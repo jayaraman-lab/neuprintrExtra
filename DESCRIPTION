@@ -3,7 +3,7 @@ Type: Package
 Title: Extra functions to analyze neuprint EM datasets
 Version: 0.1.0
 Depends: R (>= 3.6.2)
-Authors@R: c(person("Romain","Franconville",email="franconviller@janelia.hhmi.org",role=c("aut","cre")))
+Authors@R: c(person("Romain","Franconville",email="franconviller@janelia.hhmi.org",role=c("aut","cre"),comment = c(ORCID = "0000-0002-4440-7297")))
 Description: Analysis and display functions to complement the neuprintr package, initially developped by the Jayaraman lab to analyze
     Central complex connectivity in the hemibrain FIBSEM dataset
 Imports: 

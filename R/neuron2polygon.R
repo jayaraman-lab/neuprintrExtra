@@ -1,16 +1,16 @@
-neuronForGG <- function(neur,axis=c("x","y")){UseMethod("neuronForGG")}
+neuron2polygon <- function(neur,axis=c("x","y")){UseMethod("neuron2polygon")}
 
-neuronForGG.neuron <- function(neur,axis=c("x","y")){
+neuron2polygon.neuron <- function(neur,axis=c("x","y")){
   refT <- mutate(neur$d,x=!!as.name(toupper(axis[1])),y=!!as.name(toupper(axis[2])))
   refT <- addOutlines(refT)
   ptsOrd <- tryCatch(treeOrder(1,neur$SegList,branchpoints(neur),refTable = refT),error=function(cond){segOrder(neur,toupper(axis[2]))})##segOrder(neur,toupper(axis[2]))#
-  refT <- left_join(ptsOrd,refT,by = c("idx" = "PointNo"))
-  refT <- mutate(refT,x=ifelse(side=="upper",upperX,lowerX),y=ifelse(side=="upper",upperY,lowerY)) %>% mutate(bodyid=neur$bodyid)
-  refT %>% select(x,y,bodyid)
+  refT <- dplyr::left_join(ptsOrd,refT,by = c("idx" = "PointNo"))
+  refT <- dplyr::mutate(refT,x=ifelse(side=="upper",upperX,lowerX),y=ifelse(side=="upper",upperY,lowerY)) %>% dplyr::mutate(bodyid=neur$bodyid)
+  refT %>% dplyr::select(x,y,bodyid)
 }
 
-neuronForGG.neuronlist <- function(neurL,axis=c("x","y")){
-  outD <- bind_rows(lapply(neurL,neuronForGG,axis=axis))
+neuron2polygon.neuronlist <- function(neurL,axis=c("x","y")){
+  outD <- dplyr::bind_rows(lapply(neurL,neuron2polygon,axis=axis))
 }
 
 angle <- function(x, y) {
@@ -38,15 +38,15 @@ perpStart <- function(x, y, len){
 
 addOutlines <- function(neuronD){
   out <- neuronD %>%
-    mutate(xPar = ifelse(Parent %in% PointNo,neuronD$x[match(Parent,neuronD$PointNo)],neuronD$x[match(PointNo,neuronD$Parent)]),
-           yPar = ifelse(Parent %in% PointNo,neuronD$y[match(Parent,neuronD$PointNo)],neuronD$y[match(PointNo,neuronD$Parent)]),
-          angle = atan2(y-yPar,x-xPar),
-          dx = W/2 * (cos(angle + pi/2)),
-          dy = W/2 * (sin(angle + pi/2)),
-          lowerX = xPar - dx,
-          lowerY = yPar - dy,
-          upperX = xPar +dx,
-          upperY =yPar + dy)
+    dplyr::mutate(xPar = ifelse(Parent %in% PointNo,neuronD$x[match(Parent,neuronD$PointNo)],neuronD$x[match(PointNo,neuronD$Parent)]),
+                  yPar = ifelse(Parent %in% PointNo,neuronD$y[match(Parent,neuronD$PointNo)],neuronD$y[match(PointNo,neuronD$Parent)]),
+                  angle = atan2(y-yPar,x-xPar),
+                  dx = W/2 * (cos(angle + pi/2)),
+                  dy = W/2 * (sin(angle + pi/2)),
+                  lowerX = xPar - dx,
+                  lowerY = yPar - dy,
+                  upperX = xPar +dx,
+                  upperY =yPar + dy)
 }
 
 treeOrder <- function(subTreeIdx,segmentList,branchPts,refTable){

@@ -10,13 +10,13 @@ neuron2polygon.neuron <- function(neur,axis=c("x","y")){
   refT <- mutate(neur$d,x=!!as.name(toupper(axis[1])),y=!!as.name(toupper(axis[2])))
   refT <- addOutlines(refT)
   ptsOrd <- tryCatch(treeOrder(1,neur$SegList,branchpoints(neur),refTable = refT),error=function(cond){segOrder(neur,toupper(axis[2]))})##segOrder(neur,toupper(axis[2]))#
-  refT <- dplyr::left_join(ptsOrd,refT,by = c("idx" = "PointNo"))
-  refT <- dplyr::mutate(refT,x=ifelse(side=="upper",upperX,lowerX),y=ifelse(side=="upper",upperY,lowerY)) %>% dplyr::mutate(bodyid=neur$bodyid)
-  refT %>% dplyr::select(x,y,bodyid)
+  refT <- left_join(ptsOrd,refT,by = c("idx" = "PointNo"))
+  refT <- mutate(refT,x=ifelse(side=="upper",upperX,lowerX),y=ifelse(side=="upper",upperY,lowerY)) %>% mutate(bodyid=neur$bodyid)
+  refT %>% select(x,y,bodyid)
 }
 
 neuron2polygon.neuronlist <- function(neurL,axis=c("x","y")){
-  outD <- dplyr::bind_rows(lapply(neurL,neuron2polygon,axis=axis))
+  outD <- bind_rows(lapply(neurL,neuron2polygon,axis=axis))
 }
 
 angle <- function(x, y) {
@@ -44,7 +44,7 @@ perpStart <- function(x, y, len){
 
 addOutlines <- function(neuronD){
   out <- neuronD %>%
-    dplyr::mutate(xPar = ifelse(Parent %in% PointNo,neuronD$x[match(Parent,neuronD$PointNo)],neuronD$x[match(PointNo,neuronD$Parent)]),
+    mutate(xPar = ifelse(Parent %in% PointNo,neuronD$x[match(Parent,neuronD$PointNo)],neuronD$x[match(PointNo,neuronD$Parent)]),
                   yPar = ifelse(Parent %in% PointNo,neuronD$y[match(Parent,neuronD$PointNo)],neuronD$y[match(PointNo,neuronD$Parent)]),
                   angle = atan2(y-yPar,x-xPar),
                   dx = W/2 * (cos(angle + pi/2)),
@@ -80,7 +80,7 @@ segOrder <- function(neuronOb,ax="Y"){
   igraph::V(nGraph)$name <-  igraph::V(nGraph)$label
   tree <- igraph::as_data_frame(nGraph)
 
-  roots <- (dplyr::filter(tree,rootpoints(neuronOb)==from) %>% dplyr::arrange(desc(weight)))$segid
+  roots <- (filter(tree,rootpoints(neuronOb)==from) %>% arrange(desc(weight)))$segid
   baseTree <- unlist(lapply(roots,iterativePreorder,tree))
   startVertices <- match(tree$to,igraph::V(nGraph)$name)
   allSubTrees <- lapply(startVertices,function(r){na.omit(igraph::dfs(nGraph,r,unreachable=FALSE)$order)$name})
@@ -117,7 +117,7 @@ iterativePreorder <- function(node,tree){
 
     orderedTree <- append(orderedTree,node)
 
-    children <- dplyr::filter(tree,from == tree$to[tree$segid == node] & !(segid %in% c(todo,orderedTree))) %>% dplyr::arrange(desc(weight)) ## Avoid circular stuff
+    children <- filter(tree,from == tree$to[tree$segid == node] & !(segid %in% c(todo,orderedTree))) %>% arrange(desc(weight)) ## Avoid circular stuff
     if (length(children)>0){
       todo <- append(todo,children$segid,0)
     }

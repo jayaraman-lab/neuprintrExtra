@@ -1,12 +1,15 @@
-getNeuronsInRoiTable <- function(slctROI,minTypePercentage=0.5) {
-  #' Returns a table of all instances of neurons of types with non zero pre/post counts in slctROI.
-  #' @param slctROI : the ROI to look for
-  #' @param minTypePercentage : the minimum proportion of the instances of a type that should be innervating the ROI for
-  #' it to be considered
-  #' @return : a table of metadata for all neurons in the ROI, with extra columns \code{ROI_pre}
-  #'  and \code{ROI_post}, the counts in the queried ROI.
-
-  roi_Innervate <- neuprint_bodies_in_ROI(slctROI) %>%
+#' Get all instances of neurons of types with non zero pre/post counts in a ROI.
+#' @param ROI : the ROI to look for
+#' @param minTypePercentage : the minimum proportion of the instances of a type that should be innervating the ROI for
+#' it to be considered
+#' @return  a data frame of metadata for all neurons in the ROI, as returned by \code{neuprint_get_meta}, with extra columns \code{ROI_pre}
+#'  and \code{ROI_post}, the counts in the queried ROI.
+#' @details  If a type is selected because at least \code{minTypePercentage} of its instances touch the ROI, all instances of the type are returned.
+#' This is used internally by \code{getTypesInRoiTable}
+#' @seealso  \code{getTypesInRoiTable}
+#' @export
+getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5) {
+  roi_Innervate <- neuprint_bodies_in_ROI(ROI) %>%
     mutate(originalInstance = TRUE)
   metaRoi <- neuprint_get_meta(roi_Innervate) %>% drop_na(type)
 
@@ -28,19 +31,19 @@ getNeuronsInRoiTable <- function(slctROI,minTypePercentage=0.5) {
   return(roi_Innervate)
 }
 
+#' Returns a neuronBag object of all the neurons forming significant connections in a ROI
+#' @param ROI : the ROI to consider
+#' @param lateralize : should the neuron types be divided in left/right (default FALSE)
+#' @param ... : parameters to be passed to
+#' @details calls \code{getNeuronsInRoiTable} internally, with \code{minTypePercentage} set to 0.5, or 0.25 if \code{lateralize} is TRUE.
+#' @seealso  \code{getNeuronsInRoiTable}
+#' @export
 getTypesInRoiTable <- function(ROI,lateralize=FALSE,...){
-  #' Returns a neuronBag object of all the neurons in the ROI
-  #' @param ROI : the ROI to consider
-  #' @param lateralize : should the neuron types be divided in left/right (default FALSE)
-  #' @param big : if TRUE, run through a pblapply call
-  #' @param clN : if big is TRUE, this is the number of cores to use.
-  #'
   neuronTable <- getNeuronsInRoiTable(ROI,minTypePercentage=ifelse(lateralize,0.25,0.5)) ## Remove types if less than
   ## 25% of the instances touch (l/R)
   typesUnfiltered <- unique(neuronTable$type)
 
   roiConnections <- buildInputsOutputsByType(neuronTable,fixed=TRUE,...)
-
 
   if (lateralize == TRUE){
     roiConnections <- lateralizeInputOutputList(roiConnections)
@@ -49,21 +52,12 @@ getTypesInRoiTable <- function(ROI,lateralize=FALSE,...){
   roiConnections
 }
 
-typesInROI <- function(roiConnections,ROI){
-  typesUnfiltered <- roiConnections$names$type
-  inputs <- roiConnections$inputs %>% filter((roi == ROI) & (type.to %in% typesUnfiltered) &
-                                              (type.from %in% typesUnfiltered))
-  outputs <- roiConnections$outputs %>% filter((roi == ROI) & (type.to %in% typesUnfiltered) &
-                                                (type.from %in% typesUnfiltered))
-
-  roiTypes <- data.frame(type = unique(c(inputs$type.to,outputs$type.from))) %>%
-    mutate(databaseType = roiConnections$names$databaseType[match(type,roiConnections$names$type)])
-
-  return(roiTypes)
-}
-
+#' A wrapper around \code{neuprint_ROI_hierarchy} returning a cleaned up, sorted table with various ROI levels.
+#' @return  A table with columns `level` 0 through 4, 0 being the more general and 4 the more detailed, omitting tracts. ROI are somewhat sorted,
+#'  from right to central to left (and from periphery to center to periphery). level0 is similar to level1 except that Left/Right distinctions are omitted.
+#' @seealso  \code{selectRoiSet} to make a selection of ROIs (for example for a figure) from such a hierarchy
+#' @export
 getRoiTree <- function(){
-  #' Build a more useful roi table, with things ordered in a semi useful way
   roiH <- neuprint_ROI_hierarchy() %>% mutate_all(as.character)
   roiT <- data.frame(level1 = roiH$roi[roiH$parent == "hemibrain"],stringsAsFactors = F) %>% filter(!(level1 %in% c("hemibrain","AOT(R)","GC","GF(R)","mALT(R)","POC","mALT(L)")))
   roiT <- left_join(roiT,roiH,by=c("level1"="parent")) %>% rename(level2 = roi) %>% mutate(level2 = ifelse(is.na(level2),level1,level2))
@@ -82,9 +76,7 @@ getRoiTree <- function(){
 
   roiT <- arrange(roiT,side2,level1)
   roiT$level0 <- delateralize(roiT$level1)
-  #fineOrder <- c(which(roiT$side2!="Left"),rev(which(roiT$side2 == "Left")))
   roiT <- roiT %>% mutate_at(c("level2","level3","level4"),function(a) factor(a,levels=unique(a)))
-  #roiT <- arrange(roiT,level4)
   roiT
 }
 
@@ -92,7 +84,17 @@ delateralize <- function(roiName){
   gsub("(L)","",gsub("(R)","",roiName,fixed=TRUE),fixed=TRUE)
 }
 
-selectRoiSet <- function(roiTree,default_level=2,exceptions=NULL,exceptionLevelMatch = default_level){
+#' Select a set of ROIs from a ROI hierarchy as the one generated by getRoiTree
+#' @param roiTree : a ROI hierarchy table as returned by \code{getRoiTree}
+#' @param default_level : an integer specifying which ROI level to use by default
+#' @param exceptions : a list of the form list(nameOfRoi = level) where nameOfRoi is the name of
+#' ROIs at level \code{exceptionLevelMatch} for which one want to use a different level of description
+#' @param exceptionLevelMatch : what level to use in the \code{exceptions} list
+#' @return a data.frame with the same columns as those returned by \code{getRoiTree} with an extra \code{roi} column
+#' containing the desired set
+#' @seealso \code{getRoiTree}
+#' @export
+selectRoiSet <- function(roiTree=getRoiTree(),default_level=2,exceptions=NULL,exceptionLevelMatch = default_level){
   if (!is.null(exceptions)){
     levelEx <- paste0("level",exceptionLevelMatch)
     normalRois <- roiTree %>% filter(!((!!as.name(levelEx)) %in% names(exceptions))) %>%
@@ -115,21 +117,37 @@ selectRoiSet <- function(roiTree,default_level=2,exceptions=NULL,exceptionLevelM
   return(distinct(rois))
 }
 
-roisPalette <- function(favoriteRegion="CX",my_palette=paletteer_d("Polychrome::palette36")){
-  rois <- getRoiTree()
+#' Create a consistent palette for ROIs for plotting
+#' @param rois : a ROI hierarchy as returned by \code{getRoiTree}
+#' @param favoriteRegion : a brain region (defined at level 1) for which one wants colors
+#' defined down to level 2
+#' @param my_palette : a discrete color palette to use
+#' @return A named vector of colors (for example to be used in ggplot2's \code{scale_color_manual})
+#' @seealso \code{getRoiTree}
+#' @export
+roisPalette <- function(rois=getRoiTree(),favoriteRegion="CX",my_palette){
   roiL <- unique(delateralize(c(as.character(rois$level1),as.character(rois$level2[rois$level1==favoriteRegion]))))
   pal <- my_palette[1:length(roiL)]
   names(pal) <- roiL
   pal
 }
 
-roiOutline <- function(roiMesh,axis=c("x","y"),alpha=100,roiName){UseMethod("roiOutline")}
+#' Get 2D outlines for a ROI
+#' @param roiMesh : either a mesh3d object (as returned by \code{neuprint_ROI_mesh}) or the name of an
+#' existing ROI
+#' @param alpha : alpha parameter to be passed to the \code{alphahull::ahull} function
+#' @param roiName : a name to label the outline with
+#' @return a data frame with columns x, y (outlines) proj (either xy or xz, the projection considered) and roi (the roi name)
+#' @details both xy and xz projections are returned, which can be selected with the \code{proj} column. This is meant to
+#' be handy for ggplot2 plotting
+#' @export
+roiOutline <- function(roiMesh,alpha=100,roiName){UseMethod("roiOutline")}
 
 roiOutline.mesh3d <- function(roiMesh,alpha=100,roiName =deparse(substitute(roiMesh))){
   roiPts <-  data.frame(dotprops(roiMesh)$points)
   names(roiPts) <- c("x","y","z")
-  roiHullxy <- ahull(x=roiPts$x,y=roiPts$y,alpha=alpha)
-  roiHullxz <- ahull(x=roiPts$x,y=roiPts$z,alpha=alpha)
+  roiHullxy <- alphahull::ahull(x=roiPts$x,y=roiPts$y,alpha=alpha)
+  roiHullxz <- alphahull::ahull(x=roiPts$x,y=roiPts$z,alpha=alpha)
 
   roiOutxy <- data.frame(roiHullxy$arcs) %>% mutate(x=c1,y=c2,proj="xy",roi=roiName) %>% select(x,y,proj,roi)
   roiOutxy <-  bind_rows(roiOutxy,roiOutxy[1,])

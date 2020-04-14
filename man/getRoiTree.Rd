@@ -2,10 +2,17 @@
 % Please edit documentation in R/rois.R
 \name{getRoiTree}
 \alias{getRoiTree}
-\title{Build a more useful roi table, with things ordered in a semi useful way}
+\title{A wrapper around \code{neuprint_ROI_hierarchy} returning a cleaned up, sorted table with various ROI levels.}
 \usage{
 getRoiTree()
 }
+\value{
+A table with columns `level` 0 through 4, 0 being the more general and 4 the more detailed, omitting tracts. ROI are somewhat sorted,
+ from right to central to left (and from periphery to center to periphery). level0 is similar to level1 except that Left/Right distinctions are omitted.
+}
 \description{
-Build a more useful roi table, with things ordered in a semi useful way
+A wrapper around \code{neuprint_ROI_hierarchy} returning a cleaned up, sorted table with various ROI levels.
+}
+\seealso{
+\code{selectRoiSet} to make a selection of ROIs (for example for a figure) from such a hierarchy
 }

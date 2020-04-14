@@ -2,20 +2,27 @@
 % Please edit documentation in R/rois.R
 \name{getNeuronsInRoiTable}
 \alias{getNeuronsInRoiTable}
-\title{Returns a table of all instances of neurons of types with non zero pre/post counts in slctROI.}
+\title{Get all instances of neurons of types with non zero pre/post counts in a ROI.}
 \usage{
-getNeuronsInRoiTable(slctROI, minTypePercentage = 0.5)
+getNeuronsInRoiTable(ROI, minTypePercentage = 0.5)
 }
 \arguments{
-\item{slctROI}{: the ROI to look for}
+\item{ROI}{: the ROI to look for}
 
 \item{minTypePercentage}{: the minimum proportion of the instances of a type that should be innervating the ROI for
 it to be considered}
 }
 \value{
-: a table of metadata for all neurons in the ROI, with extra columns \code{ROI_pre}
+a data frame of metadata for all neurons in the ROI, as returned by \code{neuprint_get_meta}, with extra columns \code{ROI_pre}
  and \code{ROI_post}, the counts in the queried ROI.
 }
 \description{
-Returns a table of all instances of neurons of types with non zero pre/post counts in slctROI.
+Get all instances of neurons of types with non zero pre/post counts in a ROI.
+}
+\details{
+If a type is selected because at least \code{minTypePercentage} of its instances touch the ROI, all instances of the type are returned.
+This is used internally by \code{getTypesInRoiTable}
+}
+\seealso{
+\code{getTypesInRoiTable}
 }

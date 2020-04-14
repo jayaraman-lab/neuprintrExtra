@@ -10,7 +10,7 @@ Analysis and display functions to complement the neuprintr package, initially de
     Central complex connectivity in the hemibrain FIBSEM dataset
 }
 \author{
-\strong{Maintainer}: Romain Franconville \email{franconviller@janelia.hhmi.org}
+\strong{Maintainer}: Romain Franconville \email{franconviller@janelia.hhmi.org} (\href{https://orcid.org/0000-0002-4440-7297}{ORCID})
 
 }
 \keyword{internal}

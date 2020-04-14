@@ -2,7 +2,7 @@
 % Please edit documentation in R/rois.R
 \name{getTypesInRoiTable}
 \alias{getTypesInRoiTable}
-\title{Returns a neuronBag object of all the neurons in the ROI}
+\title{Returns a neuronBag object of all the neurons forming significant connections in a ROI}
 \usage{
 getTypesInRoiTable(ROI, lateralize = FALSE, ...)
 }
@@ -11,10 +11,14 @@ getTypesInRoiTable(ROI, lateralize = FALSE, ...)
 
 \item{lateralize}{: should the neuron types be divided in left/right (default FALSE)}
 
-\item{big}{: if TRUE, run through a pblapply call}
-
-\item{clN}{: if big is TRUE, this is the number of cores to use.}
+\item{...}{: parameters to be passed to}
 }
 \description{
-Returns a neuronBag object of all the neurons in the ROI
+Returns a neuronBag object of all the neurons forming significant connections in a ROI
+}
+\details{
+calls \code{getNeuronsInRoiTable} internally, with \code{minTypePercentage} set to 0.5, or 0.25 if \code{lateralize} is TRUE.
+}
+\seealso{
+\code{getNeuronsInRoiTable}
 }

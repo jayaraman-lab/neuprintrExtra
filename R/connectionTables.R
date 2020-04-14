@@ -34,7 +34,7 @@ getConnectionTable.data.frame <- function(bodyIDs,synapseType, slctROI=NULL,by.r
   myConnections_raw <- neuprint_connection_table(bodyIDs, synapseType, slctROI,by.roi=by.roi,chunk=chunk_connections,...)
 
   if (by.roi | !is.null(slctROI)){
-    myConnections_raw <- myConnections_raw %>% drop_na(ROIweight)
+    myConnections_raw <- myConnections_raw %>% tidyr::drop_na(ROIweight)
     myConnections <- myConnections_raw %>% filter(ROIweight>synThresh)
   }else{
     myConnections <- myConnections_raw %>% filter(weight>synThresh)
@@ -132,7 +132,7 @@ processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partn
       ## This is how much this connection accounts for the outputs of the input neuron (not the standard measure)
       myConnections <- myConnections %>% mutate(knownWeightRelative = ROIweight/knownTablePostROI$knownPostWeight[match(paste0(myConnections$to,myConnections$roi),paste0(knownTablePostROI$to,knownTablePostROI$roi))],
                                                 knownTotalPreROIweight = knownTablePreROI$knownPreWeight[match(paste0(myConnections$from,myConnections$roi),paste0(knownTablePreROI$from,knownTablePreROI$roi))],
-                                                knownOutputContribution = ROIweight/knownTotalPreROIweight) %>% drop_na(weightRelative)  ## NA values can occur in rare cases where
+                                                knownOutputContribution = ROIweight/knownTotalPreROIweight) %>% tidyr::drop_na(weightRelative)  ## NA values can occur in rare cases where
     }
     ## synapse (pre/post) is split between ROIs
   }else{

@@ -2,6 +2,7 @@
 
 export(getConnectionTable)
 export(getNeuronsInRoiTable)
+export(getRoiInfo)
 export(getRoiTree)
 export(getTypeToTypeTable)
 export(getTypesInRoiTable)

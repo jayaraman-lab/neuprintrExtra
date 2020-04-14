@@ -69,15 +69,15 @@ treeOrder <- function(subTreeIdx,segmentList,branchPts,refTable){
 }
 
 segOrder <- function(neuronOb,ax="Y"){
-  nGraph <- segmentgraph(neuronOb,weights=FALSE,segids=TRUE)
-  E(nGraph)$weight <- neuronOb$d[[ax]][match(E(nGraph)$segid,neuronOb$d$PointNo)]
-  V(nGraph)$name <-  V(nGraph)$label
-  tree <- as_data_frame(nGraph)
+  nGraph <- nat::segmentgraph(neuronOb,weights=FALSE,segids=TRUE)
+  igraph::E(nGraph)$weight <- neuronOb$d[[ax]][match(E(nGraph)$segid,neuronOb$d$PointNo)]
+  igraph::V(nGraph)$name <-  igraph::V(nGraph)$label
+  tree <- igraph::as_data_frame(nGraph)
 
-  roots <- (filter(tree,rootpoints(neuronOb)==from) %>% arrange(desc(weight)))$segid
+  roots <- (dplyr::filter(tree,rootpoints(neuronOb)==from) %>% dplyr::arrange(desc(weight)))$segid
   baseTree <- unlist(lapply(roots,iterativePreorder,tree))
-  startVertices <- match(tree$to,V(nGraph)$name)
-  allSubTrees <- lapply(startVertices,function(r){na.omit(dfs(nGraph,r,unreachable=FALSE)$order)$name})
+  startVertices <- match(tree$to,igraph::V(nGraph)$name)
+  allSubTrees <- lapply(startVertices,function(r){na.omit(igraph::dfs(nGraph,r,unreachable=FALSE)$order)$name})
   allSubTrees<- lapply(allSubTrees,function(s) filter(tree,to %in% s)$segid)
   allSubTrees <- lapply(1:length(baseTree),function(i) baseTree[baseTree %in% c(i,allSubTrees[[i]])])
 
@@ -111,7 +111,7 @@ iterativePreorder <- function(node,tree){
 
     orderedTree <- append(orderedTree,node)
 
-    children <- filter(tree,from == tree$to[tree$segid == node] & !(segid %in% c(todo,orderedTree))) %>% arrange(desc(weight)) ## Avoid circular stuff
+    children <- dplyr::filter(tree,from == tree$to[tree$segid == node] & !(segid %in% c(todo,orderedTree))) %>% dplyr::arrange(desc(weight)) ## Avoid circular stuff
     if (length(children)>0){
       todo <- append(todo,children$segid,0)
     }

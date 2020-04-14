@@ -8,6 +8,7 @@ Description: Analysis and display functions to complement the neuprintr package,
     Central complex connectivity in the hemibrain FIBSEM dataset
 Imports: 
     alphahull (>=2.2),
+    dplyr (>=0.8.5),
     igraph (>=1.2.5),
     neuprintr (>=1.0)
 Suggests:

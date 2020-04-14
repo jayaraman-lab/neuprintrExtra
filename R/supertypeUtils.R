@@ -14,15 +14,15 @@ supertype.character <- function(types,level=2){
   supertype[is.na(types)] <- "Other"
   supertype[is.null(types)] <- "Other"
 
-  supertype[grepl("FB.*",types)] <- str_extract(types,"FB[1-9]")[grepl("FB.*",types)]
-  supertype[grepl("Delta0.*",types)] <- str_extract(types,"Delta0[A-O]")[grepl("Delta0.*",types)]
-  supertype[grepl("Delta6.*",types)] <- str_extract(types,"Delta6[A-M]")[grepl("Delta6.*",types)]
-  supertype[grepl("FC.*",types)] <- str_extract(types,"FC[1-9]")[grepl("FC.*",types)]
-  supertype[grepl("FS.*",types)] <- str_extract(types,"FS[1-9]")[grepl("FS.*",types)]
+  supertype[grepl("FB.*",types)] <- stringr::str_extract(types,"FB[1-9]")[grepl("FB.*",types)]
+  supertype[grepl("Delta0.*",types)] <- stringr::str_extract(types,"Delta0[A-O]")[grepl("Delta0.*",types)]
+  supertype[grepl("Delta6.*",types)] <- stringr::str_extract(types,"Delta6[A-M]")[grepl("Delta6.*",types)]
+  supertype[grepl("FC.*",types)] <- stringr::str_extract(types,"FC[1-9]")[grepl("FC.*",types)]
+  supertype[grepl("FS.*",types)] <- stringr::str_extract(types,"FS[1-9]")[grepl("FS.*",types)]
   supertype[grepl("^FR.*",types)] <- "FR"
   supertype[grepl("^EL.*",types)] <- "EL"
   supertype[grepl("PFR.*",types)] <- "PFR"
-  supertype[grepl("PFN.*",types)] <- str_extract(types,"PFN[a|d|m|p|v]")[grepl("PFN.*",types)]
+  supertype[grepl("PFN.*",types)] <- stringr::str_extract(types,"PFN[a|d|m|p|v]")[grepl("PFN.*",types)]
   supertype[types %in% c("L-L(c)1","AoL-L(c)","L-LC(c)1","VeL-CLVe(c)1","L-Lic(c)","VeL-LVeC(c)",
                         "CL-LC(c)","VeL-LVe(c)2","CL-L(c)1","L-LC(c)2","VeLC-L(c)","CL-L(c)2",
                         "VeL-L(c)","CL-L(c)2","VeLC-LVe(c)3","VeL-LC(c)","L-L(c)2")] <- "L-L(c)"

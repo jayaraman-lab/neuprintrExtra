@@ -12,7 +12,9 @@ Imports:
     igraph (>= 1.2.5),
     nat (>= 1.10.1),
     neuprintr (>= 1.0),
-    magrittr (>= 1.5)
+    magrittr (>= 1.5),
+    stringr (>= 1.4.0),
+    tidyr (>= 1.0.2)
 Suggests:
     ggiraph,
     paletteer,

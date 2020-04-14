@@ -1,0 +1,18 @@
+Package: neuprintrExtra
+Type: Package
+Title: Extra functions to analyze neuprint EM datasets
+Version: 0.1.0
+Depends: R (>= 3.6.2)
+Authors@R: c(person("Romain","Franconville",email="franconviller@janelia.hhmi.org",role=c("aut","cre")))
+Description: Analysis and display functions to complement the neuprintr package, initially developped by the Jayaraman lab to analyze
+    Central complex connectivity in the hemibrain FIBSEM dataset
+Imports: 
+    alphahull (>=2.2),
+    igraph (>=1.2.5),
+    neuprintr (>=1.0)
+Suggests:
+    ggiraph,
+    paletteer
+License: file LICENSE
+Encoding: UTF-8
+LazyData: true

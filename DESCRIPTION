@@ -15,7 +15,8 @@ Imports:
     magrittr (>= 1.5)
 Suggests:
     ggiraph,
-    paletteer
+    paletteer,
+    testthat
 License: file LICENSE
 Encoding: UTF-8
 LazyData: true

@@ -9,9 +9,9 @@
 #' @seealso  \code{getTypesInRoiTable}
 #' @export
 getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5) {
-  roi_Innervate <- neuprintr::neuprint_bodies_in_ROI(ROI) %>%
+  roi_Innervate <- neuprint_bodies_in_ROI(ROI) %>%
     mutate(originalInstance = TRUE)
-  metaRoi <- neuprintr::neuprint_get_meta(roi_Innervate) %>% drop_na(type)
+  metaRoi <- neuprint_get_meta(roi_Innervate) %>% drop_na(type)
 
   ## Get all instances of the types touching the ROI
   all_neurons <- getTypesTable(unique(metaRoi$type))
@@ -58,7 +58,7 @@ getTypesInRoiTable <- function(ROI,lateralize=FALSE,...){
 #' @seealso  \code{selectRoiSet} to make a selection of ROIs (for example for a figure) from such a hierarchy
 #' @export
 getRoiTree <- function(){
-  roiH <- neuprintr::neuprint_ROI_hierarchy() %>% mutate_all(as.character)
+  roiH <- neuprint_ROI_hierarchy() %>% mutate_all(as.character)
   roiT <- data.frame(level1 = roiH$roi[roiH$parent == "hemibrain"],stringsAsFactors = F) %>% filter(!(level1 %in% c("hemibrain","AOT(R)","GC","GF(R)","mALT(R)","POC","mALT(L)")))
   roiT <- left_join(roiT,roiH,by=c("level1"="parent")) %>% rename(level2 = roi) %>% mutate(level2 = ifelse(is.na(level2),level1,level2))
   roiT <- left_join(roiT,roiH,by=c("level2"="parent")) %>% rename(level3 = roi) %>% mutate(level3 = ifelse(is.na(level3),level2,level3))
@@ -159,6 +159,6 @@ roiOutline.mesh3d <- function(roiMesh,alpha=100,roiName =deparse(substitute(roiM
 }
 
 roiOutline.character <- function(roi,alpha=100){
-  roiMesh <- neuprintr::neuprint_ROI_mesh(roi)
+  roiMesh <- neuprint_ROI_mesh(roi)
   roiOutline(roiMesh,alpha=alpha,roiName=roi)
 }

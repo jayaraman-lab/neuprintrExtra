@@ -7,9 +7,9 @@
 typesPalette(typeSelection, my_palette = paletteer_d("Polychrome::palette36"))
 }
 \arguments{
-\item{typeSelection}{: a supertype selection as returned by \code{selectSupertypeSet}}
+\item{typeSelection}{A supertype selection as returned by \code{selectSupertypeSet}}
 
-\item{my_palette}{: a discrete color palette to use}
+\item{my_palette}{A discrete color palette to use}
 }
 \value{
 A named vector of colors (for example to be used in ggplot2's \code{scale_color_manual})

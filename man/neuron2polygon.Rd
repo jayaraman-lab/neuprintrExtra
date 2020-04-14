@@ -7,9 +7,9 @@
 neuron2polygon(neur, axis = c("x", "y"))
 }
 \arguments{
-\item{neur}{: a neuron or neuronList object}
+\item{neur}{A neuron or neuronList object}
 
-\item{axis}{: which axis do we want to project onto. Has to be a length 2 vector of "x", "y" or "z"}
+\item{axis}{Which axis do we want to project onto. Has to be a length 2 vector of "x", "y" or "z"}
 }
 \value{
 a dataframe with columns x, y and bodyid. If \code{neur} is  a neuronlist there will be several bodyids.

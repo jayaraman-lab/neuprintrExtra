@@ -12,14 +12,14 @@ selectRoiSet(
 )
 }
 \arguments{
-\item{roiTree}{: a ROI hierarchy table as returned by \code{getRoiTree}}
+\item{roiTree}{A ROI hierarchy table as returned by \code{getRoiTree}}
 
-\item{default_level}{: an integer specifying which ROI level to use by default}
+\item{default_level}{An integer specifying which ROI level to use by default}
 
-\item{exceptions}{: a list of the form list(nameOfRoi = level) where nameOfRoi is the name of
+\item{exceptions}{A list of the form list(nameOfRoi = level) where nameOfRoi is the name of
 ROIs at level \code{exceptionLevelMatch} for which one want to use a different level of description}
 
-\item{exceptionLevelMatch}{: what level to use in the \code{exceptions} list}
+\item{exceptionLevelMatch}{What level to use in the \code{exceptions} list}
 }
 \value{
 a data.frame with the same columns as those returned by \code{getRoiTree} with an extra \code{roi} column

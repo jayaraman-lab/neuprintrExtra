@@ -7,11 +7,11 @@
 getTypesInRoiTable(ROI, lateralize = FALSE, ...)
 }
 \arguments{
-\item{ROI}{: the ROI to consider}
+\item{ROI}{The ROI to consider}
 
-\item{lateralize}{: should the neuron types be divided in left/right (default FALSE)}
+\item{lateralize}{Should the neuron types be divided in left/right (default FALSE)}
 
-\item{...}{: parameters to be passed to}
+\item{...}{Parameters to be passed to}
 }
 \description{
 Returns a neuronBag object of all the neurons forming significant connections in a ROI

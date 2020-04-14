@@ -7,12 +7,12 @@
 roisPalette(rois = getRoiTree(), favoriteRegion = "CX", my_palette)
 }
 \arguments{
-\item{rois}{: a ROI hierarchy as returned by \code{getRoiTree}}
+\item{rois}{A ROI hierarchy as returned by \code{getRoiTree}}
 
-\item{favoriteRegion}{: a brain region (defined at level 1) for which one wants colors
+\item{favoriteRegion}{A brain region (defined at level 1) for which one wants colors
 defined down to level 2}
 
-\item{my_palette}{: a discrete color palette to use}
+\item{my_palette}{A discrete color palette to use}
 }
 \value{
 A named vector of colors (for example to be used in ggplot2's \code{scale_color_manual})

@@ -12,14 +12,14 @@ selectSupertypeSet(
 )
 }
 \arguments{
-\item{supertypeTable}{: a supertypes table as returned by \code{supertype}}
+\item{supertypeTable}{A supertypes table as returned by \code{supertype}}
 
-\item{default_level}{: an integer specifying which Supertype level to use by default}
+\item{default_level}{An integer specifying which Supertype level to use by default}
 
-\item{exceptions}{: a list of the form list(nameOfType = level) where nameOfType is the name of
+\item{exceptions}{A list of the form list(nameOfType = level) where nameOfType is the name of
 Supertypes at level \code{exceptionLevelMatch} for which one want to use a different level of description}
 
-\item{exceptionLevelMatch}{: what level to use in the \code{exceptions} list}
+\item{exceptionLevelMatch}{What level to use in the \code{exceptions} list}
 }
 \value{
 a data.frame with the same columns as those returned by \code{supertype} with an extra \code{type} column

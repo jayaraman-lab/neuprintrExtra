@@ -7,9 +7,9 @@
 getNeuronsInRoiTable(ROI, minTypePercentage = 0.5)
 }
 \arguments{
-\item{ROI}{: the ROI to look for}
+\item{ROI}{The ROI to look for}
 
-\item{minTypePercentage}{: the minimum proportion of the instances of a type that should be innervating the ROI for
+\item{minTypePercentage}{The minimum proportion of the instances of a type that should be innervating the ROI for
 it to be considered}
 }
 \value{

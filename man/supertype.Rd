@@ -7,10 +7,10 @@
 supertype(types, level = 2)
 }
 \arguments{
-\item{types}{: a type name or vector of type names, or a data frame containing databaseType
+\item{types}{A type name or vector of type names, or a data frame containing databaseType
 (or databaseType.to and from) columns, or a neuronBag object}
 
-\item{level}{: depth of the supertype. Possible values are 1,2 or 3 (default 2), 1 being the finest
+\item{level}{Depth of the supertype. Possible values are 1,2 or 3 (default 2), 1 being the finest
 subdivision and 3 the coarsest}
 }
 \value{

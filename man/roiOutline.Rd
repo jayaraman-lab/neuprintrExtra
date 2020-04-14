@@ -7,12 +7,12 @@
 roiOutline(roiMesh, alpha = 100, roiName)
 }
 \arguments{
-\item{roiMesh}{: either a mesh3d object (as returned by \code{neuprint_ROI_mesh}) or the name of an
+\item{roiMesh}{Either a mesh3d object (as returned by \code{neuprint_ROI_mesh}) or the name of an
 existing ROI}
 
-\item{alpha}{: alpha parameter to be passed to the \code{alphahull::ahull} function}
+\item{alpha}{Alpha parameter to be passed to the \code{alphahull::ahull} function}
 
-\item{roiName}{: a name to label the outline with}
+\item{roiName}{A name to label the outline with}
 }
 \value{
 a data frame with columns x, y (outlines) proj (either xy or xz, the projection considered) and roi (the roi name)

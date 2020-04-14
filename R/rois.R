@@ -125,7 +125,7 @@ selectRoiSet <- function(roiTree=getRoiTree(),default_level=2,exceptions=NULL,ex
 #' @return A named vector of colors (for example to be used in ggplot2's \code{scale_color_manual})
 #' @seealso \code{getRoiTree}
 #' @export
-roisPalette <- function(rois=getRoiTree(),favoriteRegion="CX",my_palette){
+roisPalette <- function(rois=getRoiTree(),favoriteRegion="CX",my_palette=paletteer::paletteer_d("Polychrome::palette36")){
   roiL <- unique(delateralize(c(as.character(rois$level1),as.character(rois$level2[rois$level1==favoriteRegion]))))
   pal <- my_palette[1:length(roiL)]
   names(pal) <- roiL

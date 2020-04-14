@@ -143,7 +143,7 @@ selectSupertypeSet <- function(supertypeTable,default_level=2,exceptions=NULL,ex
 #' @return A named vector of colors (for example to be used in ggplot2's \code{scale_color_manual})
 #' @seealso \code{selectSupertypeSet}, \code{roisPalette}
 #' @export
-typesPalette <- function(typeSelection,my_palette=paletteer_d("Polychrome::palette36")){
+typesPalette <- function(typeSelection,my_palette=paletteer::paletteer_d("Polychrome::palette36")){
   typeSelection <- unique(c(as.character(typeSelection),"Other"))
   if (length(typeSelection)>36) warning(paste0(length(typeSelection)," levels in your palette, this is likely too many."))
   pal <- my_palette[1:length(typeSelection)]

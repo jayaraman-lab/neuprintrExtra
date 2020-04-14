@@ -4,7 +4,10 @@
 \alias{typesPalette}
 \title{Create a consistent palette for supertypes for plotting}
 \usage{
-typesPalette(typeSelection, my_palette = paletteer_d("Polychrome::palette36"))
+typesPalette(
+  typeSelection,
+  my_palette = paletteer::paletteer_d("Polychrome::palette36")
+)
 }
 \arguments{
 \item{typeSelection}{A supertype selection as returned by \code{selectSupertypeSet}}

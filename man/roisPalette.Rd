@@ -4,7 +4,11 @@
 \alias{roisPalette}
 \title{Create a consistent palette for ROIs for plotting}
 \usage{
-roisPalette(rois = getRoiTree(), favoriteRegion = "CX", my_palette)
+roisPalette(
+  rois = getRoiTree(),
+  favoriteRegion = "CX",
+  my_palette = paletteer::paletteer_d("Polychrome::palette36")
+)
 }
 \arguments{
 \item{rois}{A ROI hierarchy as returned by \code{getRoiTree}}

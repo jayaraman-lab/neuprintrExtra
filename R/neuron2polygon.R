@@ -1,8 +1,9 @@
+#' Transforms a nat neuron object into a polygon that can be plotted in 2D
+#' @param neur : a neuron or neuronList object
+#' @param axis : which axis do we want to project onto. Has to be a length 2 vector of "x", "y" or "z"
+#' @return a dataframe with columns x, y and bodyid. If \code{neur} is  a neuronlist there will be several bodyids.
+#' @export
 neuron2polygon <- function(neur,axis=c("x","y")){
-  #' Transforms a nat neuron object into a polygon that can be plotted in 2D
-  #' @param neur : a neuron or neuronList object
-  #' @param axis : which axis do we want to project onto. Has to be a length 2 vector of "x", "y" or "z"
-  #' @return a dataframe with columns x, y and bodyid. If \code{neur} is  a neuronlist there will be several bodyids.
   UseMethod("neuron2polygon")}
 
 neuron2polygon.neuron <- function(neur,axis=c("x","y")){

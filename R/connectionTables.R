@@ -70,8 +70,9 @@ processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partn
     if (computeKnownRatio){
       knownTablePost <- myConnections_raw  %>% mutate(from = ifelse(prepost==1,bodyid,partner),
                                                       to = ifelse(prepost==1,partner,bodyid)) %>% select(-bodyid,-partner)
-      knownTablePre <- neuprint_connection_table(unique(myConnections$from),"POST",slctROI,by.roi=by.roi,chunk=chunk_connections,...) %>% drop_na(ROIweight) %>% mutate(from = ifelse(prepost==1,bodyid,partner),
+      knownTablePre <- neuprint_connection_table(unique(myConnections$from),"POST",slctROI,by.roi=by.roi,chunk=chunk_connections,...)  %>% mutate(from = ifelse(prepost==1,bodyid,partner),
                                                                                                                                                                         to = ifelse(prepost==1,partner,bodyid)) %>% select(-bodyid,-partner)
+
     }
     outMeta <- refMeta
     inMeta <- partnerMeta
@@ -81,7 +82,7 @@ processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partn
     if (computeKnownRatio){
       knownTablePre <- myConnections_raw  %>% mutate(from = ifelse(prepost==1,bodyid,partner),
                                                      to = ifelse(prepost==1,partner,bodyid)) %>% select(-bodyid,-partner)
-      knownTablePost <- neuprint_connection_table(unique(myConnections$to),"PRE",slctROI,by.roi=by.roi,chunk=chunk_connections,...) %>% drop_na(ROIweight) %>% mutate(from = ifelse(prepost==1,bodyid,partner),
+      knownTablePost <- neuprint_connection_table(unique(myConnections$to),"PRE",slctROI,by.roi=by.roi,chunk=chunk_connections,...) %>% mutate(from = ifelse(prepost==1,bodyid,partner),
                                                                                                                                                                       to = ifelse(prepost==1,partner,bodyid)) %>% select(-bodyid,-partner)
     }
     inMeta <- refMeta
@@ -91,6 +92,9 @@ processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partn
   }
 
   if (computeKnownRatio){
+    if (by.roi | !(is.null(slctROI))){
+      knownTablePre <- tidyr::drop_na(knownTablePre,ROIweight)
+    }
     knownTablePostTotal <- knownTablePost %>% group_by(to) %>% distinct(from,weight) %>% mutate(knownPostWeight = sum(weight)) %>% ungroup()
     knownTablePreTotal <- knownTablePre %>% group_by(from) %>% distinct(to,weight) %>% mutate(knownPreWeight = sum(weight)) %>% ungroup()
   }

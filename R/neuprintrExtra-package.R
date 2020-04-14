@@ -5,5 +5,6 @@
 # roxygen namespace tags. Modify with care!
 ## usethis namespace: start
 #' @import dplyr
+#' @importFrom stringr str_extract
 ## usethis namespace: end
 NULL

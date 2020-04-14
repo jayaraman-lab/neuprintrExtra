@@ -9,24 +9,24 @@
 #' @seealso  \code{getTypesInRoiTable}
 #' @export
 getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5) {
-  roi_Innervate <- neuprint_bodies_in_ROI(ROI) %>%
-    mutate(originalInstance = TRUE)
-  metaRoi <- neuprint_get_meta(roi_Innervate) %>% drop_na(type)
+  roi_Innervate <- neuprintr::neuprint_bodies_in_ROI(ROI) %>%
+    dplyr::mutate(originalInstance = TRUE)
+  metaRoi <- neuprintr::neuprint_get_meta(roi_Innervate) %>% dplyr::drop_na(type)
 
   ## Get all instances of the types touching the ROI
   all_neurons <- getTypesTable(unique(metaRoi$type))
 
   ## Join to the full table of type members (and fill with zero where the extra instances do not
   ## innervate)
-  roi_Innervate <- left_join(all_neurons,roi_Innervate,by=c("bodyid","pre","post","voxels"))
-  roi_Innervate <- roi_Innervate %>% select(-c(voxels,cellBodyFiber)) %>%
-    replace_na(list(ROI_pre = 0,ROI_post = 0,originalInstance=FALSE)) %>%
-    mutate(databaseType = type) ## Convenience column for when types are changed
+  roi_Innervate <- dplyr::left_join(all_neurons,roi_Innervate,by=c("bodyid","pre","post","voxels"))
+  roi_Innervate <- roi_Innervate %>% dplyr::select(-c(voxels,cellBodyFiber)) %>%
+    dplyr::replace_na(list(ROI_pre = 0,ROI_post = 0,originalInstance=FALSE)) %>%
+    dplyr::mutate(databaseType = type) ## Convenience column for when types are changed
 
-  roi_Innervate <-roi_Innervate %>% group_by(type) %>%
-                   mutate(typePercentage = sum(originalInstance)/n()) %>%
-                   ungroup() %>%
-                   filter(typePercentage > minTypePercentage)
+  roi_Innervate <-roi_Innervate %>% dplyr::group_by(type) %>%
+    dplyr::mutate(typePercentage = sum(originalInstance)/n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(typePercentage > minTypePercentage)
 
   return(roi_Innervate)
 }
@@ -58,12 +58,12 @@ getTypesInRoiTable <- function(ROI,lateralize=FALSE,...){
 #' @seealso  \code{selectRoiSet} to make a selection of ROIs (for example for a figure) from such a hierarchy
 #' @export
 getRoiTree <- function(){
-  roiH <- neuprint_ROI_hierarchy() %>% mutate_all(as.character)
-  roiT <- data.frame(level1 = roiH$roi[roiH$parent == "hemibrain"],stringsAsFactors = F) %>% filter(!(level1 %in% c("hemibrain","AOT(R)","GC","GF(R)","mALT(R)","POC","mALT(L)")))
-  roiT <- left_join(roiT,roiH,by=c("level1"="parent")) %>% rename(level2 = roi) %>% mutate(level2 = ifelse(is.na(level2),level1,level2))
-  roiT <- left_join(roiT,roiH,by=c("level2"="parent")) %>% rename(level3 = roi) %>% mutate(level3 = ifelse(is.na(level3),level2,level3))
-  roiT <- left_join(roiT,roiH,by=c("level3"="parent")) %>% rename(level4 = roi) %>% mutate(level4 = ifelse(is.na(level4),level3,level4))
-  roiT <- roiT %>% mutate(side4 = "Central",
+  roiH <- neuprintr::neuprint_ROI_hierarchy() %>% dplyr::mutate_all(as.character)
+  roiT <- data.frame(level1 = roiH$roi[roiH$parent == "hemibrain"],stringsAsFactors = F) %>% dplyr::filter(!(level1 %in% c("hemibrain","AOT(R)","GC","GF(R)","mALT(R)","POC","mALT(L)")))
+  roiT <- dplyr::left_join(roiT,roiH,by=c("level1"="parent")) %>% dplyr::rename(level2 = roi) %>% dplyr::mutate(level2 = ifelse(is.na(level2),level1,level2))
+  roiT <- dplyr::left_join(roiT,roiH,by=c("level2"="parent")) %>% dplyr::rename(level3 = roi) %>% dplyr::mutate(level3 = ifelse(is.na(level3),level2,level3))
+  roiT <- dplyr::left_join(roiT,roiH,by=c("level3"="parent")) %>% dplyr::rename(level4 = roi) %>% dplyr::mutate(level4 = ifelse(is.na(level4),level3,level4))
+  roiT <- roiT %>% dplyr::mutate(side4 = "Central",
                           side2 = "Central")
   roiT$side4[grepl("(L",roiT$level4,fixed=T)] <- "Left"
   roiT$side4[grepl("(R",roiT$level4,fixed=T)] <- "Right"
@@ -74,9 +74,9 @@ getRoiTree <- function(){
   roiT$side2 <- factor(roiT$side2,levels=(c("Right","Central","Left")))
   roiT$level1 <- factor(roiT$level1,levels= c("OL(R)","AL(R)","MB(+ACA)(R)","LH(R)","PENP","GNG","VLNP(R)","SNP(R)","VMNP","INP","LX(R)","CX","LX(L)","SNP(L)","MB(L)","AL(L)"))
 
-  roiT <- arrange(roiT,side2,level1)
+  roiT <- dplyr::arrange(roiT,side2,level1)
   roiT$level0 <- delateralize(roiT$level1)
-  roiT <- roiT %>% mutate_at(c("level2","level3","level4"),function(a) factor(a,levels=unique(a)))
+  roiT <- roiT %>% dplyr::mutate_at(c("level2","level3","level4"),function(a) factor(a,levels=unique(a)))
   roiT
 }
 
@@ -97,24 +97,24 @@ delateralize <- function(roiName){
 selectRoiSet <- function(roiTree=getRoiTree(),default_level=2,exceptions=NULL,exceptionLevelMatch = default_level){
   if (!is.null(exceptions)){
     levelEx <- paste0("level",exceptionLevelMatch)
-    normalRois <- roiTree %>% filter(!((!!as.name(levelEx)) %in% names(exceptions))) %>%
-       mutate(roi = (!!as.name(paste0("level",default_level))))
+    normalRois <- roiTree %>% dplyr::filter(!((!!as.name(levelEx)) %in% names(exceptions))) %>%
+      dplyr::mutate(roi = (!!as.name(paste0("level",default_level))))
 
-    exceptionsRois <- roiTree %>% filter(((!!as.name(levelEx)) %in% names(exceptions)))
+    exceptionsRois <- roiTree %>% dplyr::filter(((!!as.name(levelEx)) %in% names(exceptions)))
 
     roisEx <- as.character(exceptionsRois[[levelEx]])
     customLev <- sapply(roisEx,function(r) paste0("level",exceptions[[r]]))
     exceptionsRois$roi <- sapply(1:length(customLev),function(i) as.character(exceptionsRois[[customLev[i]]][i]))
 
-    rois <- bind_rows(normalRois,exceptionsRois)
+    rois <- dplyr::bind_rows(normalRois,exceptionsRois)
   }else{
-    rois <- roiTree %>% mutate(roi = (!!(as.name(paste0("level",default_level)))))
+    rois <- roiTree %>% dplyr::mutate(roi = (!!(as.name(paste0("level",default_level)))))
   }
 
-  rois <- rois %>% arrange(side2,level1) %>%
-    mutate(roi = factor(roi,levels=unique(roi)))
+  rois <- rois %>% dplyr::arrange(side2,level1) %>%
+    dplyr::mutate(roi = factor(roi,levels=unique(roi)))
 
-  return(distinct(rois))
+  return(dplyr::distinct(rois))
 }
 
 #' Create a consistent palette for ROIs for plotting
@@ -144,21 +144,21 @@ roisPalette <- function(rois=getRoiTree(),favoriteRegion="CX",my_palette){
 roiOutline <- function(roiMesh,alpha=100,roiName){UseMethod("roiOutline")}
 
 roiOutline.mesh3d <- function(roiMesh,alpha=100,roiName =deparse(substitute(roiMesh))){
-  roiPts <-  data.frame(dotprops(roiMesh)$points)
+  roiPts <-  data.frame(nat::dotprops(roiMesh)$points)
   names(roiPts) <- c("x","y","z")
   roiHullxy <- alphahull::ahull(x=roiPts$x,y=roiPts$y,alpha=alpha)
   roiHullxz <- alphahull::ahull(x=roiPts$x,y=roiPts$z,alpha=alpha)
 
-  roiOutxy <- data.frame(roiHullxy$arcs) %>% mutate(x=c1,y=c2,proj="xy",roi=roiName) %>% select(x,y,proj,roi)
-  roiOutxy <-  bind_rows(roiOutxy,roiOutxy[1,])
+  roiOutxy <- data.frame(roiHullxy$arcs) %>% dplyr::mutate(x=c1,y=c2,proj="xy",roi=roiName) %>% dplyr::select(x,y,proj,roi)
+  roiOutxy <-  rbind(roiOutxy,roiOutxy[1,])
 
-  roiOutxz <- data.frame(roiHullxz$arcs) %>% mutate(x=c1,y=c2,proj="xz",roi=roiName) %>% select(x,y,proj,roi)
-  roiOutxz <-  bind_rows(roiOutxz,roiOutxz[1,])
+  roiOutxz <- data.frame(roiHullxz$arcs) %>% dplyr::mutate(x=c1,y=c2,proj="xz",roi=roiName) %>% dplyr::select(x,y,proj,roi)
+  roiOutxz <- rbind(roiOutxz,roiOutxz[1,])
 
-  bind_rows(roiOutxy,roiOutxz)
+  rbind(roiOutxy,roiOutxz)
 }
 
 roiOutline.character <- function(roi,alpha=100){
-  roiMesh <- neuprint_ROI_mesh(roi)
+  roiMesh <- neuprintr::neuprint_ROI_mesh(roi)
   roiOutline(roiMesh,alpha=alpha,roiName=roi)
 }

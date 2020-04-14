@@ -6,6 +6,5 @@
 ## usethis namespace: start
 #' @import dplyr
 #' @import neuprintr
-#' @importFrom stringr str_extract
 ## usethis namespace: end
 NULL

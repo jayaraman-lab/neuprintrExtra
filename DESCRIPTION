@@ -17,6 +17,7 @@ Imports:
     tidyr (>= 1.0.2)
 Suggests:
     ggiraph,
+    ggnewscale,
     ggplot2,
     paletteer,
     testthat

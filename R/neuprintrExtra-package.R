@@ -6,5 +6,6 @@
 ## usethis namespace: start
 #' @import dplyr
 #' @import neuprintr
+#' @import ggplot2
 ## usethis namespace: end
 NULL

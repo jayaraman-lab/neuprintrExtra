@@ -2,12 +2,20 @@
 % Please edit documentation in R/retyping.R
 \name{retype.na}
 \alias{retype.na}
-\title{Fill in the type and name field in case they are NAs, using the name field if it exists
-(removing the _L/_R) or the neuron id. By default expects a table in to/from format.}
+\title{Fill in the type and name field in case they are NAs}
 \usage{
 retype.na(connectionTable)
 }
+\arguments{
+\item{connectionTable}{A table of connections in the to/from format}
+}
+\value{
+A connection table with name and type fields filled in.
+}
 \description{
-Fill in the type and name field in case they are NAs, using the name field if it exists
-(removing the _L/_R) or the neuron id. By default expects a table in to/from format.
+Fill in the type and name field in case they are NAs
+}
+\details{
+If types are missing, fill them with a cleaned up (removing the L/R postfixes)
+version of the name. If the name is missing, use the bodyid for everything.
 }

@@ -25,7 +25,9 @@ retype.na <- function(connectionTable){
 #' @param ... Extra parameters to be passed to retype_func
 #' @return A data frame or neuronBag with the columns \code{type_col} updated, and previous
 #' types stored in \code{previous.} columns
-#'
+#' @details This is a low level functions. In most use cases, you can use \code{lateralize_types} or \code{redefineTypeByName} instead
+#' @seealso \code{\link{lateralize_types}}, \code{\link{redefineTypeByName}}
+#' @export
 redefine_types <- function(connections,retype_func,postfix=c("raw","from","to"),redefinePartners=TRUE,...){UseMethod("redefine_types")}
 
 redefine_types.data.frame <- function(table,retype_func,postfix=c("raw","from","to"),redefinePartners=TRUE,...){

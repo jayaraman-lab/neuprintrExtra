@@ -32,3 +32,9 @@ types stored in \code{previous.} columns
 \description{
 Redefine types in a table/neuronBag
 }
+\details{
+This is a low level functions. In most use cases, you can use \code{lateralize_types} or \code{redefineTypeByName} instead
+}
+\seealso{
+\code{\link{lateralize_types}}, \code{\link{redefineTypeByName}}
+}

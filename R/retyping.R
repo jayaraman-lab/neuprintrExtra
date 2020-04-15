@@ -15,6 +15,16 @@ retype.na <- function(connectionTable){
   return(connectionTable)
 }
 
+retype.na_meta <- function(metaTable){
+  metaTable <- metaTable %>%
+    mutate(
+      name = ifelse(is.na(name),as.character(bodyid),name),
+      type = ifelse(is.na(type),gsub("_L$|_R$","",name),type)
+    )
+
+  return(metaTable)
+}
+
 #' Redefine types in a table/neuronBag
 #' @param connections A connection table or a neuronBag object
 #' @param retype_func A function taking \code{connections} and \code{postfix} as argument
@@ -40,14 +50,14 @@ redefine_types.data.frame <- function(table,retype_func,postfix=c("raw","from","
 }
 
 redefine_types.neuronBag <- function(neuronBag,retype_func,postfix="raw",redefinePartners,...){
-  neuronBag$inputs_raw <- redefines_types(neuronBag$inputs_raw,retype_func,postfix="to",...)
-  neuronBag$outputs_raw <- redefines_types(neuronBag$outputs_raw,retype_func,postfix="from",...)
-  neuronBag$names <- redefines_types(neuronBag$names,retype_func,postfix="raw",...)
+  neuronBag$inputs_raw <- redefine_types(neuronBag$inputs_raw,retype_func,postfix="to",...)
+  neuronBag$outputs_raw <- redefine_types(neuronBag$outputs_raw,retype_func,postfix="from",...)
+  neuronBag$names <- redefine_types(neuronBag$names,retype_func,postfix="raw",...)
 
   if (redefinePartners){
-    neuronBag$inputs_raw <- redefines_types(neuronBag$inputs_raw,retype_func,postfix="from",...)
-    neuronBag$outputs_raw <- redefines_types(neuronBag$outputs_raw,retype_func,postfix="to",...)
-    neuronBag$outputsTableRef <- redefines_types(neuronBag$outputsTableRef,retype_func,postfix="raw",...)
+    neuronBag$inputs_raw <- redefine_types(neuronBag$inputs_raw,retype_func,postfix="from",...)
+    neuronBag$outputs_raw <- redefine_types(neuronBag$outputs_raw,retype_func,postfix="to",...)
+    neuronBag$outputsTableRef <- redefine_types(neuronBag$outputsTableRef,retype_func,postfix="raw",...)
   }
 
   neuronBag$inputs <- getTypeToTypeTable(neuronBag$inputs_raw,typesTable = neuronBag$names, oldTable=neuronBag$inputs)

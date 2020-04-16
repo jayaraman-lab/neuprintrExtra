@@ -37,12 +37,14 @@ is.neuronBag <- function(x) inherits(x,"neuronBag")
 create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,...){
   UseMethod("create_neuronBag")}
 
+#' @export
 create_neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,verbose=FALSE,...){
   TypeNames <- distinct(bind_rows(lapply(typeQuery,neuprint_search,field="type",fixed=fixed))) %>%
     mutate(databaseType = type)
   create_neuronBag(TypeNames,fixed=FALSE,by.roi=by.roi,verbose=verbose,...)
 }
 
+#' @export
 create_neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE,verbose=FALSE,...){
 
   if (verbose) message("Calculate raw outputs")

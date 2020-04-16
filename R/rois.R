@@ -143,6 +143,7 @@ roisPalette <- function(rois=getRoiTree(),favoriteRegion="CX",my_palette=palette
 #' @export
 roiOutline <- function(roiMesh,alpha=100,roiName){UseMethod("roiOutline")}
 
+#' @export
 roiOutline.mesh3d <- function(roiMesh,alpha=100,roiName =deparse(substitute(roiMesh))){
   roiPts <-  data.frame(nat::dotprops(roiMesh)$points)
   names(roiPts) <- c("x","y","z")
@@ -158,6 +159,7 @@ roiOutline.mesh3d <- function(roiMesh,alpha=100,roiName =deparse(substitute(roiM
   rbind(roiOutxy,roiOutxz)
 }
 
+#' @export
 roiOutline.character <- function(roi,alpha=100){
   roiMesh <- neuprint_ROI_mesh(roi)
   roiOutline(roiMesh,alpha=alpha,roiName=roi)

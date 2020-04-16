@@ -6,6 +6,7 @@
 neuron2polygon <- function(neur,axis=c("x","y")){
   UseMethod("neuron2polygon")}
 
+#' @export
 neuron2polygon.neuron <- function(neur,axis=c("x","y")){
   refT <- mutate(neur$d,x=!!as.name(toupper(axis[1])),y=!!as.name(toupper(axis[2])))
   refT <- addOutlines(refT)
@@ -15,6 +16,7 @@ neuron2polygon.neuron <- function(neur,axis=c("x","y")){
   refT %>% select(x,y,bodyid)
 }
 
+#' @export
 neuron2polygon.neuronlist <- function(neurL,axis=c("x","y")){
   outD <- bind_rows(lapply(neurL,neuron2polygon,axis=axis))
 }

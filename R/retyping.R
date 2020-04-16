@@ -40,6 +40,7 @@ retype.na_meta <- function(metaTable){
 #' @export
 redefine_types <- function(connections,retype_func,postfix=c("raw","from","to"),redefinePartners=TRUE,...){UseMethod("redefine_types")}
 
+#' @export
 redefine_types.data.frame <- function(table,retype_func,postfix=c("raw","from","to"),redefinePartners=TRUE,...){
   postfix <- match.arg(postfix)
   type_col <- get_col_name("type",postfix)
@@ -49,6 +50,7 @@ redefine_types.data.frame <- function(table,retype_func,postfix=c("raw","from","
   return(table)
 }
 
+#' @export
 redefine_types.neuronBag <- function(neuronBag,retype_func,postfix="raw",redefinePartners,...){
   neuronBag$inputs_raw <- redefine_types(neuronBag$inputs_raw,retype_func,postfix="to",...)
   neuronBag$outputs_raw <- redefine_types(neuronBag$outputs_raw,retype_func,postfix="from",...)
@@ -66,6 +68,7 @@ redefine_types.neuronBag <- function(neuronBag,retype_func,postfix="raw",redefin
 }
 
 #' Small utility to generate "type.from" kind of names
+#' @export
 get_col_name <- function(col="type",post=c("raw","from","to")){
   post <- match.arg(post)
   return(ifelse(post=="raw",col,paste0(col,".",post)))

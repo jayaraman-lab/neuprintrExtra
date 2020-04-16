@@ -6,7 +6,7 @@
 \usage{
 redefineTypeBySet(
   connections,
-  postfix,
+  postfix = c("raw", "to", "from"),
   redefinePartners = TRUE,
   sets,
   nameModifiers

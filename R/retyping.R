@@ -173,7 +173,7 @@ conditional_renamer <- function(connections,postfix,type,condition,newNames){
 #' to be appended to the type name of all neurons whose name is in the corresponding set
 #'
 #' @export
-redefineTypeBySet <- function(connections,postfix,redefinePartners=TRUE,sets,nameModifiers){
+redefineTypeBySet <- function(connections,postfix=c("raw","to","from"),redefinePartners=TRUE,sets,nameModifiers){
   postfix = match.arg(postfix)
   redefine_types(connections,retype_func = sets_retyper,postfix=postfix,sets=sets,nameModifiers=nameModifiers,redefinePartners = redefinePartners)
 }

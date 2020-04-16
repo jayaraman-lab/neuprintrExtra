@@ -162,3 +162,28 @@ conditional_renamer <- function(connections,postfix,type,condition,newNames){
   types[types == newNames[1] & !condition] <-  newNames[2]
   return(types)
 }
+
+#' Retype according to sets of names
+#' @param connections Connectivity table  or neuronBag to modify
+#' @param postfix One of "raw, "to" or "from". Specify if type (and name) columns in table to be modified are postfixed with
+#' to and from or nothing
+#' @param redefinePartners If table is a neuronBag, should the partners also be retyped?
+#' @param sets List of neuron name sets
+#' @param nameModifiers Character vector of length the same length as sets containing postfixes
+#' to be appended to the type name of all neurons whose name is in the corresponding set
+#'
+#' @export
+redefineTypeBySet <- function(connections,postfix,redefinePartners=TRUE,sets,nameModifiers){
+  postfix = match.arg(postfix)
+  redefine_types(connections,retype_func = sets_retyper,postfix=postfix,sets=sets,nameModifiers=nameModifiers,redefinePartners = redefinePartners)
+}
+
+sets_retyper <- function(conn,postfix,sets,nameModifiers){
+  typeCol <- get_col_name("type",postfix)
+  nameCol <- get_col_name("name",postfix)
+  types <- conn[[typeCol]]
+  for (i in 1:length(sets)){
+    types[conn[[nameCol]] %in% sets[i]] <- paste0(types[conn[[nameCol]] %in% sets[i]],nameModifiers[i])
+  }
+  types
+}

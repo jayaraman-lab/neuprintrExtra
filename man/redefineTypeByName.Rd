@@ -6,8 +6,9 @@
 \usage{
 redefineTypeByName(
   connections,
-  typeList,
-  pattern,
+  typeList = NULL,
+  pattern = NULL,
+  sets = NULL,
   nameModifiers,
   postfix = c("raw", "to", "from"),
   redefinePartners = FALSE,
@@ -22,8 +23,11 @@ contains L or R)}
 
 \item{pattern}{A grep pattern to be run to match a "name" column}
 
-\item{nameModifiers}{A vector of strings of lenght 2 : first string is appended for matched types, second to the absence of matches
-(for types in \code{typeList})}
+\item{sets}{List of neuron name sets. To be used in place of pattern.}
+
+\item{nameModifiers}{A vector of strings of lenght 2 if \code{pattern} is used : first string is appended for matched types, second to the absence of matches
+(for types in \code{typeList}), or of the same lenght as sets: postfixes
+to be appended to the type name of all neurons whose name is in the corresponding set}
 
 \item{postfix}{One of "raw, "to" or "from". Specify if type (and name) columns in table to be modified are postfixed with
 to and from or nothing}
@@ -34,6 +38,10 @@ to and from or nothing}
 }
 \description{
 Retype neurons according to a grep pattern to be run on names
+}
+\details{
+\code{pattern}, \code{typeList} and \code{perl} are used if \code{pattern} is used. Alternatively \code{sets} allow to retype according to an arbitrary number
+of subtypes
 }
 \examples{
 \dontrun{

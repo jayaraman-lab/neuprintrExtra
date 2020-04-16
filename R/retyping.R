@@ -129,9 +129,13 @@ lateralizer <- function(connections,postfix,typeList){
 #' Retype neurons according to a grep pattern to be run on names
 #' @inheritParams lateralize_types
 #' @param pattern A grep pattern to be run to match a "name" column
-#' @param nameModifiers A vector of strings of lenght 2 : first string is appended for matched types, second to the absence of matches
-#' (for types in \code{typeList})
+#' @param sets List of neuron name sets. To be used in place of pattern.
+#' @param nameModifiers A vector of strings of lenght 2 if \code{pattern} is used : first string is appended for matched types, second to the absence of matches
+#' (for types in \code{typeList}), or of the same lenght as sets: postfixes
+#' to be appended to the type name of all neurons whose name is in the corresponding set
 #' @param perl Should the grep match use perl rules?
+#' @details \code{pattern}, \code{typeList} and \code{perl} are used if \code{pattern} is used. Alternatively \code{sets} allow to retype according to an arbitrary number
+#' of subtypes
 #' @examples
 #' \dontrun{
 #' PFLNames <- getTypesTable(c("PFL1","PFL2","PFL3"))
@@ -140,9 +144,15 @@ lateralizer <- function(connections,postfix,typeList){
 #' PFLNames3 <- redefineTypeByName(PFLNames,typeList = c("PFL3"),pattern = "(^.*_L(?!.*irreg))|(^.*_R.*irreg)",perl=TRUE,nameModifiers = c("_L*","_R*"))
 #' }
 #' @export
-redefineTypeByName <- function(connections,typeList,pattern,nameModifiers,postfix=c("raw","to","from"),redefinePartners=FALSE,perl=FALSE){
+redefineTypeByName <- function(connections,typeList=NULL,pattern=NULL,sets=NULL,nameModifiers,postfix=c("raw","to","from"),redefinePartners=FALSE,perl=FALSE){
+  stopifnot(!is.null(pattern) | !is.null(sets))
   postfix <- match.arg(postfix)
-  redefine_types(connections,retype_func = pattern_renamer,postfix=postfix,redefinePartners = redefinePartners,typeList=typeList,pattern=pattern,newPostFixes=nameModifiers,perl=perl)
+  if (!is.null(pattern)){
+    return(redefine_types(connections,retype_func = pattern_renamer,postfix=postfix,redefinePartners = redefinePartners,typeList=typeList,pattern=pattern,newPostFixes=nameModifiers,perl=perl))
+  }
+  if (!is.null(sets)){
+    return(redefine_types(connections,retype_func = sets_retyper,postfix=postfix,sets=sets,nameModifiers=nameModifiers,redefinePartners = redefinePartners,kind="name"))
+  }
 }
 
 pattern_renamer <- function(connections,postfix,typeList,pattern,newPostFixes,perl){
@@ -163,27 +173,32 @@ conditional_renamer <- function(connections,postfix,type,condition,newNames){
   return(types)
 }
 
-#' Retype according to sets of names
-#' @param connections Connectivity table  or neuronBag to modify
-#' @param postfix One of "raw, "to" or "from". Specify if type (and name) columns in table to be modified are postfixed with
-#' to and from or nothing
-#' @param redefinePartners If table is a neuronBag, should the partners also be retyped?
-#' @param sets List of neuron name sets
-#' @param nameModifiers Character vector of length the same length as sets containing postfixes
-#' to be appended to the type name of all neurons whose name is in the corresponding set
-#'
-#' @export
-redefineTypeBySet <- function(connections,postfix=c("raw","to","from"),redefinePartners=TRUE,sets,nameModifiers){
-  postfix = match.arg(postfix)
-  redefine_types(connections,retype_func = sets_retyper,postfix=postfix,sets=sets,nameModifiers=nameModifiers,redefinePartners = redefinePartners)
-}
-
-sets_retyper <- function(conn,postfix,sets,nameModifiers){
+sets_retyper <- function(conn,postfix,sets,nameModifiers,kind=c("bodyid","name")){
+  kind <- match.arg(kind)
   typeCol <- get_col_name(col="type",postfix)
-  nameCol <- get_col_name(col="name",postfix)
+  nameCol <- ifelse(kind=="name",get_col_name(col="name",postfix),
+                                 ifelse(postfix=="raw",kind,postfix))
   types <- conn[[typeCol]]
   for (i in 1:length(sets)){
     types[conn[[nameCol]] %in% sets[[i]]] <- paste0(types[conn[[nameCol]] %in% sets[[i]]],nameModifiers[i])
   }
   return(types)
 }
+
+
+#' Retype according to sets of bodyids
+#' @param connections Connectivity table  or neuronBag to modify
+#' @param postfix One of "raw, "to" or "from". Specify if type (and name) columns in table to be modified are postfixed with
+#' to and from or nothing
+#' @param redefinePartners If table is a neuronBag, should the partners also be retyped?
+#' @param sets List of neuron bodyid sets.
+#' @param nameModifiers A vector of strings of lenght the same length as sets: postfixes
+#' to be appended to the type name of all neurons whose name is in the corresponding set
+#' @param nameModifiers Character vector of length the same length as sets containing
+#'
+#' @export
+redefineTypeByBodyId <- function(connections,sets,nameModifiers,postfix=c("raw","to","from"),redefinePartners=FALSE){
+  postfix <- match.arg(postfix)
+  redefine_types(connections,retype_func = sets_retyper,postfix=postfix,sets=sets,nameModifiers=nameModifiers,redefinePartners = redefinePartners,kind="bodyid")
+}
+

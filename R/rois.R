@@ -11,7 +11,7 @@
 getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5) {
   roi_Innervate <- neuprint_bodies_in_ROI(ROI) %>%
     mutate(originalInstance = TRUE)
-  metaRoi <- neuprint_get_meta(roi_Innervate) %>% drop_na(type)
+  metaRoi <- neuprint_get_meta(roi_Innervate) %>% tidyr::drop_na(type)
 
   ## Get all instances of the types touching the ROI
   all_neurons <- getTypesTable(unique(metaRoi$type))
@@ -20,7 +20,7 @@ getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5) {
   ## innervate)
   roi_Innervate <- left_join(all_neurons,roi_Innervate,by=c("bodyid","pre","post","voxels"))
   roi_Innervate <- roi_Innervate %>% select(-c(voxels,cellBodyFiber)) %>%
-    replace_na(list(ROI_pre = 0,ROI_post = 0,originalInstance=FALSE)) %>%
+    tidyr::replace_na(list(ROI_pre = 0,ROI_post = 0,originalInstance=FALSE)) %>%
     mutate(databaseType = type) ## Convenience column for when types are changed
 
   roi_Innervate <-roi_Innervate %>% group_by(type) %>%
@@ -43,10 +43,10 @@ getTypesInRoiTable <- function(ROI,lateralize=FALSE,...){
   ## 25% of the instances touch (l/R)
   typesUnfiltered <- unique(neuronTable$type)
 
-  roiConnections <- buildInputsOutputsByType(neuronTable,fixed=TRUE,...)
+  roiConnections <- create_neuronBag(neuronTable,fixed=TRUE,...)
 
   if (lateralize == TRUE){
-    roiConnections <- lateralizeInputOutputList(roiConnections)
+    roiConnections <- lateralize_types(roiConnections)
   }
 
   roiConnections

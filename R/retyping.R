@@ -183,7 +183,7 @@ sets_retyper <- function(conn,postfix,sets,nameModifiers){
   nameCol <- get_col_name(col="name",postfix)
   types <- conn[[typeCol]]
   for (i in 1:length(sets)){
-    types[conn[[nameCol]] %in% sets[i]] <- paste0(types[conn[[nameCol]] %in% sets[i]],nameModifiers[i])
+    types[conn[[nameCol]] %in% sets[[i]]] <- paste0(types[conn[[nameCol]] %in% sets[[i]]],nameModifiers[i])
   }
   return(types)
 }

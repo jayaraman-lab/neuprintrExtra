@@ -10,7 +10,8 @@ neuron2polygon <- function(neur,axis=c("x","y")){
 neuron2polygon.neuron <- function(neur,axis=c("x","y")){
   refT <- mutate(neur$d,x=!!as.name(toupper(axis[1])),y=!!as.name(toupper(axis[2])))
   refT <- addOutlines(refT)
-  ptsOrd <- tryCatch(treeOrder(1,neur$SegList,branchpoints(neur),refTable = refT),error=function(cond){segOrder(neur,toupper(axis[2]))})##segOrder(neur,toupper(axis[2]))#
+  roots <- nat::rootpoints(neur)
+  ptsOrd <- tryCatch(unlist(lapply(roots,treeOrder,neur$SegList,branchpoints(neur),refTable = refT)),error=function(cond){segOrder(neur,toupper(axis[2]))})##segOrder(neur,toupper(axis[2]))#
   refT <- left_join(ptsOrd,refT,by = c("idx" = "PointNo"))
   refT <- mutate(refT,x=ifelse(side=="upper",upperX,lowerX),y=ifelse(side=="upper",upperY,lowerY)) %>% mutate(bodyid=neur$bodyid,proj=paste0(axis,collapse=""))
   refT %>% select(x,y,bodyid,proj)
@@ -82,7 +83,7 @@ segOrder <- function(neuronOb,ax="Y"){
   igraph::V(nGraph)$name <-  igraph::V(nGraph)$label
   tree <- igraph::as_data_frame(nGraph)
 
-  roots <- (filter(tree,rootpoints(neuronOb)==from) %>% arrange(desc(weight)))$segid
+  roots <- (filter(tree,nat::rootpoints(neuronOb)==from) %>% arrange(desc(weight)))$segid
   baseTree <- unlist(lapply(roots,iterativePreorder,tree))
   startVertices <- match(tree$to,igraph::V(nGraph)$name)
   allSubTrees <- lapply(startVertices,function(r){na.omit(igraph::dfs(nGraph,r,unreachable=FALSE)$order)$name})

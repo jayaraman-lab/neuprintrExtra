@@ -179,11 +179,11 @@ redefineTypeBySet <- function(connections,postfix=c("raw","to","from"),redefineP
 }
 
 sets_retyper <- function(conn,postfix,sets,nameModifiers){
-  typeCol <- get_col_name("type",postfix)
-  nameCol <- get_col_name("name",postfix)
+  typeCol <- get_col_name(col="type",postfix)
+  nameCol <- get_col_name(col="name",postfix)
   types <- conn[[typeCol]]
   for (i in 1:length(sets)){
     types[conn[[nameCol]] %in% sets[i]] <- paste0(types[conn[[nameCol]] %in% sets[i]],nameModifiers[i])
   }
-  types
+  return(types)
 }

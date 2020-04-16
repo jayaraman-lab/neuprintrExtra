@@ -1,7 +1,7 @@
 #' Transforms a nat neuron object into a polygon that can be plotted in 2D
 #' @param neur A neuron or neuronList object
 #' @param axis Which axis do we want to project onto. Has to be a length 2 vector of "x", "y" or "z"
-#' @return a dataframe with columns x, y and bodyid. If \code{neur} is  a neuronlist there will be several bodyids.
+#' @return a dataframe with columns x, y, proj and bodyid. If \code{neur} is  a neuronlist there will be several bodyids.
 #' @export
 neuron2polygon <- function(neur,axis=c("x","y")){
   UseMethod("neuron2polygon")}
@@ -12,8 +12,8 @@ neuron2polygon.neuron <- function(neur,axis=c("x","y")){
   refT <- addOutlines(refT)
   ptsOrd <- tryCatch(treeOrder(1,neur$SegList,branchpoints(neur),refTable = refT),error=function(cond){segOrder(neur,toupper(axis[2]))})##segOrder(neur,toupper(axis[2]))#
   refT <- left_join(ptsOrd,refT,by = c("idx" = "PointNo"))
-  refT <- mutate(refT,x=ifelse(side=="upper",upperX,lowerX),y=ifelse(side=="upper",upperY,lowerY)) %>% mutate(bodyid=neur$bodyid)
-  refT %>% select(x,y,bodyid)
+  refT <- mutate(refT,x=ifelse(side=="upper",upperX,lowerX),y=ifelse(side=="upper",upperY,lowerY)) %>% mutate(bodyid=neur$bodyid,proj=paste0(axis,collapse=""))
+  refT %>% select(x,y,bodyid,proj)
 }
 
 #' @export
@@ -78,7 +78,7 @@ treeOrder <- function(subTreeIdx,segmentList,branchPts,refTable){
 
 segOrder <- function(neuronOb,ax="Y"){
   nGraph <- nat::segmentgraph(neuronOb,weights=FALSE,segids=TRUE)
-  igraph::E(nGraph)$weight <- neuronOb$d[[ax]][match(E(nGraph)$segid,neuronOb$d$PointNo)]
+  igraph::E(nGraph)$weight <- neuronOb$d[[ax]][match(igraph::E(nGraph)$segid,neuronOb$d$PointNo)]
   igraph::V(nGraph)$name <-  igraph::V(nGraph)$label
   tree <- igraph::as_data_frame(nGraph)
 

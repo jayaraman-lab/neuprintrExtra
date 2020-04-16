@@ -6,9 +6,11 @@
 #' @details For example, at level 1 delta0 neurons are just divided in DeltaA to K, at level 2 they are
 #' D0, and at level 3 they are FB Interneurons
 #' @return an object of the same type as the \code{types} inputed, possibly with extra columns
+#'
 #' @export
 supertype <- function(types,level=2){UseMethod("supertype")}
 
+#' @export
 supertype.character <- function(types,level=2){
   supertype <- types
   supertype[is.na(types)] <- "Other"
@@ -75,6 +77,7 @@ supertype.character <- function(types,level=2){
   supertype
 }
 
+#' @export
 supertype.neuronBag <- function(types){
   for (lev in 1:3){
     for (ty in c(".from",".to")){
@@ -88,6 +91,7 @@ supertype.neuronBag <- function(types){
   types
 }
 
+#' @export
 supertype.data.frame <- function(types,level=1:3){
   renamable <- names(types)[names(types) %in% c("databaseType","databaseType.from","databaseType.to")]
   for (lev in level){
@@ -98,6 +102,7 @@ supertype.data.frame <- function(types,level=1:3){
   types
 }
 
+#' @export
 supertype.NULL <- function(types,level=NULL){
   return(NULL)
 }

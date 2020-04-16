@@ -2,6 +2,10 @@
 
 S3method(c,neuronBag)
 S3method(filter,neuronBag)
+S3method(supertype,"NULL")
+S3method(supertype,character)
+S3method(supertype,data.frame)
+S3method(supertype,neuronBag)
 export(create_neuronBag)
 export(cxRetyping)
 export(getConnectionTable)

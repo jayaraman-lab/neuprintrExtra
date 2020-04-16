@@ -52,6 +52,25 @@ getTypesInRoiTable <- function(ROI,lateralize=FALSE,...){
   roiConnections
 }
 
+#' Extract types participating in a significant connection in a ROI
+#' @param roiConnections A \code{neuronBag} object
+#' @param ROI The ROI to consider
+#' @return A dataframe with columns "type" and "databaseType"
+#'
+#' @export
+typesInROI <- function(roiConnections,ROI){
+  typesUnfiltered <- roiConnections$names$type
+  inputs <- roiConnections$inputs %>% filter((roi == ROI) & (type.to %in% typesUnfiltered) &
+                                               (type.from %in% typesUnfiltered))
+  outputs <- roiConnections$outputs %>% filter((roi == ROI) & (type.to %in% typesUnfiltered) &
+                                                 (type.from %in% typesUnfiltered))
+
+  roiTypes <- data.frame(type = unique(c(inputs$type.to,outputs$type.from))) %>%
+    mutate(databaseType = roiConnections$names$databaseType[match(type,roiConnections$names$type)])
+
+  return(roiTypes)
+}
+
 #' A wrapper around \code{neuprint_ROI_hierarchy} returning a cleaned up, sorted table with various ROI levels.
 #' @return  A table with columns `level` 0 through 4, 0 being the more general and 4 the more detailed, omitting tracts. ROI are somewhat sorted,
 #'  from right to central to left (and from periphery to center to periphery). level0 is similar to level1 except that Left/Right distinctions are omitted.

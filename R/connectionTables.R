@@ -239,7 +239,7 @@ getTypeToTypeTable <- function(connectionTable,
                                pThresh = 0.05,
                                typesTable = NULL,
                                oldTable = NULL){
-
+  if (is.null(connectionTable)){return(NULL)}
   ## Counting instances for each post type
   if (is.null(typesTable) & any(connectionTable$type.to != connectionTable$databaseType.to,na.rm=T))
   {

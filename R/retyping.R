@@ -67,6 +67,9 @@ redefine_types.neuronBag <- function(neuronBag,retype_func,postfix="raw",redefin
   return(neuronBag)
 }
 
+#' @export
+redefine_types.NULL <- function(neuronBag,retype_func,postfix="raw",redefinePartners,...){return(NULL)}
+
 #' Small utility to generate "type.from" kind of names
 #' @export
 get_col_name <- function(col="type",post=c("raw","from","to")){

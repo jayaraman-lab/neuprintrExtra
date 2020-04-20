@@ -41,34 +41,34 @@ retype.na_meta <- function(metaTable){
 redefine_types <- function(connections,retype_func,postfix=c("raw","from","to"),redefinePartners=TRUE,...){UseMethod("redefine_types")}
 
 #' @export
-redefine_types.data.frame <- function(table,retype_func,postfix=c("raw","from","to"),redefinePartners=TRUE,...){
+redefine_types.data.frame <- function(connections,retype_func,postfix=c("raw","from","to"),redefinePartners=TRUE,...){
   postfix <- match.arg(postfix)
   type_col <- get_col_name("type",postfix)
-  table[[paste0("previous.",type_col)]] <- table[[type_col]] ## keeping track of the last named types
-  newTypes <- retype_func(table,postfix,...)
-  table[[type_col]] <-  newTypes
-  return(table)
+  connections[[paste0("previous.",type_col)]] <- connections[[type_col]] ## keeping track of the last named types
+  newTypes <- retype_func(connections,postfix,...)
+  connections[[type_col]] <-  newTypes
+  return(connections)
 }
 
 #' @export
-redefine_types.neuronBag <- function(neuronBag,retype_func,postfix="raw",redefinePartners,...){
-  neuronBag$inputs_raw <- redefine_types(neuronBag$inputs_raw,retype_func,postfix="to",...)
-  neuronBag$outputs_raw <- redefine_types(neuronBag$outputs_raw,retype_func,postfix="from",...)
-  neuronBag$names <- redefine_types(neuronBag$names,retype_func,postfix="raw",...)
+redefine_types.neuronBag <- function(connections,retype_func,postfix="raw",redefinePartners,...){
+  connections$inputs_raw <- redefine_types(connections$inputs_raw,retype_func,postfix="to",...)
+  connections$outputs_raw <- redefine_types(connections$outputs_raw,retype_func,postfix="from",...)
+  connections$names <- redefine_types(connections$names,retype_func,postfix="raw",...)
 
   if (redefinePartners){
-    neuronBag$inputs_raw <- redefine_types(neuronBag$inputs_raw,retype_func,postfix="from",...)
-    neuronBag$outputs_raw <- redefine_types(neuronBag$outputs_raw,retype_func,postfix="to",...)
-    neuronBag$outputsTableRef <- redefine_types(neuronBag$outputsTableRef,retype_func,postfix="raw",...)
+    connections$inputs_raw <- redefine_types(connections$inputs_raw,retype_func,postfix="from",...)
+    connections$outputs_raw <- redefine_types(connections$outputs_raw,retype_func,postfix="to",...)
+    connections$outputsTableRef <- redefine_types(connections$outputsTableRef,retype_func,postfix="raw",...)
   }
 
-  neuronBag$inputs <- getTypeToTypeTable(neuronBag$inputs_raw,typesTable = neuronBag$names, oldTable=neuronBag$inputs)
-  neuronBag$outputs <- getTypeToTypeTable(neuronBag$outputs_raw,typesTable = neuronBag$outputsTableRef, oldTable=neuronBag$outputs)
-  return(neuronBag)
+  connections$inputs <- getTypeToTypeTable(connections$inputs_raw,typesTable = connections$names, oldTable=connections$inputs)
+  connections$outputs <- getTypeToTypeTable(connections$outputs_raw,typesTable = connections$outputsTableRef, oldTable=connections$outputs)
+  return(connections)
 }
 
 #' @export
-redefine_types.NULL <- function(neuronBag,retype_func,postfix="raw",redefinePartners,...){return(NULL)}
+redefine_types.NULL <- function(connections,retype_func,postfix="raw",redefinePartners,...){return(NULL)}
 
 #' Small utility to generate "type.from" kind of names
 #' @export

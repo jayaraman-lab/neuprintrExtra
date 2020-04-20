@@ -4,10 +4,10 @@
 \alias{roiOutline}
 \title{Get 2D outlines for a ROI}
 \usage{
-roiOutline(roiMesh, alpha = 100, roiName)
+roiOutline(roi, alpha = 100, roiName)
 }
 \arguments{
-\item{roiMesh}{Either a mesh3d object (as returned by \code{neuprint_ROI_mesh}) or the name of an
+\item{roi}{Either a mesh3d object (as returned by \code{neuprint_ROI_mesh}) or the name of an
 existing ROI}
 
 \item{alpha}{Alpha parameter to be passed to the \code{alphahull::ahull} function}

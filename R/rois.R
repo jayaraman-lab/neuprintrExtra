@@ -152,7 +152,7 @@ roisPalette <- function(rois=getRoiTree(),favoriteRegion="CX",my_palette=palette
 }
 
 #' Get 2D outlines for a ROI
-#' @param roiMesh Either a mesh3d object (as returned by \code{neuprint_ROI_mesh}) or the name of an
+#' @param roi Either a mesh3d object (as returned by \code{neuprint_ROI_mesh}) or the name of an
 #' existing ROI
 #' @param alpha Alpha parameter to be passed to the \code{alphahull::ahull} function
 #' @param roiName A name to label the outline with
@@ -160,11 +160,11 @@ roisPalette <- function(rois=getRoiTree(),favoriteRegion="CX",my_palette=palette
 #' @details both xy and xz projections are returned, which can be selected with the \code{proj} column. This is meant to
 #' be handy for ggplot2 plotting
 #' @export
-roiOutline <- function(roiMesh,alpha=100,roiName){UseMethod("roiOutline")}
+roiOutline <- function(roi,alpha=100,roiName){UseMethod("roiOutline")}
 
 #' @export
-roiOutline.mesh3d <- function(roiMesh,alpha=100,roiName =deparse(substitute(roiMesh))){
-  roiPts <-  data.frame(nat::dotprops(roiMesh)$points)
+roiOutline.mesh3d <- function(roi,alpha=100,roiName =deparse(substitute(roi))){
+  roiPts <-  data.frame(nat::dotprops(roi)$points)
   names(roiPts) <- c("x","y","z")
   roiHullxy <- alphahull::ahull(x=roiPts$x,y=roiPts$y,alpha=alpha)
   roiHullxz <- alphahull::ahull(x=roiPts$x,y=roiPts$z,alpha=alpha)

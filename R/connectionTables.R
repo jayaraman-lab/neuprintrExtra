@@ -10,18 +10,18 @@
 #' @param slctROI: String specifying the ROI where connections should be queried. By default all the ROIs.
 #' @param by.roi: Passed to neuprint_connection_table. If returning all ROIs, should results be broken down by ROI?
 #' @param synThresh: Minimum number of synapses to consider a connection (default 3)
-#' @param chunk_meta : to be passed to metadata and roiInfo queries (default TRUE)
+#' @param chunk_meta : to be passed to metadata and roiInfo queries (default 2000)
 #' @param chunk_connection : to be passed to neuprint_connection_table (default TRUE)
 #' @param verbose : should the function report on its progress?
 #' @param computeKnownRatio : should the function also compute ratios (weightRelative and outputContribution) relative to known synaptic partners rather
 #' than relative to the total number of synapses
 #' @param ...: Other arguments to be passed to neuprint queries (neuprint_connection_table, getRoiInfo and neuprint_get_meta)
 #' @export
-getConnectionTable <- function(bodyIDs,synapseType, slctROI,by.roi, synThresh = 3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,computeKnownRatio=FALSE,...){
+getConnectionTable <- function(bodyIDs,synapseType, slctROI,by.roi, synThresh = 3,chunk_connections=TRUE,chunk_meta=2000,verbose=FALSE,computeKnownRatio=FALSE,...){
   UseMethod("getConnectionTable")}
 
 #' @export
-getConnectionTable.default = function(bodyIDs, synapseType, slctROI=NULL,by.roi=FALSE, synThresh=3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,computeKnownRatio=FALSE,...){
+getConnectionTable.default = function(bodyIDs, synapseType, slctROI=NULL,by.roi=FALSE, synThresh=3,chunk_connections=TRUE,chunk_meta=2000,verbose=FALSE,computeKnownRatio=FALSE,...){
   refMeta <- neuprint_get_meta(bodyIDs,chunk=chunk_meta,...)
   return(getConnectionTable(refMeta,synapseType,slctROI,by.roi,synThresh,chunk_connections=chunk_connections,chunk_meta=chunk_meta,computeKnownRatio=computeKnownRatio,...))
 }
@@ -58,8 +58,8 @@ getConnectionTable.data.frame <- function(bodyIDs,synapseType, slctROI=NULL,by.r
 processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partnerMeta,refMetaOrig,synapseType,by.roi,slctROI,verbose,chunk_meta,chunk_connections,computeKnownRatio,...){
 
 
-  refMeta <- slice(refMeta,as.integer(sapply(myConnections$bodyid,function(b) match(b,refMeta$bodyid))))
-  refMetaOrig <- slice(refMetaOrig,as.integer(sapply(myConnections$bodyid,function(b) match(b,refMetaOrig$bodyid))))
+  refMeta <- slice(refMeta,match(myConnections$bodyid,bodyid))
+  refMetaOrig <- slice(refMetaOrig,match(myConnections$bodyid,bodyid))
 
   myConnections <-mutate(myConnections,
                          partnerName = partnerMeta[["name"]],

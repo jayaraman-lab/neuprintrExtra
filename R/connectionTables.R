@@ -10,18 +10,18 @@
 #' @param slctROI: String specifying the ROI where connections should be queried. By default all the ROIs.
 #' @param by.roi: Passed to neuprint_connection_table. If returning all ROIs, should results be broken down by ROI?
 #' @param synThresh: Minimum number of synapses to consider a connection (default 3)
-#' @param chunk_meta : to be passed to metadata and roiInfo queries (default 2000)
+#' @param chunk_meta : to be passed to metadata and roiInfo queries (default TRUE)
 #' @param chunk_connection : to be passed to neuprint_connection_table (default TRUE)
 #' @param verbose : should the function report on its progress?
 #' @param computeKnownRatio : should the function also compute ratios (weightRelative and outputContribution) relative to known synaptic partners rather
 #' than relative to the total number of synapses
 #' @param ...: Other arguments to be passed to neuprint queries (neuprint_connection_table, getRoiInfo and neuprint_get_meta)
 #' @export
-getConnectionTable <- function(bodyIDs,synapseType, slctROI,by.roi, synThresh = 3,chunk_connections=TRUE,chunk_meta=2000,verbose=FALSE,computeKnownRatio=FALSE,...){
+getConnectionTable <- function(bodyIDs,synapseType, slctROI,by.roi, synThresh = 3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,computeKnownRatio=FALSE,...){
   UseMethod("getConnectionTable")}
 
 #' @export
-getConnectionTable.default = function(bodyIDs, synapseType, slctROI=NULL,by.roi=FALSE, synThresh=3,chunk_connections=TRUE,chunk_meta=2000,verbose=FALSE,computeKnownRatio=FALSE,...){
+getConnectionTable.default = function(bodyIDs, synapseType, slctROI=NULL,by.roi=FALSE, synThresh=3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,computeKnownRatio=FALSE,...){
   refMeta <- neuprint_get_meta(bodyIDs,chunk=chunk_meta,...)
   return(getConnectionTable(refMeta,synapseType,slctROI,by.roi,synThresh,chunk_connections=chunk_connections,chunk_meta=chunk_meta,computeKnownRatio=computeKnownRatio,...))
 }
@@ -121,7 +121,8 @@ processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partn
     if (verbose) message("Pull roiInfo")
     myConnections[["weightROIRelativeTotal"]] <- myConnections[["ROIweight"]]/outMeta[["post"]]
     outInfo <- getRoiInfo(unique(myConnections$to),chunk=chunk_meta,...) %>% select(bodyid,roi,post)
-    inInfo <- getRoiInfo(unique(myConnections$from),chunk=chunk_meta,...) %>% select(bodyid,roi,downstream)
+    inInfo <- getRoiInfo(unique(myConnections$from),chunk=chunk_meta,...)
+    inInfo <-  select(inInfo,bodyid,roi,downstream)
 
     myConnections <- left_join(myConnections,inInfo,by=c("from" = "bodyid","roi"="roi")) %>% rename(totalPreROIweight = downstream)
 

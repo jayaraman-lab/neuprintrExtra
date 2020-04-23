@@ -11,7 +11,7 @@ neuron2polygon.neuron <- function(neur,axis=c("x","y")){
   refT <- mutate(neur$d,x=!!as.name(toupper(axis[1])),y=!!as.name(toupper(axis[2])))
   refT <- addOutlines(refT)
   roots <- nat::rootpoints(neur)
-  ptsOrd <- tryCatch(unlist(lapply(roots,treeOrder,neur$SegList,branchpoints(neur),refTable = refT)),error=function(cond){segOrder(neur,toupper(axis[2]))})##segOrder(neur,toupper(axis[2]))#
+  ptsOrd <- tryCatch(unlist(lapply(roots,treeOrder,neur$SegList,branchpoints(neur),refTable = refT)),error=function(cond){segOrder(neur,toupper(axis[2]))})
   refT <- left_join(ptsOrd,refT,by = c("idx" = "PointNo"))
   refT <- mutate(refT,x=ifelse(side=="upper",upperX,lowerX),y=ifelse(side=="upper",upperY,lowerY)) %>% mutate(bodyid=neur$bodyid,proj=paste0(axis,collapse=""))
   refT %>% select(x,y,bodyid,proj)
@@ -19,30 +19,12 @@ neuron2polygon.neuron <- function(neur,axis=c("x","y")){
 
 #' @export
 neuron2polygon.neuronlist <- function(neurL,axis=c("x","y")){
-  outD <- bind_rows(lapply(neurL,neuron2polygon,axis=axis))
+  nD <- lapply(neurL,neuron2polygon,axis=axis)
+  outD <- bind_rows(nD)
 }
 
 angle <- function(x, y) {
   atan2(y[2] - y[1], x[2] - x[1])
-}
-
-## x and y are vectors of length 2
-perpUp <- function(x, y, len, a) {
-  dx <- len*cos(a + pi/2)
-  dy <- len*sin(a + pi/2)
-  upper <- c(x[1] + dx, y[1] + dy)
-}
-
-perpLow <-  function(x, y, len, a) {
-  dx <- len*cos(a + pi/2)
-  dy <- len*sin(a + pi/2)
-  lower <- c(x[1] - dx, y[1] - dy)
-}
-
-
-## x and y are vectors of length 2
-perpStart <- function(x, y, len){
-  perp(x, y, len, angle(x, y), 1)
 }
 
 addOutlines <- function(neuronD){
@@ -86,6 +68,7 @@ segOrder <- function(neuronOb,ax="Y"){
   roots <- (filter(tree,nat::rootpoints(neuronOb)==from) %>% arrange(desc(weight)))$segid
   baseTree <- unlist(lapply(roots,iterativePreorder,tree))
   startVertices <- match(tree$to,igraph::V(nGraph)$name)
+
   allSubTrees <- lapply(startVertices,function(r){na.omit(igraph::dfs(nGraph,r,unreachable=FALSE)$order)$name})
   allSubTrees<- lapply(allSubTrees,function(s) filter(tree,to %in% s)$segid)
   allSubTrees <- lapply(1:length(baseTree),function(i) baseTree[baseTree %in% c(i,allSubTrees[[i]])])

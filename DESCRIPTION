@@ -20,7 +20,8 @@ Suggests:
     ggnewscale,
     ggplot2,
     paletteer,
-    testthat
+    testthat,
+    pbapply
 License: file LICENSE
 Encoding: UTF-8
 LazyData: true

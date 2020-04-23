@@ -1,9 +1,11 @@
 #' Transforms a nat neuron object into a polygon that can be plotted in 2D
 #' @param neur A neuron or neuronList object
 #' @param axis Which axis do we want to project onto. Has to be a length 2 vector of "x", "y" or "z"
+#' @param progress When applied to neuronLists, whether to display a progress bar
+#' @param cl A cluster parameter, can be either an integer or a cluster object (see \code{pbapply::pbapply})
 #' @return a dataframe with columns x, y, proj and bodyid. If \code{neur} is  a neuronlist there will be several bodyids.
 #' @export
-neuron2polygon <- function(neur,axis=c("x","y")){
+neuron2polygon <- function(neur,axis=c("x","y"),progress=TRUE,cl=10L){
   UseMethod("neuron2polygon")}
 
 #' @export
@@ -18,8 +20,13 @@ neuron2polygon.neuron <- function(neur,axis=c("x","y")){
 }
 
 #' @export
-neuron2polygon.neuronlist <- function(neurL,axis=c("x","y")){
-  nD <- lapply(neurL,neuron2polygon,axis=axis)
+neuron2polygon.neuronlist <- function(neurL,axis=c("x","y"),progress=TRUE,cl=10L){
+  if (progress){
+      nD <- pbapply::pblapply(neurL,neuron2polygon,axis=axis,cl=cl)
+    }else{
+      nD <- lapply(neurL,neuron2polygon,axis=axis)
+    }
+
   outD <- bind_rows(nD)
 }
 

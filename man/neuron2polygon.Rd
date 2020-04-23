@@ -4,12 +4,16 @@
 \alias{neuron2polygon}
 \title{Transforms a nat neuron object into a polygon that can be plotted in 2D}
 \usage{
-neuron2polygon(neur, axis = c("x", "y"))
+neuron2polygon(neur, axis = c("x", "y"), progress = TRUE, cl = 10L)
 }
 \arguments{
 \item{neur}{A neuron or neuronList object}
 
 \item{axis}{Which axis do we want to project onto. Has to be a length 2 vector of "x", "y" or "z"}
+
+\item{progress}{When applied to neuronLists, whether to display a progress bar}
+
+\item{cl}{A cluster parameter, can be either an integer or a cluster object (see \code{pbapply::pbapply})}
 }
 \value{
 a dataframe with columns x, y, proj and bodyid. If \code{neur} is  a neuronlist there will be several bodyids.

@@ -43,7 +43,7 @@ haneschPlot <- function(roiTable,
     scale_fill_manual(name="Brain region",values=roiP,guide = guide_legend(reverse = TRUE)) +
     ggnewscale::new_scale_fill()}
   if (interactive){
-    hanesch <- hanesch + ggiraph::geom_point_interactive(data=roiTable,aes(size=fullWeight,fill=deltaWeight,x=roi,y=type,tooltip=paste0(type," in ",roi,"\nOutputs: ",OutputWeight,"\nInputs: ",InputWeight)),shape=21)}
+    hanesch <- hanesch + ggiraph::geom_point_interactive(data=roiTable,aes(size=fullWeight,fill=deltaWeight,x=roi,y=type,tooltip=paste0(type," in ",roi,"\nOutputs: ",OutputWeight,"\nInputs: ",InputWeight),dataid=type),shape=21)}
   else{
     hanesch <- hanesch +
       geom_point(data=roiTable,aes(size=fullWeight,fill=deltaWeight,x=roi,y=type),shape=21)}

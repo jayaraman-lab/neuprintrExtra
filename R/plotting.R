@@ -36,16 +36,15 @@ haneschPlot <- function(roiTable,
   hanesch <- ggplot(data=roiTable,aes(x=roi,y=type))
   roiP <- roisPalette()
 
-  hanesch <- hanesch +
-    geom_line(aes(group=type))
   if (regionOutlines==TRUE){hanesch <- hanesch +
     geom_rect(data=roiPos,aes(xmin=xmin,xmax=xmax,ymin=-Inf,ymax=Inf,fill=superroi),alpha=alphaRois,inherit.aes = F) +
     scale_fill_manual(name="Brain region",values=roiP,guide = guide_legend(reverse = TRUE)) +
     ggnewscale::new_scale_fill()}
   if (interactive){
-    hanesch <- hanesch + ggiraph::geom_point_interactive(data=roiTable,aes(size=fullWeight,fill=deltaWeight,x=roi,y=type,tooltip=paste0(type," in ",roi,"\nOutputs: ",OutputWeight,"\nInputs: ",InputWeight),data_id=type),shape=21)}
+    hanesch <- hanesch + ggiraph::geom_line_interactive(aes(group=type,data_id=type)) + ggiraph::geom_point_interactive(data=roiTable,aes(size=fullWeight,fill=deltaWeight,x=roi,y=type,tooltip=paste0(type," in ",roi,"\nOutputs: ",OutputWeight,"\nInputs: ",InputWeight),data_id=type),shape=21)}
   else{
     hanesch <- hanesch +
+      geom_line(aes(group=type)) +
       geom_point(data=roiTable,aes(size=fullWeight,fill=deltaWeight,x=roi,y=type),shape=21)}
   hanesch <- hanesch +
     scale_fill_gradient(name="Polarity",breaks=c(-1,-0.5,0,0.5,1),labels=c("Receives inputs","","Mixed","","Sends outputs"),low = "white", high = "black",

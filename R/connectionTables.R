@@ -108,7 +108,8 @@ processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partn
     knownTablePreTotal <- knownTablePre %>% group_by(from) %>% distinct(to,weight) %>% mutate(knownPreWeight = sum(weight)) %>% ungroup()
   }
 
-  myConnections <-mutate(myConnections,weightRelativeTotal = weight/outMeta[["post"]],
+  myConnections <-mutate(totalWeight = outMeta[["post"]],
+                         myConnections,weightRelativeTotal = weight/outMeta[["post"]],
                          totalPreWeight = inMeta[["downstream"]][match(myConnections$from,inMeta$bodyid)],
                          outputContributionTotal = weight/totalPreWeight,
                          previous.type.to = databaseType.to,
@@ -116,9 +117,12 @@ processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partn
   )
   if  (computeKnownRatio){
     myConnections <-mutate(myConnections,
-                           knownWeightRelativeTotal = weight/knownTablePostTotal$knownPostWeight[match(myConnections$to,knownTablePostTotal$to)],
+                           knownTotalWeight = knownTablePostTotal$knownPostWeight[match(myConnections$to,knownTablePostTotal$to)],
+                           knownWeightRelativeTotal = weight/knownTotalWeight,
                            knownTotalPreWeight = knownTablePreTotal$knownPreWeight[match(myConnections$from,knownTablePreTotal$from)],
-                           knownOutputContributionTotal = weight/knownTotalPreWeight
+                           knownOutputContributionTotal = weight/knownTotalPreWeight,
+                           output_completednessTotal = knownTotalPreWeight/totalPreWeight,
+                           input_completednessTotal =  knownTotalWeight/totalWeight
     )
 
   }
@@ -140,9 +144,13 @@ processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partn
       knownTablePostROI <- knownTablePost %>% group_by(to,roi)  %>% summarize(knownPostWeight = sum(ROIweight)) %>% ungroup()
       knownTablePreROI <- knownTablePre %>% group_by(from,roi)  %>% summarize(knownPreWeight = sum(ROIweight)) %>% ungroup()
       ## This is how much this connection accounts for the outputs of the input neuron (not the standard measure)
-      myConnections <- myConnections %>% mutate(knownWeightRelative = ROIweight/knownTablePostROI$knownPostWeight[match(paste0(myConnections$to,myConnections$roi),paste0(knownTablePostROI$to,knownTablePostROI$roi))],
+      myConnections <- myConnections %>% mutate(knownTotalROIweight = knownTablePostROI$knownPostWeight[match(paste0(myConnections$to,myConnections$roi),paste0(knownTablePostROI$to,knownTablePostROI$roi))],
+                                                knownWeightRelative = ROIweight/knownTotalROIweight,
                                                 knownTotalPreROIweight = knownTablePreROI$knownPreWeight[match(paste0(myConnections$from,myConnections$roi),paste0(knownTablePreROI$from,knownTablePreROI$roi))],
-                                                knownOutputContribution = ROIweight/knownTotalPreROIweight) %>% tidyr::drop_na(weightRelative)  ## NA values can occur in rare cases where
+                                                knownOutputContribution = ROIweight/knownTotalPreROIweight,
+                                                output_completedness = knownTotalPreROIweight/totalPreROIweight,
+                                                input_completedness = knownTotalROIweight/totalROIweight
+                                                ) %>% tidyr::drop_na(weightRelative)  ## NA values can occur in rare cases where
     }
     ## synapse (pre/post) is split between ROIs
   }else{

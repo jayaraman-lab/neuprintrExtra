@@ -276,6 +276,13 @@ getTypeToTypeTable <- function(connectionTable,
   connectionTable$n[is.na(connectionTable$n)] <- 1
   connectionTable <- retype.na(connectionTable)
 
+  ## Gather the completedness measures
+  connectionTable <- group_by(connectionTable,type.to,roi) %>% mutate_at(vars(any_of(c("input_completedness"))),first) %>%
+                     group_by(type.to) %>% mutate_at(vars(any_of(c("input_completednessTotal"))),first) %>%
+                     group_by(type.from,roi)  %>% mutate_at(vars(any_of(c("output_completedness"))),first) %>%
+                     group_by(type.from)  %>% mutate_at(vars(any_of(c("output_completednessTotal"))),first) %>%
+                     ungroup()
+
   ## Gather the outputContributions
   connectionTable <-  connectionTable %>% group_by(from,type.to,roi) %>%
     mutate_at(vars(any_of(c("outputContribution","outputContributionTotal","knownOutputContribution","knownOutputContributionTotal"))),sum) %>%
@@ -290,7 +297,8 @@ getTypeToTypeTable <- function(connectionTable,
 
   ## This contains the neurons unique in their type that reach our hard threshold
   loners <- connectionTable %>% filter(n==1) %>%
-    group_by_if(names(.) %in% c("type.from","type.to","roi","previous.type.from","previous.type.to","outputContribution","outputContributionTotal","knownOutputContribution","knownOutputContributionTotal",
+    group_by_if(names(.) %in% c("type.from","type.to","roi","previous.type.from","previous.type.to","outputContribution","outputContributionTotal","knownOutputContribution",
+                                "knownOutputContributionTotal", "output_completedness","output_completednessTotal", "input_completedness","input_completednessTotal",
                                 "databaseType.to","databaseType.from",paste0("supertype.to",1:3),paste0("supertype.from",1:3))) %>%
     mutate_at(vars(any_of(c("weightRelative","weightRelativeTotal","knownWeightRelative","knownWeightRelativeTotal"))),sum) %>%
     mutate(weight = sum(ROIweight),
@@ -300,9 +308,11 @@ getTypeToTypeTable <- function(connectionTable,
     summarize_at(vars(any_of(c("weightRelative","weightRelativeTotal","knownWeightRelative","knownWeightRelativeTotal","weight","absoluteWeight","n_type","n_targets"))),first) %>% ungroup()
 
   group_In <- names(connectionTable)[names(connectionTable) %in% c("type.from","to","type.to","roi","previous.type.from","previous.type.to","n","outputContribution","outputContributionTotal","knownOutputContribution","knownOutputContributionTotal",
+                                                                   "output_completedness","output_completednessTotal","input_completedness","input_completednessTotal",
                                                                    "databaseType.to","databaseType.from",paste0("supertype.to",1:3),paste0("supertype.from",1:3))]
 
   group_Out <- names(connectionTable)[names(connectionTable) %in% c("type.from","type.to","roi","previous.type.from","previous.type.to","outputContribution","outputContributionTotal","knownOutputContribution","knownOutputContributionTotal",
+                                                                    "output_completedness","output_completednessTotal","input_completedness","input_completednessTotal",
                                                                     "databaseType.to","databaseType.from",paste0("supertype.to",1:3),paste0("supertype.from",1:3))]
 
   ## Main filter. Could potentially be rewritten in more optimal ways.

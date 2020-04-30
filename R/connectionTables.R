@@ -73,9 +73,12 @@ processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partn
     if (computeKnownRatio){
       knownTablePost <- myConnections_raw  %>% mutate(from = ifelse(prepost==1,bodyid,partner),
                                                       to = ifelse(prepost==1,partner,bodyid)) %>% select(-bodyid,-partner)
-      knownTablePre <- neuprint_connection_table(unique(myConnections$from),"POST",slctROI,by.roi=by.roi,chunk=chunk_connections,...)  %>% mutate(from = ifelse(prepost==1,bodyid,partner),
-                                                                                                                                                                        to = ifelse(prepost==1,partner,bodyid)) %>% select(-bodyid,-partner)
+      knownTablePre <- neuprint_connection_table(unique(myConnections$from),"POST",slctROI,by.roi=by.roi,chunk=chunk_connections,...) %>% mutate(from = ifelse(prepost==1,bodyid,partner),
+                                                                                                                                                  to = ifelse(prepost==1,partner,bodyid)) %>% select(-bodyid,-partner)
 
+      if (by.roi | !is.null(slctROI)){
+        knownTablePre <- tidyr::drop_na(knownTablePre,ROIweight)
+      }
     }
     outMeta <- refMeta
     inMeta <- partnerMeta
@@ -86,8 +89,11 @@ processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partn
       knownTablePre <- myConnections_raw  %>% mutate(from = ifelse(prepost==1,bodyid,partner),
                                                      to = ifelse(prepost==1,partner,bodyid)) %>% select(-bodyid,-partner)
       knownTablePost <- neuprint_connection_table(unique(myConnections$to),"PRE",slctROI,by.roi=by.roi,chunk=chunk_connections,...) %>% mutate(from = ifelse(prepost==1,bodyid,partner),
-                                                                                                                                                                      to = ifelse(prepost==1,partner,bodyid)) %>% select(-bodyid,-partner)
-    }
+                                                                                                                                               to = ifelse(prepost==1,partner,bodyid)) %>% select(-bodyid,-partner)
+      if (by.roi | !is.null(slctROI)){
+        knownTablePost <- tidyr::drop_na(knownTablePost,ROIweight)
+      }
+      }
     inMeta <- refMeta
     outMeta <- partnerMeta
     myConnections <- mutate(myConnections,databaseType.to = type.to,

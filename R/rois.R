@@ -199,11 +199,35 @@ combineRois.data.frame <- function(connections,rois,newRoi){
   newRegionTable <- connections %>%
     filter(roi %in% rois) %>%
     group_by(to) %>%
-    mutate(totalROIweight=sum(totalROIweight[match(rois,roi)],na.rm=TRUE)) %>%
+    mutate_at(vars(any_of(c("totalROIweight","knownTotalROIweight"))),~sum(.[match(rois,roi)],na.rm=TRUE)) %>%
     group_by(from) %>%
-    mutate(totalPreROIweight=sum(totalPreROIweight[match(rois,roi)],na.rm=TRUE)) %>%
-    group_by_if(names(.) %in% c(paste0(c("","name.","type.","databaseType.","previous.type."),"to"),paste0(c("","name.","type.","databaseType.","previous.type."),"from"),paste0("supertype.to",1:3),paste0("supertype.from",1:3))) %>%
-    summarize(roi=newRoi,
+    mutate_at(vars(any_of(c("totalPreROIweight","knownTotalPreROIweight"))),~sum(.[match(rois,roi)],na.rm=TRUE)) %>%
+    group_by_if(names(.) %in% c(paste0(c("","name.","type.","databaseType.","previous.type."),"to"),
+                                paste0(c("","name.","type.","databaseType.","previous.type."),"from"),
+                                paste0("supertype.to",1:3),paste0("supertype.from",1:3)))
+
+  if ("knownWeightRelative" %in% names(newRegionTable)){
+    newRegionTable <- summarize(newRegionTable,roi=newRoi,
+                                weight=weight[1],
+                                totalPreWeight=totalPreWeight[1],
+                                knownTotalPreWeight=knownTotalPreWeight[1],
+                                weightRelativeTotal=weightRelativeTotal[1],
+                                knownWeightRelativeTotal=knownWeightRelativeTotal[1],
+                                outputContributionTotal=outputContributionTotal[1],
+                                knownOutputContributionTotal = knownOutputContributionTotal[1],
+                                totalROIweight = totalROIweight[1],
+                                knownTotalROIweight = knownTotalROIweight[1],
+                                totalPreROIweight=totalPreROIweight[1],
+                                knownTotalPreROIweight=knownTotalPreROIweight[1],
+                                ROIweight=sum(ROIweight),
+                                weightROIRelativeTotal=sum(weightROIRelativeTotal)) %>%
+      ungroup() %>%
+      mutate(weightRelative=ROIweight/totalROIweight,
+             knownWeightRelative=ROIweight/knownTotalROIweight,
+             outputContribution=ROIweight/totalPreROIweight,
+             knownOutputContribution=ROIweight/knownTotalPreROIweight)
+  }else{
+    newRegionTable <- summarize(newRegionTable,roi=newRoi,
               weight=weight[1],
               totalPreWeight=totalPreWeight[1],
               weightRelativeTotal=weightRelativeTotal[1],
@@ -214,7 +238,7 @@ combineRois.data.frame <- function(connections,rois,newRoi){
               weightROIRelativeTotal=sum(weightROIRelativeTotal)) %>%
     ungroup() %>%
     mutate(weightRelative=ROIweight/totalROIweight,
-           outputContribution=ROIweight/totalPreROIweight)
+           outputContribution=ROIweight/totalPreROIweight)}
 
   newRegionTable
 }

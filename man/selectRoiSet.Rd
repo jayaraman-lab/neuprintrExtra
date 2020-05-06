@@ -19,7 +19,8 @@ selectRoiSet(
 \item{exceptions}{A list of the form list(nameOfRoi = level) where nameOfRoi is the name of
 ROIs at level \code{exceptionLevelMatch} for which one want to use a different level of description}
 
-\item{exceptionLevelMatch}{What level to use in the \code{exceptions} list}
+\item{exceptionLevelMatch}{What level to use in the \code{exceptions} list. Can be either a scalar or a vector the same
+length as \code{exceptions}}
 }
 \value{
 a data.frame with the same columns as those returned by \code{getRoiTree} with an extra \code{roi} column

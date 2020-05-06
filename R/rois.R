@@ -108,7 +108,8 @@ delateralize <- function(roiName){
 #' @param default_level An integer specifying which ROI level to use by default
 #' @param exceptions A list of the form list(nameOfRoi = level) where nameOfRoi is the name of
 #' ROIs at level \code{exceptionLevelMatch} for which one want to use a different level of description
-#' @param exceptionLevelMatch What level to use in the \code{exceptions} list
+#' @param exceptionLevelMatch What level to use in the \code{exceptions} list. Can be either a scalar or a vector the same
+#' length as \code{exceptions}
 #' @return a data.frame with the same columns as those returned by \code{getRoiTree} with an extra \code{roi} column
 #' containing the desired set
 #' @seealso \code{getRoiTree}

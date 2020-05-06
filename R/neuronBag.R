@@ -164,6 +164,8 @@ getROISummary <- function(nBag,filter=FALSE,rois = NULL){
       filter(roi %in% rois$roi)
   }
 
+  countInstances <- group_by(nBag$names,type) %>% summarize(n=n())
+
   roiSummary <-
     full_join(ROIInputs,ROIOutputs,by=c("roi","type","databaseType")) %>% tidyr::replace_na(list(InputWeight=0,OutputWeight=0)) %>%
     mutate(fullWeight = OutputWeight+InputWeight,
@@ -171,6 +173,8 @@ getROISummary <- function(nBag,filter=FALSE,rois = NULL){
            supertype1 = supertype(databaseType,level=1),
            supertype2 = supertype(databaseType,level=2),
            supertype3 = supertype(databaseType,level=3))
+
+  roiSummary <- left_join(roiSummary,countInstances,by="type")
 
   if (!is.null(rois)){roiSummary <- left_join(roiSummary,rois,by=roi)}
   return(roiSummary)

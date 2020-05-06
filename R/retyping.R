@@ -118,7 +118,7 @@ lateralizer <- function(connections,postfix,typeList){
     typeList <- distinct(typeList,(!!as.name(nameCol)),(!!as.name(typeCol)))
     typeList <- filter(typeList,grepl("_R$|_L$|_R[1-9]$|_L[1-9]$|_R[1-9/1-9]|_L[1-9/1-9]|_L[1-9_C1-9]$|_R[1-9_C1-9]$",(!!as.name(nameCol)))) %>% na.omit()
     typeList <- typeList[[typeCol]]
-    condition <- grepl("_L$|_L[1-9]$|_L[1-9/1-9]|_L[1-9_C1-9]$",connections[[nameCol]])
+    condition <- grepl("_L$|_L[1-9]$|_L[1-9/1-9]$|_L[1-9_C1-9]$",connections[[nameCol]])
 
     for (t in typeList){
       rightType <- paste0(t,"_R")

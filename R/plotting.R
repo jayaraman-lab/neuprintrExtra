@@ -59,8 +59,8 @@ haneschPlot <- function(roiTable,
                                                              x=roi,
                                                              y=yV,
                                                              tooltip=paste0(type," in ",roi,
-                                                                            "\nOutputs: ",downstream,
-                                                                            "\nInputs: ",upstream,
+                                                                            "\nOutputs: ",format(downstream,digits=2),
+                                                                            "\nInputs: ",format(upstream,digits=2),
                                                                             "\nn: ",n),
                                                              data_id=type),shape=21)}
   else{

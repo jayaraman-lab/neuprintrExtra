@@ -19,7 +19,8 @@ haneschPlot <- function(roiTable,
                         roiLabel=selectRoiSet(getRoiTree(),default_level = 0),
                         regionOutlines=TRUE,
                         theme=theme_minimal(),
-                        interactive=FALSE){
+                        interactive=FALSE,
+                        showCount=FALSE){
   roiTable <- roiTable %>% filter(roi %in% unique(roiSelect$roi))  %>%
     mutate(roi = factor(roi,levels=levels(roiSelect$roi)),
            l4 = roiSelect$level4[match(roi,roiSelect$roi)],
@@ -30,26 +31,40 @@ haneschPlot <- function(roiTable,
 
   roiPos <- roiTable %>% group_by(superroi,side) %>%
     summarize(xmin=min(roiX)-0.45,xmax=max(roiX)+0.45) %>%
-    ungroup() #%>%
-  #filter(xmax-xmin>1)
+    ungroup()
 
-  hanesch <- ggplot(data=roiTable,aes(x=roi,y=type))
+  if (showCount)
+    roiTable <- mutate(roiTable,yV = paste0(type, " (n= ",n,")"))
+  else
+    roiTable <- mutate(roiTable,yV=type)
+
+  hanesch <- ggplot(data=roiTable,aes(x=roi,y=yV))
+
   roiP <- roisPalette()
 
   if (interactive){
-    hanesch <- hanesch + ggiraph::geom_line_interactive(aes(group=type,data_id=type))
+    hanesch <- hanesch + ggiraph::geom_line_interactive(aes(group=yV,data_id=type))
   }else{
-    hanesch <- hanesch + geom_line(aes(group=type))
+    hanesch <- hanesch + geom_line(aes(group=yV))
   }
   if (regionOutlines==TRUE){hanesch <- hanesch +
     geom_rect(data=roiPos,aes(xmin=xmin,xmax=xmax,ymin=-Inf,ymax=Inf,fill=superroi),alpha=alphaRois,inherit.aes = F) +
     scale_fill_manual(name="Brain region",values=roiP,guide = guide_legend(reverse = TRUE)) +
     ggnewscale::new_scale_fill()}
   if (interactive){
-    hanesch <- hanesch + ggiraph::geom_point_interactive(data=roiTable,aes(size=fullWeight,fill=deltaWeight,x=roi,y=type,tooltip=paste0(type," in ",roi,"\nOutputs: ",OutputWeight,"\nInputs: ",InputWeight),data_id=type),shape=21)}
+    hanesch <- hanesch + ggiraph::geom_point_interactive(data=roiTable,
+                                                         aes(size=fullWeight,
+                                                             fill=deltaWeight,
+                                                             x=roi,
+                                                             y=yV,
+                                                             tooltip=paste0(type," in ",roi,
+                                                                            "\nOutputs: ",OutputWeight,
+                                                                            "\nInputs: ",InputWeight,
+                                                                            "\nn: ",n),
+                                                             data_id=type),shape=21)}
   else{
     hanesch <- hanesch +
-      geom_point(data=roiTable,aes(size=fullWeight,fill=deltaWeight,x=roi,y=type),shape=21)}
+      geom_point(data=roiTable,aes(size=fullWeight,fill=deltaWeight,x=roi,y=yV),shape=21)}
   hanesch <- hanesch +
     scale_fill_gradient(name="Polarity",breaks=c(-1,-0.5,0,0.5,1),labels=c("Receives inputs","","Mixed","","Sends outputs"),low = "white", high = "black",
                         space = "Lab") +

@@ -263,3 +263,50 @@ combineRois.neuronBag <- function(connections,rois,newRoi,...){
             outputsTableRef = connections$outputsTableRef)
 
 }
+
+#' Build a per roi summary of innervation for neurons in a neuronBag
+#' @param neurons : a dataframe as returned by a search or a neuronBag object
+#' @param threshold : the minimal average number of synapses for a type in a ROI
+#' for it to be included
+#' @param rois : a roiset to consider (if NULL consider all rois)
+#'
+#'@export
+getROISummary <- function(neurons,threshold=0,rois=NULL){UseMethod("getROISummary")}
+
+#
+
+#'@export
+getROISummary.neuronBag <- function(neurons,threshold=0,rois = NULL){
+  getROISummary(neurons$names,rois=rois,threshold=threshold)
+}
+
+#'@export
+getROISummary.data.frame <- function(neurons,threshold=0,rois = NULL){
+
+  roiSummary <- getRoiInfo(neurons)
+
+  if (!(is.null(rois))){
+    roiSummary <- roiSummary %>%
+      filter(roi %in% rois$roi)
+  }
+
+  countInstances <- group_by(neurons,type) %>% summarize(n=n())
+
+  roiSummary <-
+    left_join(roiSummary,
+              select(neurons,bodyid,type,databaseType),
+              by=c("bodyid")) %>% tidyr::replace_na(list(downstream=0,upstream=0)) %>%
+    group_by(roi,type,databaseType) %>%
+    summarize(downstream=mean(downstream),
+              upstream=mean(upstream)) %>%
+    ungroup() %>%
+    mutate(fullWeight = downstream+upstream,
+           deltaWeight = (downstream - upstream)/fullWeight) %>%
+    filter(fullWeight>threshold)
+
+  roiSummary <- left_join(roiSummary,countInstances,by="type")
+
+  if (!is.null(rois)){roiSummary <- left_join(roiSummary,rois,by=roi)}
+  return(supertype(roiSummary))
+}
+

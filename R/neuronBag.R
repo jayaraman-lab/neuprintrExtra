@@ -135,44 +135,44 @@ getIntraBag <- function(nBag){
 }
 
 #' Build a per roi summary of innervation for neurons in a neuronBag
-#' @param nBag : a neuronBag object
-#' @param filter : if TRUE, only return results in ROIs where significant type to
-#' type connections are found. Otherwise consider all connections (the default)
+#' @param neurons : a dataframe as returned by a search or a neuronBag object
+#' @param threshold : the minimal average number of synapses for a type in a ROI
+#' for it to be included
 #' @param rois : a roiset to consider (if NULL consider all rois)
 #'
 #'@export
-getROISummary <- function(nBag,filter=FALSE,rois = NULL){
-  stopifnot(is.neuronBag(nBag))
+getROISummary <- function(neurons,threshold=0,rois=NULL){UseMethod("getROISummary")}
 
-  ROIOutputs <- nBag$outputs_raw %>% group_by(roi,type.from,databaseType.from)   %>%
-    summarize(OutputWeight = sum(weight)) %>% rename(type = type.from,databaseType=databaseType.from) %>% ungroup()
+#
 
-  ROIInputs <- nBag$inputs_raw %>% group_by(roi,type.to,databaseType.to)   %>%
-    summarize(InputWeight = sum(weight))  %>% rename(type = type.to,databaseType=databaseType.to) %>% ungroup()
+#'@export
+getROISummary.neuronBag <- function(neurons,threshold=0,rois = NULL){
+  getROISummary(neurons$names,rois=rois,threshold=threshold)
+}
 
-  if (filter){
-    ROIOutputs <- ROIOutputs %>%
-      filter(paste0(roi,type) %in% paste0(nBag$outputs$roi,nBag$outputs$type.from))
-    ROIInputs <- ROIInputs %>%
-      filter(paste0(roi,type) %in% paste0(nBag$inputs$roi,nBag$inputs$type.to))
-  }
+#'@export
+getROISummary.data.frame <- function(neurons,threshold=0,rois = NULL){
+
+  roiSummary <- getRoiInfo(neurons)
 
   if (!(is.null(rois))){
-    ROIOutputs <- ROIOutputs %>%
-      filter(roi %in% rois$roi)
-    ROIInputs <- ROIInputs %>%
+    roiSummary <- roiSummary %>%
       filter(roi %in% rois$roi)
   }
 
-  countInstances <- group_by(nBag$names,type) %>% summarize(n=n())
+  countInstances <- group_by(neurons,type) %>% summarize(n=n())
 
   roiSummary <-
-    full_join(ROIInputs,ROIOutputs,by=c("roi","type","databaseType")) %>% tidyr::replace_na(list(InputWeight=0,OutputWeight=0)) %>%
-    mutate(fullWeight = OutputWeight+InputWeight,
-           deltaWeight = (OutputWeight - InputWeight)/fullWeight,
-           supertype1 = supertype(databaseType,level=1),
-           supertype2 = supertype(databaseType,level=2),
-           supertype3 = supertype(databaseType,level=3))
+    left_join(roiSummary,
+              select(neurons,bodyid,type,databaseType),
+              by=c("bodyid")) %>% tidyr::replace_na(list(downstream=0,upstream=0)) %>%
+    group_by(roi,type,databaseType) %>%
+    summarize(downstream=mean(downstream),
+              upstream=mean(upstream)) %>%
+    ungroup() %>%
+    mutate(fullWeight = downstream+upstream,
+           deltaWeight = (downstream - upstream)/fullWeight) %>%
+    filter(fullWeight>threshold)
 
   roiSummary <- left_join(roiSummary,countInstances,by="type")
 

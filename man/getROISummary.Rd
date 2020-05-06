@@ -4,13 +4,13 @@
 \alias{getROISummary}
 \title{Build a per roi summary of innervation for neurons in a neuronBag}
 \usage{
-getROISummary(nBag, filter = FALSE, rois = NULL)
+getROISummary(neurons, threshold = 0, rois = NULL)
 }
 \arguments{
-\item{nBag}{: a neuronBag object}
+\item{neurons}{: a dataframe as returned by a search or a neuronBag object}
 
-\item{filter}{: if TRUE, only return results in ROIs where significant type to
-type connections are found. Otherwise consider all connections (the default)}
+\item{threshold}{: the minimal average number of synapses for a type in a ROI
+for it to be included}
 
 \item{rois}{: a roiset to consider (if NULL consider all rois)}
 }

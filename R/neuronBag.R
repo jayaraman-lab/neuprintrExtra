@@ -177,5 +177,5 @@ getROISummary.data.frame <- function(neurons,threshold=0,rois = NULL){
   roiSummary <- left_join(roiSummary,countInstances,by="type")
 
   if (!is.null(rois)){roiSummary <- left_join(roiSummary,rois,by=roi)}
-  return(roiSummary)
+  return(supertype(roiSummary))
 }

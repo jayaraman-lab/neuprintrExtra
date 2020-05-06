@@ -10,6 +10,7 @@
 #' @param regionOutlines Whether or not to add the ROI color code
 #' @param theme Theme to be passed to ggplot2
 #' @param interactive Whether or not to use some interactivity from ggiraph
+#' @param showCount Whether or not to print the number of instances in the type in the tick labels
 #'
 #' @export
 haneschPlot <- function(roiTable,

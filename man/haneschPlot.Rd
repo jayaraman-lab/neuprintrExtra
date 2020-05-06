@@ -13,7 +13,8 @@ haneschPlot(
   roiLabel = selectRoiSet(getRoiTree(), default_level = 0),
   regionOutlines = TRUE,
   theme = theme_minimal(),
-  interactive = FALSE
+  interactive = FALSE,
+  showCount = FALSE
 )
 }
 \arguments{
@@ -36,6 +37,8 @@ side axis}
 \item{theme}{Theme to be passed to ggplot2}
 
 \item{interactive}{Whether or not to use some interactivity from ggiraph}
+
+\item{showCount}{Whether or not to print the number of instances in the type in the tick labels}
 }
 \description{
 Plot a hanesch type plot based on a summary of ROI innervation

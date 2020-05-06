@@ -115,15 +115,20 @@ delateralize <- function(roiName){
 #' @export
 selectRoiSet <- function(roiTree=getRoiTree(),default_level=2,exceptions=NULL,exceptionLevelMatch = default_level){
   if (!is.null(exceptions)){
+
+    if (length(exceptionLevelMatch) == 1 & length(exceptions)>=1) exceptionLevelMatch <- rep(exceptionLevelMatch,length(exceptions))
     levelEx <- paste0("level",exceptionLevelMatch)
-    normalRois <- roiTree %>% filter(!((!!as.name(levelEx)) %in% names(exceptions))) %>%
-      mutate(roi = (!!as.name(paste0("level",default_level))))
 
-    exceptionsRois <- roiTree %>% filter(((!!as.name(levelEx)) %in% names(exceptions)))
+    normalRois <- roiTree
+    exceptionsRois <- bind_rows(lapply(1:length(exceptions),function(i) filter(roiTree,
+                                                                               ((!!as.name(levelEx[i])) %in% names(exceptions[i]))) %>%
+                                         mutate(roi=!!as.name(paste0("level",exceptions[[i]])))))
 
-    roisEx <- as.character(exceptionsRois[[levelEx]])
-    customLev <- sapply(roisEx,function(r) paste0("level",exceptions[[r]]))
-    exceptionsRois$roi <- sapply(1:length(customLev),function(i) as.character(exceptionsRois[[customLev[i]]][i]))
+    for (i in 1:length(exceptions)){
+        normalRois <- filter(normalRois,!((!!as.name(levelEx[i])) %in% names(exceptions)[i]))
+    }
+
+    normalRois <- mutate(normalRois,roi = (!!as.name(paste0("level",default_level))))
 
     rois <- bind_rows(normalRois,exceptionsRois)
   }else{

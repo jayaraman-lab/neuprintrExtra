@@ -78,6 +78,6 @@ haneschPlot <- function(roiTable,
   }
 
   if (flip==TRUE){hanesch <- hanesch + coord_flip()}
-  hanesch + theme(axis.text.x = element_text(angle = 90))
+  hanesch + theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))
 
 }

@@ -20,3 +20,29 @@ cxRetyping <- function(connections,redefinePartners=TRUE,postfix=c("raw","to","f
   connections <- lateralize_types(connections,redefinePartners = redefinePartners,postfix = postfix)
   return(connections)
 }
+
+#' A color scale for Central complex supertypes
+#' @return A list of colors (and breaks) mapping CX supertypes to palette36 colors
+#'
+#' @export
+supertype2Palette <- function(){
+  s2 <- c("D0","D6","Delta7","EL","EPG","EPGt","ExR","FBt","FC","FR","FS","LN","SPS-PB","LPsP","P","PEG","PEN","PFGs","PFL","PFN","PFR","Ring","SA")
+  pal <- paletteer::paletteer_d("Polychrome::palette36")[c(35,32,28,8,12,33,6,10,9,3,25,18,21,30,31,34,16,27,7,26,1,15,36)]
+  names(pal) <- s2
+  list(pal=pal,breaks=s2)
+}
+
+#' A color scale for Central complex supertypes
+#' @return A ggplot scale to be used in plots were color (or fill) map to level 2 supertypes
+#'
+#' @export
+scale_color_CX_supertype <- function(...){
+  pal <- supertype2Palette()
+  scale_color_manual(values=pal$pal,breaks=pal$breaks,...)
+}
+
+#' @export
+scale_fill_CX_supertype <- function(...){
+  pal <- supertype2Palette()
+  scale_fill_manual(values=pal$pal,breaks=pal$breaks,...)
+}

@@ -67,7 +67,7 @@ haneschPlot <- function(roiTable,
     hanesch <- hanesch +
       geom_point(data=roiTable,aes(size=fullWeight,fill=deltaWeight,x=roi,y=yV),shape=21)}
   hanesch <- hanesch +
-    scale_fill_gradient(name="Polarity",breaks=c(-1,-0.5,0,0.5,1),labels=c("Receives inputs","","Mixed","","Sends outputs"),low = "white", high = "black",
+    scale_fill_gradient(limits=c(-1,1),name="Polarity",breaks=c(-1,-0.5,0,0.5,1),labels=c("Receives inputs","","Mixed","","Sends outputs"),low = "white", high = "black",
                         space = "Lab") +
     guides(fill = guide_legend(override.aes = list(size=5))) +
     scale_size_continuous(name = "# Synapses") + labs(y="Neuron type",x="Neuropile") + theme

@@ -161,10 +161,16 @@ redefineTypeByName <- function(connections,typeList=NULL,pattern=NULL,sets=NULL,
 
 pattern_renamer <- function(connections,postfix,typeList,pattern,newPostFixes,perl){
   name_col <- get_col_name(col="name",postfix)
+  typeCol <- get_col_name(col="type",postfix)
   condition <- grepl(pattern,connections[[name_col]],perl=perl)
+  types <- connections[[typeCol]]
+  if (is.null(typeList)){
+    typeList <- unique(types)
+  }
   for (t in typeList){
     newNames <- paste0(t,newPostFixes)
-    types <- conditional_renamer(connections,postfix,t,condition,newNames)
+    types[types == t] <- newNames[1]
+    types[types == newNames[1] & !condition] <-  newNames[2]
   }
   return(types)
 }

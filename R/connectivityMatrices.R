@@ -1,3 +1,14 @@
+#' Builds a connectivity matrix from a connection object
+#' @param connObj : a connection table
+#' @param slctROIs : which ROIs to consider
+#' @param allToAll : whether to build a square matrix or just a from -> to matrix
+#' @param from : which field to use as a "source" (default "name.from")
+#' @param to : which field to use as a "target" (default "name.to")
+#' @param value : which field to use to fill the matrix (default "weightRelative")
+#' @param ref : which channel will be used as the "reference" (to be the columns of the output). The
+#' other channel gets .roi affixed to their names in case several ROIs are considered
+#'
+#' @export
 connectivityMatrix <- function(connObj,
                                           slctROIs,
                                           allToAll=FALSE,
@@ -5,17 +16,7 @@ connectivityMatrix <- function(connObj,
                                           to="name.to",
                                           value="weightRelative",
                                           ref=c("inputs","outputs")){
-  #' Builds a connectivity matrix from a connection object
-  #' @param connObj : a connection table
-  #' @param slctROIs : which ROIs to consider
-  #' @param allToAll : whether to build a square matrix or just a from -> to matrix
-  #' @param from : which field to use as a "source" (default "name.from")
-  #' @param to : which field to use as a "target" (default "name.to")
-  #' @param value : which field to use to fill the matrix (default "weightRelative")
-  #' @param ref : which channel will be used as the "reference" (to be the columns of the output). The
-  #' other channel gets .roi affixed to their names in case several ROIs are considered
-  #'
-  #' @export
+
   ref <- match.arg(ref)
   connObj <- filter(connObj,roi %in% slctROIs)
   if (any(is.na(c(connObj[[to]],connObj[[from]])))){

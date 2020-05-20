@@ -36,7 +36,6 @@ supertype.character <- function(types,level=2){
   supertype[startsWith(types,"L-Ve")] <- "L-Ve"
   supertype[startsWith(types,"L-WP")] <- "L-WP"
   supertype[startsWith(types,"LVe")] <- "LVe"
-  supertype[startsWith(types,"IbSp")] <- "IbSp"
   supertype[startsWith(types,"Pl-C")] <- "Pl-C"
   supertype[types %in% c("SpVeL-(?)(c)","SpVeL-LSpIp(c)1","SpVeL-LSpIp(c)2")] <- "SpVeL-X(c)"
   supertype[types %in% c("VeLC-CLVe(c)","VeLC-LVe(c)")] <- "VeL-LVe"
@@ -60,7 +59,7 @@ supertype.character <- function(types,level=2){
   supertype[grepl("^EL.*",types)] <- "EL"
   supertype[grepl("^R[1-6].*",types)] <- "Ring"
   supertype[grepl("^SA.*",types)] <- "SA"
-  supertype[grepl("^SpsP.*",types)] <- "SPS-PB"
+  supertype[grepl("SpsP.*",types)] <- "SPS-PB"
   supertype[grepl("^OA_V.*",types)] <- "OA"
   supertype[grepl("^P[1|6].*",types)] <- "P"
 

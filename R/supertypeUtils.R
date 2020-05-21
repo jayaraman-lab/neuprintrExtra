@@ -57,7 +57,7 @@ supertype.character <- function(types,level=2){
   supertype[grepl("^FS.*",types)] <- "FS"
   supertype[grepl("^LCN.*",types)] <- "LN"
   supertype[grepl("^EL.*",types)] <- "EL"
-  supertype[grepl("^R[1-6].*",types)] <- "Ring"
+  supertype[grepl("^ER[1-6].*",types)] <- "Ring"
   supertype[grepl("^SA.*",types)] <- "SA"
   supertype[grepl("SpsP.*",types)] <- "SPS-PB"
   supertype[grepl("^OA_V.*",types)] <- "OA"

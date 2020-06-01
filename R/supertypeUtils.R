@@ -8,14 +8,14 @@
 #' @return an object of the same type as the \code{types} inputed, possibly with extra columns
 #'
 #' @export
-supertype <- function(types,level=2){UseMethod("supertype")}
+supertype <- function(types,level=2,unicodeDelta=TRUE){UseMethod("supertype")}
 
 #' @export
-supertype.character <- function(types,level=2){
+supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype <- types
   supertype[is.na(types)] <- "Other"
   supertype[is.null(types)] <- "Other"
-
+  
   supertype[grepl("^FB.*",types)] <- stringr::str_extract(types,"FB[1-9]")[grepl("^FB.*",types)]
   supertype[grepl("^vDelta.*",types)] <- stringr::str_extract(types,"vDelta[A-O]")[grepl("^vDelta.*",types)]
   supertype[grepl("^hDelta.*",types)] <- stringr::str_extract(types,"hDelta[A-M]")[grepl("^hDelta.*",types)]
@@ -40,7 +40,8 @@ supertype.character <- function(types,level=2){
   supertype[types %in% c("SpVeL-(?)(c)","SpVeL-LSpIp(c)1","SpVeL-LSpIp(c)2")] <- "SpVeL-X(c)"
   supertype[types %in% c("VeLC-CLVe(c)","VeLC-LVe(c)")] <- "VeL-LVe"
   supertype[types %in% c("WL-(X)(c)","VeWL-VeX(c)","LW-X(c)")] <- "WL-X(c)"
-
+  if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
+  
   if (level == 1){return(supertype)}
 
   supertype[grepl("^FB.*",types)] <- "FBt"
@@ -63,6 +64,7 @@ supertype.character <- function(types,level=2){
   supertype[grepl("^OA_V.*",types)] <- "OA"
   supertype[grepl("^P[1|6].*",types)] <- "P"
 
+  if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   if (level == 2){return(supertype)}
 
   supertype[grepl("^Delta7|P[1|6].*",types)] <- "PB Interneurons"
@@ -73,29 +75,30 @@ supertype.character <- function(types,level=2){
   supertype[grepl("^[h|v]Delta.*",types)] <- "FB Interneuron"
 
   supertype[types == supertype] <- "Other"
+  if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   supertype
 }
 
 #' @export
-supertype.neuronBag <- function(types){
+supertype.neuronBag <- function(types,unicodeDelta=TRUE){
   for (lev in 1:3){
     for (ty in c(".from",".to")){
       for (tab in c("inputs","outputs","inputs_raw","outputs_raw")){
-        types[[tab]][[paste0("supertype",ty,lev)]] <- supertype(types[[tab]][[paste0("databaseType",ty)]],level=lev)
+        types[[tab]][[paste0("supertype",ty,lev)]] <- supertype(types[[tab]][[paste0("databaseType",ty)]],level=lev,unicodeDelta=unicodeDelta)
       }
     }
-    types$names[[paste0("supertype",lev)]] <-  supertype(types$names[[paste0("databaseType")]],level=lev)
-    types$outputsTableRef[[paste0("supertype",lev)]] <-  supertype(types$outputsTableRef[[paste0("databaseType")]],level=lev)
+    types$names[[paste0("supertype",lev)]] <-  supertype(types$names[[paste0("databaseType")]],level=lev,unicodeDelta=unicodeDelta)
+    types$outputsTableRef[[paste0("supertype",lev)]] <-  supertype(types$outputsTableRef[[paste0("databaseType")]],level=lev,unicodeDelta=unicodeDelta)
   }
   types
 }
 
 #' @export
-supertype.data.frame <- function(types,level=1:3){
+supertype.data.frame <- function(types,level=1:3,unicodeDelta=TRUE){
   renamable <- names(types)[names(types) %in% c("databaseType","databaseType.from","databaseType.to")]
   for (lev in level){
     for (ty in renamable){
-        types[[paste0(sub("databaseType","supertype",ty),lev)]] <- supertype(types[[ty]],level=lev)
+        types[[paste0(sub("databaseType","supertype",ty),lev)]] <- supertype(types[[ty]],level=lev,unicodeDelta=unicodeDelta)
     }
   }
   types

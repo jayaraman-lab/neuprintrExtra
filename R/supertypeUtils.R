@@ -3,8 +3,10 @@
 #'  (or databaseType.to and from) columns, or a neuronBag object
 #' @param level Depth of the supertype. Possible values are 1,2 or 3 (default 2), 1 being the finest
 #' subdivision and 3 the coarsest
-#' @details For example, at level 1 delta0 neurons are just divided in DeltaA to K, at level 2 they are
-#' D0, and at level 3 they are FB Interneurons
+#' @param unicodeDelta Whether or not to use unicode greek characters for Delta (Delta7 and v/h Delta) supertypes. 
+#' Unicode by default
+#' @details For example, at level 1 vDelta neurons are just divided in vDeltaA to K, at level 2 they are
+#' vDelta, and at level 3 they are FB Interneurons
 #' @return an object of the same type as the \code{types} inputed, possibly with extra columns
 #'
 #' @export

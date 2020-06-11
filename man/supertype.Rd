@@ -4,7 +4,7 @@
 \alias{supertype}
 \title{Gets a supertype from a type name, with various levels of depth}
 \usage{
-supertype(types, level = 2)
+supertype(types, level = 2, unicodeDelta = TRUE)
 }
 \arguments{
 \item{types}{A type name or vector of type names, or a data frame containing databaseType
@@ -12,6 +12,9 @@ supertype(types, level = 2)
 
 \item{level}{Depth of the supertype. Possible values are 1,2 or 3 (default 2), 1 being the finest
 subdivision and 3 the coarsest}
+
+\item{unicodeDelta}{Whether or not to use unicode greek characters for Delta (Delta7 and v/h Delta) supertypes. 
+Unicode by default}
 }
 \value{
 an object of the same type as the \code{types} inputed, possibly with extra columns
@@ -20,6 +23,6 @@ an object of the same type as the \code{types} inputed, possibly with extra colu
 Gets a supertype from a type name, with various levels of depth
 }
 \details{
-For example, at level 1 delta0 neurons are just divided in DeltaA to K, at level 2 they are
-D0, and at level 3 they are FB Interneurons
+For example, at level 1 vDelta neurons are just divided in vDeltaA to K, at level 2 they are
+vDelta, and at level 3 they are FB Interneurons
 }

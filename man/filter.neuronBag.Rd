@@ -7,11 +7,11 @@
 \method{filter}{neuronBag}(.nbag, filterPartners = FALSE, ...)
 }
 \arguments{
+\item{.nbag}{a neuronBag object to filter}
+
 \item{filterPartners}{: Whether to apply the filter to input/output neurons to}
 
 \item{...}{to be passed to a filtering function applied to the \code{names} field}
-
-\item{nbag}{a neuronBag object to filter}
 }
 \description{
 Filter a neuronBag based on its \code{names} field

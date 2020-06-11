@@ -19,6 +19,9 @@ neuronBag <- function(outputs,inputs,names,outputs_raw,inputs_raw,outputsTableRe
   return(res)
 }
 
+#' Test if x is a neuronBag
+#' @param x
+#' @return TRUE if x is a neuronBag
 #'@export
 is.neuronBag <- function(x) inherits(x,"neuronBag")
 
@@ -34,11 +37,11 @@ is.neuronBag <- function(x) inherits(x,"neuronBag")
 #  'neurons/types in that data frame)
 #' @param ... : to be passed to getConnectionTable
 #' @export
-create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,...){
+create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,...){
   UseMethod("create_neuronBag")}
 
 #' @export
-create_neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,verbose=FALSE,...){
+create_neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,...){
   TypeNames <- distinct(bind_rows(lapply(typeQuery,neuprint_search,field="type",fixed=fixed))) %>%
     mutate(databaseType = type)
   create_neuronBag(TypeNames,fixed=FALSE,by.roi=by.roi,verbose=verbose,...)
@@ -101,7 +104,7 @@ c.neuronBag <- function(...){
 
 
 #' Filter a neuronBag based on its \code{names} field
-#' @param nbag a neuronBag object to filter
+#' @param .nbag a neuronBag object to filter
 #' @param filterPartners : Whether to apply the filter to input/output neurons to
 #' @param ... to be passed to a filtering function applied to the \code{names} field
 #'

@@ -41,6 +41,9 @@ scale_color_CX_supertype <- function(...){
   scale_color_manual(values=pal$pal,breaks=pal$breaks,...)
 }
 
+#' A fill scale for Central complex supertypes
+#' @return A ggplot scale to be used in plots were color (or fill) map to level 2 supertypes
+#'
 #' @export
 scale_fill_CX_supertype <- function(...){
   pal <- supertype2Palette()

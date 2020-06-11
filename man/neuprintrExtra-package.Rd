@@ -7,7 +7,7 @@
 \title{neuprintrExtra: Extra functions to analyze neuprint EM datasets}
 \description{
 Analysis and display functions to complement the neuprintr package, initially developped by the Jayaraman lab to analyze
-    Central complex connectivity in the hemibrain FIBSEM dataset
+    Central complex connectivity in the hemibrain FIBSEM dataset.
 }
 \author{
 \strong{Maintainer}: Romain Franconville \email{franconviller@janelia.hhmi.org} (\href{https://orcid.org/0000-0002-4440-7297}{ORCID})

@@ -23,6 +23,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^FS.*",types)] <- stringr::str_extract(types,"FS[1-9]")[grepl("^FS.*",types)]
   supertype[grepl("^FR.*",types)] <- "FR"
   supertype[grepl("^EL.*",types)] <- "EL"
+  supertype[grepl("^ER[1-6].*",types)] <- stringr::str_extract(types,"ER[1-6]")[grepl("^ER[1-6].*",types)]
   supertype[grepl("^PFR.*",types)] <- "PFR"
   supertype[grepl("^PFN.*",types)] <- stringr::str_extract(types,"PFN[a|d|m|p|v]")[grepl("^PFN.*",types)]
   supertype[types %in% c("L-L(c)1","AoL-L(c)","L-LC(c)1","VeL-CLVe(c)1","L-Lic(c)","VeL-LVeC(c)",
@@ -58,7 +59,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^FS.*",types)] <- "FS"
   supertype[grepl("^LCN.*",types)] <- "LN"
   supertype[grepl("^EL.*",types)] <- "EL"
-  supertype[grepl("^ER[1-6].*",types)] <- "Ring"
+  supertype[grepl("^ER[1-6].*",types)] <- "ER"
   supertype[grepl("^SA.*",types)] <- "SA"
   supertype[grepl("SpsP.*",types)] <- "SPS-PB"
   supertype[grepl("^OA_V.*",types)] <- "OA"

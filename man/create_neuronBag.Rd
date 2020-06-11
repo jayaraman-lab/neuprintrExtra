@@ -4,7 +4,14 @@
 \alias{create_neuronBag}
 \title{Builds a neuronBag object either from a vector of query strings or a metadata data.frame.}
 \usage{
-create_neuronBag(typeQuery, fixed = FALSE, by.roi = TRUE, ...)
+create_neuronBag(
+  typeQuery,
+  fixed = FALSE,
+  by.roi = TRUE,
+  selfRef = FALSE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{typeQuery}{: either a vector of queries (similar to neuprint_search queries) or a
@@ -14,11 +21,11 @@ metadata data.frame for a set of neurons}
 
 \item{by.roi}{: return results by ROI or just global weights?}
 
-\item{...}{: to be passed to getConnectionTable}
+\item{selfRef}{: Should the input data.frame be used as the type reference (use if you already renamed}
 
 \item{verbose}{: Inform about progress if TRUE}
 
-\item{selfRef}{: Should the input data.frame be used as the type reference (use if you already renamed}
+\item{...}{: to be passed to getConnectionTable}
 }
 \description{
 Builds a neuronBag object either from a vector of query strings or a metadata data.frame.

@@ -7,7 +7,7 @@
 getTypesTable(types)
 }
 \arguments{
-\item{types:}{A vector of type names to be matched exactly}
+\item{types}{A vector of type names to be matched exactly}
 }
 \value{
 A data frame of instances of those types, including a databaseType column (used internally by other functions)

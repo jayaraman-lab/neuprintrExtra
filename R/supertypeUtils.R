@@ -3,19 +3,21 @@
 #'  (or databaseType.to and from) columns, or a neuronBag object
 #' @param level Depth of the supertype. Possible values are 1,2 or 3 (default 2), 1 being the finest
 #' subdivision and 3 the coarsest
-#' @details For example, at level 1 delta0 neurons are just divided in DeltaA to K, at level 2 they are
-#' D0, and at level 3 they are FB Interneurons
+#' @param unicodeDelta Whether or not to use unicode greek characters for Delta (Delta7 and v/h Delta) supertypes. 
+#' Unicode by default
+#' @details For example, at level 1 vDelta neurons are just divided in vDeltaA to K, at level 2 they are
+#' vDelta, and at level 3 they are FB Interneurons
 #' @return an object of the same type as the \code{types} inputed, possibly with extra columns
 #'
 #' @export
-supertype <- function(types,level=2){UseMethod("supertype")}
+supertype <- function(types,level=2,unicodeDelta=TRUE){UseMethod("supertype")}
 
 #' @export
-supertype.character <- function(types,level=2){
+supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype <- types
   supertype[is.na(types)] <- "Other"
   supertype[is.null(types)] <- "Other"
-
+  
   supertype[grepl("^FB.*",types)] <- stringr::str_extract(types,"FB[1-9]")[grepl("^FB.*",types)]
   supertype[grepl("^vDelta.*",types)] <- stringr::str_extract(types,"vDelta[A-O]")[grepl("^vDelta.*",types)]
   supertype[grepl("^hDelta.*",types)] <- stringr::str_extract(types,"hDelta[A-M]")[grepl("^hDelta.*",types)]
@@ -23,8 +25,12 @@ supertype.character <- function(types,level=2){
   supertype[grepl("^FS.*",types)] <- stringr::str_extract(types,"FS[1-9]")[grepl("^FS.*",types)]
   supertype[grepl("^FR.*",types)] <- "FR"
   supertype[grepl("^EL.*",types)] <- "EL"
+  supertype[grepl("^ER[1-6].*",types)] <- stringr::str_extract(types,"ER[1-6]")[grepl("^ER[1-6].*",types)]
   supertype[grepl("^PFR.*",types)] <- "PFR"
   supertype[grepl("^PFN.*",types)] <- stringr::str_extract(types,"PFN[a|d|m|p|v]")[grepl("^PFN.*",types)]
+  supertype[grepl("^LNO.*",types)] <- "LNO"
+  supertype[grepl("^LCNO.*",types)] <- "LCNO"
+  supertype[grepl("^GLNO.*",types)] <- "GLNO"
   supertype[types %in% c("L-L(c)1","AoL-L(c)","L-LC(c)1","VeL-CLVe(c)1","L-Lic(c)","VeL-LVeC(c)",
                         "CL-LC(c)","VeL-LVe(c)2","CL-L(c)1","L-LC(c)2","VeLC-L(c)","CL-L(c)2",
                         "VeL-L(c)","CL-L(c)2","VeLC-LVe(c)3","VeL-LC(c)","L-L(c)2")] <- "L-L(c)"
@@ -40,7 +46,8 @@ supertype.character <- function(types,level=2){
   supertype[types %in% c("SpVeL-(?)(c)","SpVeL-LSpIp(c)1","SpVeL-LSpIp(c)2")] <- "SpVeL-X(c)"
   supertype[types %in% c("VeLC-CLVe(c)","VeLC-LVe(c)")] <- "VeL-LVe"
   supertype[types %in% c("WL-(X)(c)","VeWL-VeX(c)","LW-X(c)")] <- "WL-X(c)"
-
+  if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
+  
   if (level == 1){return(supertype)}
 
   supertype[grepl("^FB.*",types)] <- "FBt"
@@ -50,19 +57,20 @@ supertype.character <- function(types,level=2){
   supertype[grepl("^PFN.*",types)] <- "PFN"
   supertype[grepl("^PFR.*",types)] <- "PFR"
   supertype[grepl("^PEN.*",types)] <- "PEN"
-  supertype[grepl("^LN.*",types)] <- "LN"
+  supertype[grepl("^LNO.*|^LCNO.*|^GLNO.*",types)] <- "LNO"
   supertype[grepl("^ExR.*",types)] <- "ExR"
   supertype[grepl("^FC.*",types)] <- "FC"
   supertype[grepl("^FR.*",types)] <- "FR"
   supertype[grepl("^FS.*",types)] <- "FS"
-  supertype[grepl("^LCN.*",types)] <- "LN"
   supertype[grepl("^EL.*",types)] <- "EL"
-  supertype[grepl("^ER[1-6].*",types)] <- "Ring"
+  supertype[grepl("^ER[1-6].*",types)] <- "ER"
   supertype[grepl("^SA.*",types)] <- "SA"
   supertype[grepl("SpsP.*",types)] <- "SPS-PB"
   supertype[grepl("^OA_V.*",types)] <- "OA"
   supertype[grepl("^P[1|6].*",types)] <- "P"
+  supertype[grepl("^TuBu.*",types)] <- "TuBu"
 
+  if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   if (level == 2){return(supertype)}
 
   supertype[grepl("^Delta7|P[1|6].*",types)] <- "PB Interneurons"
@@ -73,29 +81,30 @@ supertype.character <- function(types,level=2){
   supertype[grepl("^[h|v]Delta.*",types)] <- "FB Interneuron"
 
   supertype[types == supertype] <- "Other"
+  if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   supertype
 }
 
 #' @export
-supertype.neuronBag <- function(types){
+supertype.neuronBag <- function(types,unicodeDelta=TRUE){
   for (lev in 1:3){
     for (ty in c(".from",".to")){
       for (tab in c("inputs","outputs","inputs_raw","outputs_raw")){
-        types[[tab]][[paste0("supertype",ty,lev)]] <- supertype(types[[tab]][[paste0("databaseType",ty)]],level=lev)
+        types[[tab]][[paste0("supertype",ty,lev)]] <- supertype(types[[tab]][[paste0("databaseType",ty)]],level=lev,unicodeDelta=unicodeDelta)
       }
     }
-    types$names[[paste0("supertype",lev)]] <-  supertype(types$names[[paste0("databaseType")]],level=lev)
-    types$outputsTableRef[[paste0("supertype",lev)]] <-  supertype(types$outputsTableRef[[paste0("databaseType")]],level=lev)
+    types$names[[paste0("supertype",lev)]] <-  supertype(types$names[[paste0("databaseType")]],level=lev,unicodeDelta=unicodeDelta)
+    types$outputsTableRef[[paste0("supertype",lev)]] <-  supertype(types$outputsTableRef[[paste0("databaseType")]],level=lev,unicodeDelta=unicodeDelta)
   }
   types
 }
 
 #' @export
-supertype.data.frame <- function(types,level=1:3){
+supertype.data.frame <- function(types,level=1:3,unicodeDelta=TRUE){
   renamable <- names(types)[names(types) %in% c("databaseType","databaseType.from","databaseType.to")]
   for (lev in level){
     for (ty in renamable){
-        types[[paste0(sub("databaseType","supertype",ty),lev)]] <- supertype(types[[ty]],level=lev)
+        types[[paste0(sub("databaseType","supertype",ty),lev)]] <- supertype(types[[ty]],level=lev,unicodeDelta=unicodeDelta)
     }
   }
   types

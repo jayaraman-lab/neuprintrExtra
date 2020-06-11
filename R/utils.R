@@ -1,7 +1,7 @@
 
 
 #' Returns a table with all neurons belonging to types exactly specified
-#' @param types: A vector of type names to be matched exactly
+#' @param types A vector of type names to be matched exactly
 #' @return A data frame of instances of those types, including a databaseType column (used internally by other functions)
 #' @export
 getTypesTable <- function(types){

@@ -7,7 +7,7 @@
 simplifyConnectionTable(connectionTable)
 }
 \arguments{
-\item{connectionTable:}{A data frame in the bodyid/partner/prepost format (as returned by getConnectionTable)}
+\item{connectionTable}{A data frame in the bodyid/partner/prepost format (as returned by getConnectionTable)}
 }
 \value{
 A data frame in the from/to/name.from/name.to... format

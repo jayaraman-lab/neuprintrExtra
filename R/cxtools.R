@@ -26,8 +26,8 @@ cxRetyping <- function(connections,redefinePartners=TRUE,postfix=c("raw","to","f
 #'
 #' @export
 supertype2Palette <- function(){
-  s2 <- c("vDelta","hDelta","Delta7","EL","EPG","EPGt","ExR","FBt","FC","FR","FS","LN","SPS-PB","LPsP","P","PEG","PEN","PFGs","PFL","PFN","PFR","Ring","SA")
-  pal <- paletteer::paletteer_d("Polychrome::palette36")[c(35,32,28,8,12,33,6,10,9,3,25,18,21,30,31,34,16,27,7,26,1,15,36)]
+  s2 <- c("vDelta","v\u0394","hDelta","h\u0394","Delta7","\u03947","EL","EPG","EPGt","ExR","FBt","FC","FR","FS","LNO","SPS-PB","LPsP","P","PEG","PEN","PFGs","PFL","PFN","PFR","ER","SA")
+  pal <- paletteer::paletteer_d("Polychrome::palette36")[c(35,35,32,32,28,28,8,12,33,6,10,9,3,25,18,21,30,31,34,16,27,7,26,1,15,36)]
   names(pal) <- s2
   list(pal=pal,breaks=s2)
 }
@@ -41,6 +41,9 @@ scale_color_CX_supertype <- function(...){
   scale_color_manual(values=pal$pal,breaks=pal$breaks,...)
 }
 
+#' A fill scale for Central complex supertypes
+#' @return A ggplot scale to be used in plots were color (or fill) map to level 2 supertypes
+#'
 #' @export
 scale_fill_CX_supertype <- function(...){
   pal <- supertype2Palette()

@@ -7,8 +7,8 @@
 getConnectionTable(
   bodyIDs,
   synapseType,
-  slctROI,
-  by.roi,
+  slctROI = NULL,
+  by.roi = FALSE,
   synThresh = 3,
   chunk_connections = TRUE,
   chunk_meta = TRUE,
@@ -18,6 +18,17 @@ getConnectionTable(
 )
 }
 \arguments{
+\item{bodyIDs}{The bodyids of neurons who's connections should be queried or a metadata data.frame}
+
+\item{synapseType}{Choose "PRE" or "POST" to get inputs or outputs of the neurons in bodyIDs, respectivly. "PRE" is
+usually slower as it requires listing all the outputs of the input neurons to get the contribution of the outputs.}
+
+\item{slctROI}{String specifying the ROI where connections should be queried. By default all the ROIs.}
+
+\item{by.roi}{Passed to neuprint_connection_table. If returning all ROIs, should results be broken down by ROI?}
+
+\item{synThresh}{Minimum number of synapses to consider a connection (default 3)}
+
 \item{chunk_meta}{: to be passed to metadata and roiInfo queries (default TRUE)}
 
 \item{verbose}{: should the function report on its progress?}
@@ -25,20 +36,9 @@ getConnectionTable(
 \item{computeKnownRatio}{: should the function also compute ratios (weightRelative and outputContribution) relative to known synaptic partners rather
 than relative to the total number of synapses}
 
-\item{bodyIDs:}{The bodyids of neurons who's connections should be queried or a metadata data.frame}
-
-\item{synapseType:}{Choose "PRE" or "POST" to get inputs or outputs of the neurons in bodyIDs, respectivly. "PRE" is
-usually slower as it requires listing all the outputs of the input neurons to get the contribution of the outputs.}
-
-\item{slctROI:}{String specifying the ROI where connections should be queried. By default all the ROIs.}
-
-\item{by.roi:}{Passed to neuprint_connection_table. If returning all ROIs, should results be broken down by ROI?}
-
-\item{synThresh:}{Minimum number of synapses to consider a connection (default 3)}
+\item{...}{Other arguments to be passed to neuprint queries (neuprint_connection_table, getRoiInfo and neuprint_get_meta)}
 
 \item{chunk_connection}{: to be passed to neuprint_connection_table (default TRUE)}
-
-\item{...:}{Other arguments to be passed to neuprint queries (neuprint_connection_table, getRoiInfo and neuprint_get_meta)}
 }
 \value{
 Returns a connection table as data frame. Added columns are \code{weightRelativeTotal} which is

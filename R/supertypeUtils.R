@@ -64,6 +64,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("SpsP.*",types)] <- "SPS-PB"
   supertype[grepl("^OA_V.*",types)] <- "OA"
   supertype[grepl("^P[1|6].*",types)] <- "P"
+  supertype[grepl("^TuBu.*",types)] <- "TuBu"
 
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   if (level == 2){return(supertype)}

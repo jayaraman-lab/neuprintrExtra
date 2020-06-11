@@ -26,7 +26,7 @@ cxRetyping <- function(connections,redefinePartners=TRUE,postfix=c("raw","to","f
 #'
 #' @export
 supertype2Palette <- function(){
-  s2 <- c("vDelta","v\u0394","hDelta","h\u0394","Delta7","\u03947","EL","EPG","EPGt","ExR","FBt","FC","FR","FS","LN","SPS-PB","LPsP","P","PEG","PEN","PFGs","PFL","PFN","PFR","Ring","SA")
+  s2 <- c("vDelta","v\u0394","hDelta","h\u0394","Delta7","\u03947","EL","EPG","EPGt","ExR","FBt","FC","FR","FS","LNO","SPS-PB","LPsP","P","PEG","PEN","PFGs","PFL","PFN","PFR","ER","SA")
   pal <- paletteer::paletteer_d("Polychrome::palette36")[c(35,35,32,32,28,28,8,12,33,6,10,9,3,25,18,21,30,31,34,16,27,7,26,1,15,36)]
   names(pal) <- s2
   list(pal=pal,breaks=s2)

@@ -26,6 +26,9 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^ER[1-6].*",types)] <- stringr::str_extract(types,"ER[1-6]")[grepl("^ER[1-6].*",types)]
   supertype[grepl("^PFR.*",types)] <- "PFR"
   supertype[grepl("^PFN.*",types)] <- stringr::str_extract(types,"PFN[a|d|m|p|v]")[grepl("^PFN.*",types)]
+  supertype[grepl("^LNO.*",types)] <- "LNO"
+  supertype[grepl("^LCNO.*",types)] <- "LCNO"
+  supertype[grepl("^GLNO.*",types)] <- "GLNO"
   supertype[types %in% c("L-L(c)1","AoL-L(c)","L-LC(c)1","VeL-CLVe(c)1","L-Lic(c)","VeL-LVeC(c)",
                         "CL-LC(c)","VeL-LVe(c)2","CL-L(c)1","L-LC(c)2","VeLC-L(c)","CL-L(c)2",
                         "VeL-L(c)","CL-L(c)2","VeLC-LVe(c)3","VeL-LC(c)","L-L(c)2")] <- "L-L(c)"
@@ -52,12 +55,11 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^PFN.*",types)] <- "PFN"
   supertype[grepl("^PFR.*",types)] <- "PFR"
   supertype[grepl("^PEN.*",types)] <- "PEN"
-  supertype[grepl("^LN.*",types)] <- "LN"
+  supertype[grepl("^LNO.*|^LCNO.*|^GLNO.*",types)] <- "LNO"
   supertype[grepl("^ExR.*",types)] <- "ExR"
   supertype[grepl("^FC.*",types)] <- "FC"
   supertype[grepl("^FR.*",types)] <- "FR"
   supertype[grepl("^FS.*",types)] <- "FS"
-  supertype[grepl("^LCN.*",types)] <- "LN"
   supertype[grepl("^EL.*",types)] <- "EL"
   supertype[grepl("^ER[1-6].*",types)] <- "ER"
   supertype[grepl("^SA.*",types)] <- "SA"

@@ -68,8 +68,8 @@ connectivityMatrix <- function(connObj,
       outMat <- t(outMat)
     }
   }else{
+    outMat <- matrix(0,nrow=length(ins),ncol=length(outs),dimnames=list("Inputs"=ins,"Outputs"=outs))
     for (l in 1:nrow(connObj)){
-      outMat <- matrix(0,nrow=length(ins),ncol=length(outs),dimnames=list("Inputs"=ins,"Outputs"=outs))
       outMat[connObj[[from]][l],connObj[[to]][l]] <- connObj[[value]][l]
     }
     if (ref=="outputs") outMat <-  t(outMat)

@@ -73,7 +73,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   if (level == 2){return(supertype)}
 
-  supertype[grepl("^Delta7|P[1|6].*",types)] <- "PB Interneurons"
+  supertype[grepl("^Delta7|^P[1|6].*",types)] <- "PB Interneurons"
   supertype[grepl("^PF.*",types)] <- "FB Columnar"
   supertype[grepl("^EPG.*|^PEG.*|^PEN.*|^EL.*",types)] <- "EB Columnar"
   supertype[grepl("^FC.*|^FR.*|^FS.*",types)] <- "FB Output"

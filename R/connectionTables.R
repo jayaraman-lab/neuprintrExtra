@@ -263,7 +263,7 @@ getTypeToTypeTable <- function(connectionTable,
                                pThresh = 0.05,
                                typesTable = NULL,
                                oldTable = NULL){
-  if (is.null(connectionTable)){return(NULL)}
+  if (is.null(connectionTable) | length(connectionTable)==0){return(NULL)}
   ## Counting instances for each post type
   if (is.null(typesTable) & any(connectionTable$type.to != connectionTable$databaseType.to,na.rm=T))
   {
@@ -301,7 +301,7 @@ getTypeToTypeTable <- function(connectionTable,
     ungroup()
 
   if (!is.null(oldTable)){
-    connectionTableOld <- oldTable %>% filter(paste0(type.to,type.from) %in% paste0(connectionTable$type.to,connectionTable$type.from))
+    connectionTableOld <- oldTable %>% filter(paste0(type.to,type.from,roi) %in% paste0(connectionTable$type.to,connectionTable$type.from,connectionTable$roi))
     connectionTable <- connectionTable %>% filter((type.to != previous.type.to) | (type.from != previous.type.from))
   }
 
@@ -373,9 +373,9 @@ getTypeToTypeTable <- function(connectionTable,
       select(-pVal)
   }else{
     loners <-  loners %>% filter((weightRelative > singleNeuronThreshold & weight > singleNeuronThresholdN)| outputContribution > majorOutputThreshold |
-                                   (paste0(previous.type.to,previous.type.from) %in% paste0(oldTable$type.to,oldTable$type.from)))
+                                   (paste0(previous.type.to,previous.type.from,roi) %in% paste0(oldTable$type.to,oldTable$type.from,oldTable$roi)))
     sTable <- sTable%>% filter(pVal < pThresh | (outputContribution > majorOutputThreshold & weight > singleNeuronThresholdN) |
-                                 (paste0(previous.type.to,previous.type.from) %in% paste0(oldTable$type.to,oldTable$type.from))) %>%
+                                 (paste0(previous.type.to,previous.type.from,roi) %in% paste0(oldTable$type.to,oldTable$type.from,oldTable$roi))) %>%
       select(-pVal)
     sTable <- bind_rows(sTable,connectionTableOld)
   }

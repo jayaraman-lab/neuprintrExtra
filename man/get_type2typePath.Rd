@@ -25,7 +25,13 @@ get_type2typePath(
 \item{ROI}{which ROIs to consider. Can be a vector of ROI names, a list of vectors of ROI names, or NULL. If NULL (the default), consider all ROIs. 
 If a character vector, restrict to those ROIs. If a list, each element of the list will be ROI that will be combined together (and named as the element name in the list) using combineRois}
 
+\item{renaming}{a renaming function to use (by default \code{cxRetyping})}
+
+\item{stat}{the stat to consider (by default "weightRelative")}
+
 \item{...}{: to be passed to create_neuronBag when building the path}
+
+\item{n_step}{an integer or vector of integers. If a vector paths of all those lenghts will be listed}
 }
 \description{
 Builds a data frame of pathways between 2 collections of types

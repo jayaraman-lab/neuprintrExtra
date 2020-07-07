@@ -42,6 +42,7 @@ redefine_types <- function(connections,retype_func,postfix=c("raw","from","to"),
 
 #' @export
 redefine_types.data.frame <- function(connections,retype_func,postfix=c("raw","from","to"),redefinePartners=TRUE,...){
+  if (length(connections)==0){return(connections)}
   postfix <- match.arg(postfix)
   type_col <- get_col_name("type",postfix)
   connections[[paste0("previous.",type_col)]] <- connections[[type_col]] ## keeping track of the last named types

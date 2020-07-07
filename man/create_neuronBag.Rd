@@ -10,6 +10,8 @@ create_neuronBag(
   by.roi = TRUE,
   selfRef = FALSE,
   verbose = FALSE,
+  omitInputs = FALSE,
+  omitOutputs = FALSE,
   ...
 )
 }
@@ -21,9 +23,14 @@ metadata data.frame for a set of neurons}
 
 \item{by.roi}{: return results by ROI or just global weights?}
 
-\item{selfRef}{: Should the input data.frame be used as the type reference (use if you already renamed}
+\item{selfRef}{: Should the input data.frame be used as the type reference (use if you already renamed
+neurons/types in that data frame)}
 
 \item{verbose}{: Inform about progress if TRUE}
+
+\item{omitInputs}{: skip calculation of inputs if TRUE}
+
+\item{omitOutputs}{: skipe calculation of outputs if TRUE}
 
 \item{...}{: to be passed to getConnectionTable}
 }

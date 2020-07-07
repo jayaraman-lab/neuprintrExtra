@@ -34,47 +34,57 @@ is.neuronBag <- function(x) inherits(x,"neuronBag")
 #' @param by.roi : return results by ROI or just global weights?
 #' @param verbose : Inform about progress if TRUE
 #' @param selfRef : Should the input data.frame be used as the type reference (use if you already renamed
-#  'neurons/types in that data frame)
+#' neurons/types in that data frame)
+#' @param omitInputs : skip calculation of inputs if TRUE
+#' @param omitOutputs : skipe calculation of outputs if TRUE
 #' @param ... : to be passed to getConnectionTable
 #' @export
-create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,...){
+create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,...){
   UseMethod("create_neuronBag")}
 
 #' @export
-create_neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,...){
+create_neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,...){
   TypeNames <- distinct(bind_rows(lapply(typeQuery,neuprint_search,field="type",fixed=fixed))) %>%
     mutate(databaseType = type)
-  create_neuronBag(TypeNames,fixed=FALSE,by.roi=by.roi,verbose=verbose,...)
+  create_neuronBag(TypeNames,fixed=FALSE,by.roi=by.roi,verbose=verbose,omitInputs=omitInputs,omitOutputs=omitOutputs,...)
 }
 
 #' @export
-create_neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE,verbose=FALSE,...){
-
-  if (verbose) message("Calculate raw outputs")
-  outputsR <- getConnectionTable(typeQuery,synapseType = "POST",by.roi=by.roi,verbose=verbose,...)
-
-  if (verbose) message("Calculate raw inputs")
-  inputsR <- getConnectionTable(typeQuery,synapseType = "PRE",by.roi=by.roi,verbose=verbose,...)
+create_neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,...){
+ 
+  if (!omitOutputs){
+    if (verbose) message("Calculate raw outputs")
+    outputsR <- getConnectionTable(typeQuery,synapseType = "POST",by.roi=by.roi,verbose=verbose,...)
+  }else{
+    outputsR <- NULL}
+  
+  if (!omitInputs){
+    if (verbose) message("Calculate raw inputs")
+    inputsR <- getConnectionTable(typeQuery,synapseType = "PRE",by.roi=by.roi,verbose=verbose,...)
+  }else{
+    inputsR <- NULL}
+  
 
   if (verbose) message("Calculate type to type outputs")
   if (length(outputsR)==0){OUTByTypes <- NULL
-  outputsTableRef <- NULL
-  unknowns <- NULL
+    outputsTableRef <- NULL
+    unknowns <- NULL
   }else{
-    OUTByTypes <- getTypeToTypeTable(outputsR)
+      OUTByTypes <- getTypeToTypeTable(outputsR)
     outputsR <- retype.na(outputsR)
     outputsTableRef <- getTypesTable(unique(outputsR$type.to))
     unknowns <- retype.na_meta(neuprint_get_meta(unique(outputsR$to[!(outputsR$to %in% outputsTableRef$bodyid)])))
   }
 
   if (verbose) message("Calculate type to type inputs")
-  if (nrow(inputsR)==0){INByTypes <- NULL}else{
+  if (length(inputsR)==0) {INByTypes <- NULL} else {
+    if(nrow(inputsR)==0){INByTypes <- NULL}else{
     if (selfRef){
       INByTypes <- getTypeToTypeTable(inputsR,typesTable = typeQuery)
     }else{
       INByTypes <- getTypeToTypeTable(inputsR)
     }
-    inputsR <- retype.na(inputsR)}
+    inputsR <- retype.na(inputsR)}}
 
   return(neuronBag(outputs = OUTByTypes,
                    inputs = INByTypes,

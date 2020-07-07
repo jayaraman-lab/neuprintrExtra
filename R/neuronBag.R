@@ -77,7 +77,7 @@ create_neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.r
   }
 
   if (verbose) message("Calculate type to type inputs")
-  if (length(inputsR)==0) {INByTypes <- NULL} else {
+  if (omitInputs){INByTypes <- NULL} else {
     if(nrow(inputsR)==0){INByTypes <- NULL}else{
     if (selfRef){
       INByTypes <- getTypeToTypeTable(inputsR,typesTable = typeQuery)

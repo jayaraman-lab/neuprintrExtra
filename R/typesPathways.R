@@ -53,14 +53,13 @@ get_type2typePath <- function(type.from,type.to,by.roi=TRUE,ROI=NULL,n_steps=2,r
   
 }
 
-## Multiply 2 connection tables or a pathway table and a connection table and return a type to type pathway table
+#' Multiply 2 connection tables or a pathway table and a connection table and return a type to type pathway table
 #' @param inputTable  a type to type connection table, or a pathway table as returned by this function
 #' @param outputTable a type to type connection table
 #' @param stat which stat to use for pathway weights
 #' @param n a number to label the stage in processing 
 #' @return a table with a stat_pathway extra column, and type and roi columns labeled with n or n+1 depending if they are 
 #' at the first or second step of the pathway
-#' 
 #' @export
 tables2path <- function(inputTable,outputTable,stat="weightRelative",n=1){
   inputTable <-  select(inputTable,starts_with((c("type",

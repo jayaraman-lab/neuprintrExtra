@@ -4,6 +4,7 @@
 #' @param by.roi return results by ROI or just global weights?
 #' @param ROI which ROIs to consider. Can be a vector of ROI names, a list of vectors of ROI names, or NULL. If NULL (the default), consider all ROIs. 
 #' If a character vector, restrict to those ROIs. If a list, each element of the list will be ROI that will be combined together (and named as the element name in the list) using combineRois
+#' @param n_step an integer or vector of integers. If a vector paths of all those lenghts will be listed
 #' @param ... : to be passed to create_neuronBag when building the path
 #' @export
 get_type2typePath <- function(type.from,type.to,by.roi=TRUE,ROI=NULL,n_steps=2,renaming=cxRetyping,stat="weightRelative",...){

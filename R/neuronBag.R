@@ -101,12 +101,22 @@ create_neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.r
 #' @export
 c.neuronBag <- function(...){
   full <- list(...)
-  out <- neuronBag(outputs = distinct(bind_rows(lapply(full,function(i) i$outputs))),
-                   inputs = distinct(bind_rows(lapply(full,function(i) i$inputs))),
+  out <- neuronBag(outputs = distinct(bind_rows(lapply(full,function(i){
+                     if (is.data.frame(i$outputs) && nrow(i$outputs)==0){return(NULL)}
+                     i$outputs}))),
+                   inputs = distinct(bind_rows(lapply(full,function(i){
+                     if (is.data.frame(i$inputs) && nrow(i$inputs)==0){return(NULL)}
+                     i$inputs}))),
                    names = distinct(bind_rows(lapply(full,function(i) i$names))),
-                   outputs_raw = distinct(bind_rows(lapply(full,function(i) i$outputs_raw))),
-                   inputs_raw = distinct(bind_rows(lapply(full,function(i) i$inputs_raw))),
-                   outputsTableRef = distinct(bind_rows(lapply(full,function(i) i$outputsTableRef)))
+                   outputs_raw = distinct(bind_rows(lapply(full,function(i){
+                     if (is.data.frame(i$outputs_raw) && nrow(i$outputs_raw)==0){return(NULL)}
+                     i$outputs_raw}))),
+                   inputs_raw = distinct(bind_rows(lapply(full,function(i){
+                     if (is.data.frame(i$inputs_raw) && nrow(i$inputs_raw)==0){return(NULL)}
+                     i$inputs_raw}))),
+                   outputsTableRef = distinct(bind_rows(lapply(full,function(i){
+                     if (is.data.frame(i$outputsTableRef) && nrow(i$outputsTableRef)==0){return(NULL)}
+                     i$outputsTableRef})))
   )
   return(out)
 }

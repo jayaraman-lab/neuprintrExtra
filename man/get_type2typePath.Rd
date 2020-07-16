@@ -12,6 +12,7 @@ get_type2typePath(
   n_steps = 2,
   renaming = cxRetyping,
   stat = "weightRelative",
+  excludeLoops = TRUE,
   ...
 )
 }
@@ -28,6 +29,8 @@ If a character vector, restrict to those ROIs. If a list, each element of the li
 \item{renaming}{a renaming function to use (by default \code{cxRetyping})}
 
 \item{stat}{the stat to consider (by default "weightRelative")}
+
+\item{excludeLoops}{Logical, whether to exclude paths containing duplicates (TRUE by default)}
 
 \item{...}{: to be passed to create_neuronBag when building the path}
 

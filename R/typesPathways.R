@@ -7,9 +7,18 @@
 #' @param n_step an integer or vector of integers. If a vector paths of all those lenghts will be listed
 #' @param renaming a renaming function to use (by default \code{cxRetyping})
 #' @param stat the stat to consider (by default "weightRelative")
+#' @param excludeLoops Logical, whether to exclude paths containing duplicates (TRUE by default)
 #' @param ... : to be passed to create_neuronBag when building the path
 #' @export
-get_type2typePath <- function(type.from,type.to,by.roi=TRUE,ROI=NULL,n_steps=2,renaming=cxRetyping,stat="weightRelative",...){
+get_type2typePath <- function(type.from,
+                              type.to,
+                              by.roi=TRUE,
+                              ROI=NULL,
+                              n_steps=2,
+                              renaming=cxRetyping,
+                              stat="weightRelative",
+                              excludeLoops=TRUE,
+                              ...){
   res <- vector("list",max(n_steps))
   
   if (!("databaseType" %in% names(type.from))){type.from <- mutate(type.from,databaseType=type)}
@@ -46,14 +55,34 @@ get_type2typePath <- function(type.from,type.to,by.roi=TRUE,ROI=NULL,n_steps=2,r
     res[[n]] <- bag$inputs
   }
   
-  bind_rows(lapply(n_steps,function(nS){
+  res <- bind_rows(lapply(n_steps,function(nS){
     pathTable <- res[[1]]
     for (i in 2:nS){
       pathTable <- tables2path(pathTable,res[[i]],stat=stat,n=i-1)
     }
     pathTable <- pathTable[(pathTable$type.to %in% type.to$type),]
+    pathTable[["n_steps"]] <- nS
+    pathTable
   }))
-  
+  ## Test for loops, considering the special case where the user ask for pathways
+  ## to self
+  res <- res %>% rowwise() %>% mutate(loop=any(duplicated(c_across(starts_with("type_") |
+                                                       starts_with("type.from")),
+                                                       incomparables = c(NA,FALSE))) |
+                                        any(duplicated(c_across(starts_with("type_") |
+                                                                  starts_with("type.to")),
+                                                       incomparables = c(NA,FALSE))
+                                        ))
+  if (excludeLoops) res  <- filter(res,loop==FALSE)
+  res %>% select(type.from,
+                 starts_with("type_"),
+                 type.to,
+                 starts_with("roi"),
+                 starts_with(stat),
+                 n_steps,
+                 loop,
+                 starts_with("supertype"),
+                 starts_with("databaseType"))
 }
 
 #' Multiply 2 connection tables or a pathway table and a connection table and return a type to type pathway table

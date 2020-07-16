@@ -29,7 +29,11 @@ get_type2typePath <- function(type.from,
   type.to_loc <- type.to
   if (is.list(ROI)){ROIraw <- unlist(ROI,use.names = FALSE)}else{ROIraw <- ROI}
   
-  for (n in 1:ceiling(max(n_steps)/2)){
+  midP <- ceiling(max(n_steps)/2)
+  downHalf <- seq(1,midP,length.out = midP)
+  upHalf <- seq(midP+1,max(n_steps),length.out = max(n_steps)-midP)
+  
+  for (n in downHalf){
     bag <- create_neuronBag(type.from_loc,slctROI=ROIraw,by.roi=by.roi,omitInputs=TRUE,selfRef=TRUE,...)  
     if (is.list(ROI)){
       bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r)})
@@ -39,7 +43,7 @@ get_type2typePath <- function(type.from,
     type.from_loc <- bag$outputsTableRef
     res[[n]] <- bag$outputs
   }
-  for (n in (ceiling(max(n_steps)/2)+1):max(n_steps)){
+  for (n in upHalf){
     bag <- create_neuronBag(type.to_loc,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,selfRef=TRUE,...)   
     if (is.list(ROI)){
       bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r)})
@@ -57,12 +61,21 @@ get_type2typePath <- function(type.from,
   
   res <- bind_rows(lapply(n_steps,function(nS){
     pathTable <- res[[1]]
-    for (i in 2:nS){
+    for (i in seq(2,nS,length.out = nS-1)){
       pathTable <- tables2path(pathTable,res[[i]],stat=stat,n=i-1)
     }
     pathTable <- pathTable[(pathTable$type.to %in% type.to$type),]
     pathTable[["n_steps"]] <- nS
-    pathTable
+    if (nS == 1){
+    pathTable <- pathTable %>% rename_with(paste0,"_N1",.cols = any_of(stat)) %>%
+      rename_with(paste0,"_N1",.cols = any_of("roi")) %>%
+      select(starts_with((c("type",
+                            "databaseType",
+                            "supertype",
+                            "roi",paste0(stat,"_N1"),"n_steps"))))
+    pathTable[[paste0(stat,"_path")]] <- pathTable[[paste0(stat,"_N1")]]
+    }
+    pathTable 
   }))
   ## Test for loops, considering the special case where the user ask for pathways
   ## to self
@@ -78,7 +91,8 @@ get_type2typePath <- function(type.from,
                  starts_with("type_"),
                  type.to,
                  starts_with("roi"),
-                 starts_with(stat),
+                 starts_with(paste0(stat,"_N")),
+                 starts_with(paste0(stat,"_path")),
                  n_steps,
                  loop,
                  starts_with("supertype"),

@@ -43,7 +43,7 @@ getTypesInRoiTable <- function(ROI,lateralize=FALSE,...){
   ## 25% of the instances touch (l/R)
   typesUnfiltered <- unique(neuronTable$type)
 
-  roiConnections <- create_neuronBag(neuronTable,fixed=TRUE,...)
+  roiConnections <- create_neuronBag(neuronTable,...)
 
   if (lateralize == TRUE){
     roiConnections <- lateralize_types(roiConnections)

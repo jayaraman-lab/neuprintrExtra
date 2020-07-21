@@ -73,7 +73,7 @@ create_neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.r
     OUTByTypes <- getTypeToTypeTable(outputsR)
     outputsR <- retype.na(outputsR)
     outputsTableRef <- getTypesTable(unique(outputsR$type.to))
-    unknowns <- retype.na_meta(neuprint_get_meta(unique(outputsR$to[!(outputsR$to %in% outputsTableRef$bodyid)])))
+    unknowns <- retype.na_meta(neuprint_get_meta(unique(outputsR$to[!(outputsR$to %in% outputsTableRef$bodyid)])) %>% mutate(databaseType=NA))
   }
 
   if (verbose) message("Calculate type to type inputs")
@@ -91,7 +91,7 @@ create_neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.r
                    names = typeQuery,
                    outputs_raw = outputsR,
                    inputs_raw = inputsR,
-                   outputsTableRef = bind_rows(outputsTableRef,unknowns)
+                   outputsTableRef = rbind(outputsTableRef,unknowns)
   ))
 }
 

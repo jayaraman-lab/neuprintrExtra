@@ -31,19 +31,20 @@ getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5) {
   return(roi_Innervate)
 }
 
-#' Returns a neuronBag object of all the neurons forming significant connections in a ROI
+#' Returns a neuronBag object of all the neurons forming significant connections in a ROI.
 #' @param ROI The ROI to consider
 #' @param lateralize Should the neuron types be divided in left/right (default FALSE)
+#' @param bagROIs Which ROIs to include in the bag created (by default only the ROI one wants neurons in). If NULL returns all ROIs.
 #' @param ... Parameters to be passed to
 #' @details calls \code{getNeuronsInRoiTable} internally, with \code{minTypePercentage} set to 0.5, or 0.25 if \code{lateralize} is TRUE.
 #' @seealso  \code{getNeuronsInRoiTable}
 #' @export
-getTypesInRoiTable <- function(ROI,lateralize=FALSE,...){
+getTypesInRoiTable <- function(ROI,lateralize=FALSE,bagROIs=ROI,...){
   neuronTable <- getNeuronsInRoiTable(ROI,minTypePercentage=ifelse(lateralize,0.25,0.5)) ## Remove types if less than
   ## 25% of the instances touch (l/R)
   typesUnfiltered <- unique(neuronTable$type)
 
-  roiConnections <- create_neuronBag(neuronTable,...)
+  roiConnections <- create_neuronBag(neuronTable,slctROI=bagROIs,...)
 
   if (lateralize == TRUE){
     roiConnections <- lateralize_types(roiConnections)

@@ -6,6 +6,9 @@
 \usage{
 is.neuronBag(x)
 }
+\arguments{
+\item{x}{An object to be tested}
+}
 \value{
 TRUE if x is a neuronBag
 }

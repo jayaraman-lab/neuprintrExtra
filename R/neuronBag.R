@@ -20,7 +20,7 @@ neuronBag <- function(outputs,inputs,names,outputs_raw,inputs_raw,outputsTableRe
 }
 
 #' Test if x is a neuronBag
-#' @param x
+#' @param x An object to be tested
 #' @return TRUE if x is a neuronBag
 #'@export
 is.neuronBag <- function(x) inherits(x,"neuronBag")
@@ -70,7 +70,7 @@ create_neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.r
     outputsTableRef <- NULL
     unknowns <- NULL
   }else{
-      OUTByTypes <- getTypeToTypeTable(outputsR)
+    OUTByTypes <- getTypeToTypeTable(outputsR)
     outputsR <- retype.na(outputsR)
     outputsTableRef <- getTypesTable(unique(outputsR$type.to))
     unknowns <- retype.na_meta(neuprint_get_meta(unique(outputsR$to[!(outputsR$to %in% outputsTableRef$bodyid)])))

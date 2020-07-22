@@ -92,6 +92,8 @@ cos_dist <- function(mat){
   sim <- mat / sqrt(rowSums(mat * mat))
   sim <- sim %*% t(sim)
   D_sim <- as.dist(1 - sim)
+  attr(D_sim,"method") <- "cosine"
+  D_sim
 }
 
 #' @describeIn cos_dist Squared cosine distance
@@ -100,13 +102,17 @@ sqrt_cos_dist <- function(mat){
   sim <- sqrt(mat) / sqrt(rowSums(mat))
   sim <- sim %*% t(sim)
   D_sim <- as.dist(1 - sim)
+  attr(D_sim,"method") <- "sqcosine"
+  D_sim
 }
 
 #' @describeIn cos_dist Correlation distance matrix
 #' @export
 cor_dist <- function(mat){
   connCor <- cor(t(mat),method="spearman")
-  as.dist((1-connCor)/2)
+  D_sim <- as.dist((1-connCor)/2)
+  attr(D_sim,"method") <- "correlation"
+  D_sim
 }
 
 #' @describeIn cos_dist Binary distance

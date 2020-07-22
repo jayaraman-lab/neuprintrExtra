@@ -2,13 +2,14 @@
 #' @param ROI The ROI to look for
 #' @param minTypePercentage The minimum proportion of the instances of a type that should be innervating the ROI for
 #' it to be considered
+#' @param retyping a retyping function to be applied to the types found. \code{identity} by default (so it does nothing)
 #' @return  a data frame of metadata for all neurons in the ROI, as returned by \code{neuprint_get_meta}, with extra columns \code{ROI_pre}
 #'  and \code{ROI_post}, the counts in the queried ROI.
 #' @details  If a type is selected because at least \code{minTypePercentage} of its instances touch the ROI, all instances of the type are returned.
 #' This is used internally by \code{getTypesInRoiTable}
 #' @seealso  \code{getTypesInRoiTable}
 #' @export
-getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5) {
+getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,retyping=identity) {
   roi_Innervate <- neuprint_bodies_in_ROI(ROI) %>%
     mutate(originalInstance = TRUE)
   metaRoi <- neuprint_get_meta(roi_Innervate) %>% tidyr::drop_na(type)
@@ -23,6 +24,7 @@ getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5) {
     tidyr::replace_na(list(ROI_pre = 0,ROI_post = 0,originalInstance=FALSE)) %>%
     mutate(databaseType = type) ## Convenience column for when types are changed
 
+  roi_Innervate <- retyping(roi_Innervate)
   roi_Innervate <-roi_Innervate %>% group_by(type) %>%
     mutate(typePercentage = sum(originalInstance)/n()) %>%
     ungroup() %>%
@@ -33,23 +35,23 @@ getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5) {
 
 #' Returns a neuronBag object of all the neurons forming significant connections in a ROI.
 #' @param ROI The ROI to consider
-#' @param lateralize Should the neuron types be divided in left/right (default FALSE)
+#' @param retyping a retyping function to be applied to the types found. \code{cxRetyping} by default (for no retyping, set it to \code{identity})
 #' @param bagROIs Which ROIs to include in the bag created (by default only the ROI one wants neurons in). If NULL returns all ROIs.
-#' @param ... Parameters to be passed to
-#' @details calls \code{getNeuronsInRoiTable} internally, with \code{minTypePercentage} set to 0.5, or 0.25 if \code{lateralize} is TRUE.
+#' @param minTypePercentage The minimum proportion of the instances of a type that should be innervating the ROI for
+#' it to be considered (0.5 by default)
+#' @param ... Parameters to be passed to \code{create_neuronBag}
+#' @details calls \code{getNeuronsInRoiTable} internally, with \code{minTypePercentage} divided by 2 if \code{lateralize} is TRUE.
 #' @seealso  \code{getNeuronsInRoiTable}
 #' @export
-getTypesInRoiTable <- function(ROI,lateralize=FALSE,bagROIs=ROI,...){
-  neuronTable <- getNeuronsInRoiTable(ROI,minTypePercentage=ifelse(lateralize,0.25,0.5)) ## Remove types if less than
+getTypesInRoiTable <- function(ROI,
+                               retyping=cxRetyping,
+                               bagROIs=ROI,
+                               minTypePercentage=0.5,
+                               ...){
+  neuronTable <- getNeuronsInRoiTable(ROI,minTypePercentage=minTypePercentage,retyping=retyping) ## Remove types if less than
   ## 25% of the instances touch (l/R)
-  typesUnfiltered <- unique(neuronTable$type)
-
-  roiConnections <- create_neuronBag(neuronTable,slctROI=bagROIs,...)
-
-  if (lateralize == TRUE){
-    roiConnections <- lateralize_types(roiConnections)
-  }
-
+  roiConnections <- create_neuronBag(neuronTable,slctROI=bagROIs,selfRef=TRUE,...)
+  roiConnections <- retyping(roiConnections)
   roiConnections
 }
 

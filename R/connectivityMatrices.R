@@ -87,6 +87,7 @@ connectivityMatrix <- function(connObj,
 #'@details \code{cos_dist} returns the cosine distance, \code{sqrt_cos_dist}
 #'the squared cosine distance, \code{cor_dist} one minus the spearman correlation 
 #'between vectors, and \code{bin_dist} the binary distance after thresholding
+#'@export
 cos_dist <- function(mat){
   sim <- mat / sqrt(rowSums(mat * mat))
   sim <- sim %*% t(sim)
@@ -94,6 +95,7 @@ cos_dist <- function(mat){
 }
 
 #' @describeIn cos_dist Squared cosine distance
+#' @export
 sqrt_cos_dist <- function(mat){
   sim <- sqrt(mat) / sqrt(rowSums(mat))
   sim <- sim %*% t(sim)
@@ -101,6 +103,7 @@ sqrt_cos_dist <- function(mat){
 }
 
 #' @describeIn cos_dist Correlation distance matrix
+#' @export
 cor_dist <- function(mat){
   connCor <- cor(t(mat),method="spearman")
   as.dist((1-connCor)/2)
@@ -108,6 +111,7 @@ cor_dist <- function(mat){
 
 #' @describeIn cos_dist Binary distance
 #' @param threshold Threshold to use to binarize the matrix
+#' @export
 bin_dist <- function(mat,threshold=0.01){
   dist(mat>threshold,method="binary")
 }

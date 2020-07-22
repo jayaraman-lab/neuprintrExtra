@@ -4,22 +4,31 @@
 \alias{getTypesInRoiTable}
 \title{Returns a neuronBag object of all the neurons forming significant connections in a ROI.}
 \usage{
-getTypesInRoiTable(ROI, lateralize = FALSE, bagROIs = ROI, ...)
+getTypesInRoiTable(
+  ROI,
+  retyping = cxRetyping,
+  bagROIs = ROI,
+  minTypePercentage = 0.5,
+  ...
+)
 }
 \arguments{
 \item{ROI}{The ROI to consider}
 
-\item{lateralize}{Should the neuron types be divided in left/right (default FALSE)}
+\item{retyping}{a retyping function to be applied to the types found. \code{cxRetyping} by default (for no retyping, set it to \code{identity})}
 
 \item{bagROIs}{Which ROIs to include in the bag created (by default only the ROI one wants neurons in). If NULL returns all ROIs.}
 
-\item{...}{Parameters to be passed to}
+\item{minTypePercentage}{The minimum proportion of the instances of a type that should be innervating the ROI for
+it to be considered (0.5 by default)}
+
+\item{...}{Parameters to be passed to \code{create_neuronBag}}
 }
 \description{
 Returns a neuronBag object of all the neurons forming significant connections in a ROI.
 }
 \details{
-calls \code{getNeuronsInRoiTable} internally, with \code{minTypePercentage} set to 0.5, or 0.25 if \code{lateralize} is TRUE.
+calls \code{getNeuronsInRoiTable} internally, with \code{minTypePercentage} divided by 2 if \code{lateralize} is TRUE.
 }
 \seealso{
 \code{getNeuronsInRoiTable}

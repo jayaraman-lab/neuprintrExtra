@@ -32,7 +32,7 @@ If a character vector, restrict to those ROIs. If a list, each element of the li
 
 \item{excludeLoops}{Logical, whether to exclude paths containing duplicates (TRUE by default)}
 
-\item{...}{: to be passed to create_neuronBag when building the path}
+\item{...}{: to be passed to neuronBag when building the path}
 
 \item{n_step}{an integer or vector of integers. If a vector paths of all those lenghts will be listed}
 }

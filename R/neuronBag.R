@@ -1,14 +1,5 @@
-#' neuronBag class
-#' neuronBag objects contain information about the connectivity of a bunch of neurons
-#' @field names a table of metadata associated with the neurons in the bag -- with an extra column, 'databaseType'
-#' which keeps the type name used in the database
-#' @field outputs a type to type connectivity table of the outputs of the set of neurons
-#' @field inputs a type to type connectivity table of the inputs of the set of neurons
-#' @field outputs_raw a neuron to neuron connection table of the outputs of the set of neurons
-#' @field inputs_raw a neuron to neuron connection table of the inputs of the set of neurons
-#' @field outputsTableRef a table holding all instances of all the output types and their associated metadata
-#' @details usually created with \code{create_neuronBag}
-neuronBag <- function(outputs,
+
+new_neuronBag <- function(outputs,
                       inputs,
                       names,
                       outputs_raw,
@@ -32,30 +23,51 @@ is.neuronBag <- function(x) inherits(x,"neuronBag")
 
 #### Create neuronBags -------------------------------------------------------
 
-#' Builds a neuronBag object either from a vector of query strings or a metadata data.frame.
-#' @param typeQuery : either a vector of queries (similar to neuprint_search queries) or a
-#' metadata data.frame for a set of neurons
-#' @param fixed : if typeQuery is a query string, is it fixed?
-#' @param by.roi : return results by ROI or just global weights?
-#' @param verbose : Inform about progress if TRUE
-#' @param selfRef : Should the input data.frame be used as the type reference (use if you already renamed
-#' neurons/types in that data frame)
-#' @param omitInputs : skip calculation of inputs if TRUE
-#' @param omitOutputs : skipe calculation of outputs if TRUE
-#' @param ... : to be passed to getConnectionTable
-#' @export
 create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,...){
-  UseMethod("create_neuronBag")}
+  .Deprecated("neuronBag")
+  UseMethod("neuronBag")
+}
+
+#' Create a neuronBag
+#' 
+#' Builds a neuronBag object either from a vector of query strings or a metadata \code{data.frame}.
+#' @param typeQuery Either a vector of queries (similar to neuprint_search queries) or a
+#' metadata \code{data.frame} for a set of neurons
+#' @param fixed If typeQuery is a query string, is it fixed?
+#' @param by.roi Return results by ROI or just global weights?
+#' @param verbose Inform about progress if TRUE
+#' @param selfRef Should the input data.frame be used as the type reference (use if you already renamed
+#' neurons/types in that data frame)
+#' @param omitInputs Skip calculation of inputs if TRUE
+#' @param omitOutputs Skip calculation of outputs if TRUE
+#' @param ... To be passed to getConnectionTable
+#' @return An object of class \strong{neuronBag}. The object is a list with fields:
+#' \describe{
+#'  \item{names}{A table of metadata associated with the neurons in the bag -- with an extra column, 'databaseType'
+#' which keeps the type name used in the database.}
+#'  \item{outputs}{A type to type connectivity table of the outputs of the set of neurons.}
+#'  \item{inputs}{A type to type connectivity table of the inputs of the set of neurons.}
+#'  \item{outputs_raw}{A neuron to neuron connection table of the outputs of the set of neurons.}
+#'  \item{inputs_raw}{A neuron to neuron connection table of the inputs of the set of neurons.}
+#'  \item{outputsTableRef}{A table holding all instances of all the output types and their associated metadata}
+#' }
+#' @details A \strong{neuronBag} carries information about input and output connectivity of a group of neurons,
+#'  at the neuron and type level, while keeping track of eventual type changes that occured. Particularly useful in combination 
+#'  with retyping functions. Methods exist for filtering (\code{filter}), concatenating (\code(c)) and all retyping utilities.
+#' @seealso \code{\link{lateralize_types}}, \code{\link{cxRetyping}}, \code{\link{redefine_types}} for retyping a bag.  
+#' @export
+neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,...){
+  UseMethod("neuronBag")}
 
 #' @export
-create_neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,...){
+neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,...){
   TypeNames <- distinct(bind_rows(lapply(typeQuery,neuprint_search,field="type",fixed=fixed))) %>%
     mutate(databaseType = type)
-  create_neuronBag(TypeNames,fixed=FALSE,by.roi=by.roi,verbose=verbose,omitInputs=omitInputs,omitOutputs=omitOutputs,...)
+  neuronBag(TypeNames,fixed=FALSE,by.roi=by.roi,verbose=verbose,omitInputs=omitInputs,omitOutputs=omitOutputs,...)
 }
 
 #' @export
-create_neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,...){
+neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,...){
  
   if (!omitOutputs){
     if (verbose) message("Calculate raw outputs")
@@ -91,7 +103,7 @@ create_neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.r
     }
     inputsR <- retype.na(inputsR)}}
 
-  return(neuronBag(outputs = OUTByTypes,
+  return(new_neuronBag(outputs = OUTByTypes,
                    inputs = INByTypes,
                    names = typeQuery,
                    outputs_raw = outputsR,
@@ -106,7 +118,7 @@ create_neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.r
 #' @export
 c.neuronBag <- function(...){
   full <- list(...)
-  out <- neuronBag(outputs = distinct(bind_rows(lapply(full,function(i){
+  out <- new_neuronBag(outputs = distinct(bind_rows(lapply(full,function(i){
                      if (is.data.frame(i$outputs) && nrow(i$outputs)==0){return(NULL)}
                      i$outputs}))),
                    inputs = distinct(bind_rows(lapply(full,function(i){

@@ -2,32 +2,58 @@
 % Please edit documentation in R/neuronBag.R
 \name{neuronBag}
 \alias{neuronBag}
-\title{neuronBag class
-neuronBag objects contain information about the connectivity of a bunch of neurons}
+\title{Create a neuronBag}
 \usage{
-neuronBag(outputs, inputs, names, outputs_raw, inputs_raw, outputsTableRef)
+neuronBag(
+  typeQuery,
+  fixed = FALSE,
+  by.roi = TRUE,
+  selfRef = FALSE,
+  verbose = FALSE,
+  omitInputs = FALSE,
+  omitOutputs = FALSE,
+  ...
+)
+}
+\arguments{
+\item{typeQuery}{Either a vector of queries (similar to neuprint_search queries) or a
+metadata \code{data.frame} for a set of neurons}
+
+\item{fixed}{If typeQuery is a query string, is it fixed?}
+
+\item{by.roi}{Return results by ROI or just global weights?}
+
+\item{selfRef}{Should the input data.frame be used as the type reference (use if you already renamed
+neurons/types in that data frame)}
+
+\item{verbose}{Inform about progress if TRUE}
+
+\item{omitInputs}{Skip calculation of inputs if TRUE}
+
+\item{omitOutputs}{Skip calculation of outputs if TRUE}
+
+\item{...}{To be passed to getConnectionTable}
+}
+\value{
+An object of class \strong{neuronBag}. The object is a list with fields:
+\describe{
+ \item{names}{A table of metadata associated with the neurons in the bag -- with an extra column, 'databaseType'
+which keeps the type name used in the database.}
+ \item{outputs}{A type to type connectivity table of the outputs of the set of neurons.}
+ \item{inputs}{A type to type connectivity table of the inputs of the set of neurons.}
+ \item{outputs_raw}{A neuron to neuron connection table of the outputs of the set of neurons.}
+ \item{inputs_raw}{A neuron to neuron connection table of the inputs of the set of neurons.}
+ \item{outputsTableRef}{A table holding all instances of all the output types and their associated metadata}
+}
 }
 \description{
-neuronBag class
-neuronBag objects contain information about the connectivity of a bunch of neurons
+Builds a neuronBag object either from a vector of query strings or a metadata \code{data.frame}.
 }
 \details{
-usually created with \code{create_neuronBag}
+\strong{neuronBag}s carry information about input and output connectivity of a group of neurons,
+ at the neuron and type level, while keeping track of eventual type changes that occured. Particularly useful in combination 
+ with retyping functions. Methods exist for filtering (\code{filter}), concatenating (\code(c)) and all retyping utilities.
 }
-\section{Fields}{
-
-\describe{
-\item{\code{names}}{a table of metadata associated with the neurons in the bag -- with an extra column, 'databaseType'
-which keeps the type name used in the database}
-
-\item{\code{outputs}}{a type to type connectivity table of the outputs of the set of neurons}
-
-\item{\code{inputs}}{a type to type connectivity table of the inputs of the set of neurons}
-
-\item{\code{outputs_raw}}{a neuron to neuron connection table of the outputs of the set of neurons}
-
-\item{\code{inputs_raw}}{a neuron to neuron connection table of the inputs of the set of neurons}
-
-\item{\code{outputsTableRef}}{a table holding all instances of all the output types and their associated metadata}
-}}
-
+\seealso{
+\code{\link{lateralize_types}} \code{\link{cxRetyping}} \code{\link{redefine_types}}
+}

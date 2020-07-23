@@ -39,7 +39,7 @@ getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,retyping=identity) {
 #' @param bagROIs Which ROIs to include in the bag created (by default only the ROI one wants neurons in). If NULL returns all ROIs.
 #' @param minTypePercentage The minimum proportion of the instances of a type that should be innervating the ROI for
 #' it to be considered (0.5 by default)
-#' @param ... Parameters to be passed to \code{create_neuronBag}
+#' @param ... Parameters to be passed to \code{neuronBag}
 #' @details calls \code{getNeuronsInRoiTable} internally, with \code{minTypePercentage} divided by 2 if \code{lateralize} is TRUE.
 #' @seealso  \code{getNeuronsInRoiTable}
 #' @export
@@ -50,7 +50,7 @@ getTypesInRoiTable <- function(ROI,
                                ...){
   neuronTable <- getNeuronsInRoiTable(ROI,minTypePercentage=minTypePercentage,retyping=retyping) ## Remove types if less than
   ## 25% of the instances touch (l/R)
-  roiConnections <- create_neuronBag(neuronTable,slctROI=bagROIs,selfRef=TRUE,...)
+  roiConnections <- neuronBag(neuronTable,slctROI=bagROIs,selfRef=TRUE,...)
   roiConnections <- retyping(roiConnections)
   roiConnections
 }
@@ -261,12 +261,12 @@ combineRois.neuronBag <- function(connections,rois,newRoi,...){
   new_outputsR <- combineRois(connections$outputs_raw,rois,newRoi)
   new_inputs <- getTypeToTypeTable(new_inputsR,typesTable = connections$names,...)
   new_outputs <- getTypeToTypeTable(new_outputsR,typesTable = connections$outputsTableRef,...)
-  neuronBag(outputs = new_outputs,
-            inputs = new_inputs,
-            names = connections$names,
-            inputs_raw = new_inputsR,
-            outputs_raw = new_outputsR,
-            outputsTableRef = connections$outputsTableRef)
+  new_neuronBag(outputs = new_outputs,
+                inputs = new_inputs,
+                names = connections$names,
+                inputs_raw = new_inputsR,
+                outputs_raw = new_outputsR,
+                outputsTableRef = connections$outputsTableRef)
 
 }
 

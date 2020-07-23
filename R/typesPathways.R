@@ -8,7 +8,7 @@
 #' @param renaming a renaming function to use (by default \code{cxRetyping})
 #' @param stat the stat to consider (by default "weightRelative")
 #' @param excludeLoops Logical, whether to exclude paths containing duplicates (TRUE by default)
-#' @param ... : to be passed to create_neuronBag when building the path
+#' @param ... : to be passed to neuronBag when building the path
 #' @export
 get_type2typePath <- function(type.from,
                               type.to,
@@ -34,7 +34,7 @@ get_type2typePath <- function(type.from,
   upHalf <- seq(midP+1,max(n_steps),length.out = max(n_steps)-midP)
   
   for (n in downHalf){
-    bag <- create_neuronBag(type.from_loc,slctROI=ROIraw,by.roi=by.roi,omitInputs=TRUE,selfRef=TRUE,...)  
+    bag <- neuronBag(type.from_loc,slctROI=ROIraw,by.roi=by.roi,omitInputs=TRUE,selfRef=TRUE,...)  
     if (is.list(ROI)){
       bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r)})
       bag <- do.call(c,bag_list)
@@ -44,7 +44,7 @@ get_type2typePath <- function(type.from,
     res[[n]] <- bag$outputs
   }
   for (n in upHalf){
-    bag <- create_neuronBag(type.to_loc,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,selfRef=TRUE,...)   
+    bag <- neuronBag(type.to_loc,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,selfRef=TRUE,...)   
     if (is.list(ROI)){
       bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r)})
       bag <- do.call(c,bag_list)

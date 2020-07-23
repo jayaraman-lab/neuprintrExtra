@@ -22,7 +22,7 @@ getTypesInRoiTable(
 \item{minTypePercentage}{The minimum proportion of the instances of a type that should be innervating the ROI for
 it to be considered (0.5 by default)}
 
-\item{...}{Parameters to be passed to \code{create_neuronBag}}
+\item{...}{Parameters to be passed to \code{neuronBag}}
 }
 \description{
 Returns a neuronBag object of all the neurons forming significant connections in a ROI.

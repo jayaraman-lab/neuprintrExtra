@@ -103,13 +103,25 @@ clusterBag <- function(nBag,
 #'@export
 is.connectivityCluster <- function(x) inherits(x,"connectivityCluster")
 
+#' Plot a connectivityCluster object
+#' 
+#' @param connCl A \code{\link{connectivityCluster}} object
+#' @param order Optional ordering of the units (by default the HClust order)
+#' @param colorAxis Whether or not to color the axis labels per cluster (FALSE by default)
+#' @param axesPalette If \code{colorAxis} is TRUE, the palette to use
+#' @param theming A ggplot theme to use for the plot
+#' @param replaceIdWithNames In case of neuron to neuron clustering, whether or not to replace the bodyids by neuron names on the axis labels
+#' @param h To be passed to \code{\link{cutree}} if \code{colorAxis} is TRUE. Either \code{h} or \code{k} must be set in that case. 
+#' @param k To be passed to \code{\link{cutree}} if \code{colorAxis} is TRUE. Either \code{h} or \code{k} must be set in that case. 
 #' @export
 plotClusters <- function(connCl,
                          order=NULL,
                          colorAxis=FALSE,
-                         axesPalette=paletteer::paletteer_d("Polychrome::palette36"),
+                         axesPalette=paletteer::paletteer_d("Polychrome::palette36")[3:36],
                          theming=theme_minimal,
-                         replaceIdWithNames=TRUE){
+                         replaceIdWithNames=TRUE,
+                         h=NULL,
+                         k=NULL){
     ddM <- as.matrix(connCl$distance)
     
     if (is.null(order)){
@@ -118,23 +130,25 @@ plotClusters <- function(connCl,
       ddM <- ddM[order,order]
     }
     
-    if (replaceIdWithNames & connCl$unit=="neuron"){
-      if (is.null(connCl$inputsTable)){newNames <- connCl$outputsTable$name.from[match(rownames(ddM),connCl$outputsTable$from)]}else{
-        newNames <- connCl$inputsTable$name.to[match(rownames(ddM),connCl$outputsTable$to)]
-      }
-    }
     
     distDF <- reshape2::melt(ddM,as.is=TRUE) %>% mutate(cluster1=connCl$clusters[Var1],cluster2=connCl$clusters[Var2],Var1=factor(Var1,levels=rownames(ddM)),Var2=factor(Var2,levels=rownames(ddM)))
     if (colorAxis){
-      connCols <- axesPalette[connCl$clusters[rownames(ddM)[connCl$hc$order]]+2]
-      names(connCols) <- rownames(ddM)[connCl$hc$order]
+      clusters <- cutree(connCl$hc,h=h,k=k)
+      connCols <- axesPalette[clusters[rownames(ddM)]]
+      names(connCols) <- rownames(ddM)
     }
     
     p <- ggplot(distDF) + geom_tile(aes(x=Var1,y=Var2,fill=value)) + coord_fixed() +
       theming() + scale_fill_distiller(palette = "Greys",name = "Distance") +
-      theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))
+      theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))+xlab("")+ylab("")
     if (colorAxis){p <- p +
       theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5,colour = connCols),axis.text.y = element_text(colour = connCols))
+    }
+    if (replaceIdWithNames & connCl$unit=="neuron"){
+      if (is.null(connCl$inputsTable)){newNames <- connCl$outputsTable$name.from[match(rownames(ddM),connCl$outputsTable$from)]}else{
+        newNames <- connCl$inputsTable$name.to[match(rownames(ddM),connCl$inputsTable$to)]
+      }
+      p <- p + scale_x_discrete(labels=newNames)+scale_y_discrete(labels=newNames)
     }
     p
 } 

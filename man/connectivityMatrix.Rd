@@ -6,7 +6,7 @@
 \usage{
 connectivityMatrix(
   connObj,
-  slctROIs,
+  slctROIs = NULL,
   allToAll = FALSE,
   from = "name.from",
   to = "name.to",
@@ -17,7 +17,7 @@ connectivityMatrix(
 \arguments{
 \item{connObj}{: a connection table}
 
-\item{slctROIs}{: which ROIs to consider}
+\item{slctROIs}{: which ROIs to consider. If NULL (the default), all the ROIs present in the table are used (columns of the matrix are then appended with .roi for each ROI)}
 
 \item{allToAll}{: whether to build a square matrix or just a from -> to matrix}
 

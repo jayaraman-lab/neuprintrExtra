@@ -1,23 +1,24 @@
 #' Builds a connectivity matrix from a connection object
-#' @param connObj : a connection table
-#' @param slctROIs : which ROIs to consider
-#' @param allToAll : whether to build a square matrix or just a from -> to matrix
-#' @param from : which field to use as a "source" (default "name.from")
-#' @param to : which field to use as a "target" (default "name.to")
-#' @param value : which field to use to fill the matrix (default "weightRelative")
-#' @param ref : which channel will be used as the "reference" (to be the columns of the output). The
+#' @param connObj  a connection table
+#' @param slctROIs  which ROIs to consider. If NULL (the default), all the ROIs present in the table are used (columns of the matrix are then appended with .roi for each ROI)
+#' @param allToAll  whether to build a square matrix or just a from -> to matrix
+#' @param from  which field to use as a "source" (default "name.from")
+#' @param to  which field to use as a "target" (default "name.to")
+#' @param value  which field to use to fill the matrix (default "weightRelative")
+#' @param ref  which channel will be used as the "reference" (to be the columns of the output). The
 #' other channel gets .roi affixed to their names in case several ROIs are considered
 #'
 #' @export
 connectivityMatrix <- function(connObj,
-                                          slctROIs,
-                                          allToAll=FALSE,
-                                          from="name.from",
-                                          to="name.to",
-                                          value="weightRelative",
-                                          ref=c("inputs","outputs")){
+                               slctROIs=NULL,
+                               allToAll=FALSE,
+                               from="name.from",
+                               to="name.to",
+                               value="weightRelative",
+                               ref=c("inputs","outputs")){
 
   ref <- match.arg(ref)
+  if (is.null(slctROIs)){slctROIs <- unique(connObj$roi)}
   connObj <- filter(connObj,roi %in% slctROIs)
   if (any(is.na(c(connObj[[to]],connObj[[from]])))){
     warning("Some to/from entries are NA, using retype.na function.")

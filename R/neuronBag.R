@@ -1,14 +1,19 @@
-## Define an S3 class, neuronBag, to hold the connectivity information of a bunch of neurons
-
+#' neuronBag class
 #' neuronBag objects contain information about the connectivity of a bunch of neurons
-#' @field names : a table of metadata associated with the neurons in the bag -- with an extra column, 'databaseType'
+#' @field names a table of metadata associated with the neurons in the bag -- with an extra column, 'databaseType'
 #' which keeps the type name used in the database
-#' @field outputs : a type to type connectivity table of the outputs of the set of neurons
-#' @field inputs : a type to type connectivity table of the inputs of the set of neurons
-#' @field outputs_raw : a neuron to neuron connection table of the outputs of the set of neurons
-#' @field inputs_raw : a neuron to neuron connection table of the inputs of the set of neurons
-#' @field outputsTableRef : a table holding all instances of all the output types and their associated metadata
-neuronBag <- function(outputs,inputs,names,outputs_raw,inputs_raw,outputsTableRef){
+#' @field outputs a type to type connectivity table of the outputs of the set of neurons
+#' @field inputs a type to type connectivity table of the inputs of the set of neurons
+#' @field outputs_raw a neuron to neuron connection table of the outputs of the set of neurons
+#' @field inputs_raw a neuron to neuron connection table of the inputs of the set of neurons
+#' @field outputsTableRef a table holding all instances of all the output types and their associated metadata
+#' @details usually created with \code{create_neuronBag}
+neuronBag <- function(outputs,
+                      inputs,
+                      names,
+                      outputs_raw,
+                      inputs_raw,
+                      outputsTableRef){
   res <- list(outputs=outputs,
               inputs=inputs,
               names=names,

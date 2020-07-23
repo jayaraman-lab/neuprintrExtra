@@ -1,10 +1,12 @@
+## neuronBags !
 
+## Creator
 new_neuronBag <- function(outputs,
-                      inputs,
-                      names,
-                      outputs_raw,
-                      inputs_raw,
-                      outputsTableRef){
+                          inputs,
+                          names,
+                          outputs_raw,
+                          inputs_raw,
+                          outputsTableRef){
   res <- list(outputs=outputs,
               inputs=inputs,
               names=names,
@@ -15,13 +17,16 @@ new_neuronBag <- function(outputs,
   return(res)
 }
 
+## Validator
+validate_neuronBag <- function(nBag){}
+
 #' Test if x is a neuronBag
 #' @param x An object to be tested
 #' @return TRUE if x is a neuronBag
 #'@export
 is.neuronBag <- function(x) inherits(x,"neuronBag")
 
-#### Create neuronBags -------------------------------------------------------
+#### Helper -------------------------------------------------------
 
 create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,...){
   .Deprecated("neuronBag")
@@ -53,7 +58,7 @@ create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,ver
 #' }
 #' @details A \strong{neuronBag} carries information about input and output connectivity of a group of neurons,
 #'  at the neuron and type level, while keeping track of eventual type changes that occured. Particularly useful in combination 
-#'  with retyping functions. Methods exist for filtering (\code{filter}), concatenating (\code(c)) and all retyping utilities.
+#'  with retyping functions. Methods exist for filtering (\code{filter}), concatenating (\code{c}) and all retyping utilities.
 #' @seealso \code{\link{lateralize_types}}, \code{\link{cxRetyping}}, \code{\link{redefine_types}} for retyping a bag.  
 #' @export
 neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,...){
@@ -112,22 +117,12 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
 #' @export
 c.neuronBag <- function(...){
   full <- list(...)
-  out <- new_neuronBag(outputs = distinct(bind_rows(lapply(full,function(i){
-                     if (is.data.frame(i$outputs) && nrow(i$outputs)==0){return(NULL)}
-                     i$outputs}))),
-                   inputs = distinct(bind_rows(lapply(full,function(i){
-                     if (is.data.frame(i$inputs) && nrow(i$inputs)==0){return(NULL)}
-                     i$inputs}))),
-                   names = distinct(bind_rows(lapply(full,function(i) i$names))),
-                   outputs_raw = distinct(bind_rows(lapply(full,function(i){
-                     if (is.data.frame(i$outputs_raw) && nrow(i$outputs_raw)==0){return(NULL)}
-                     i$outputs_raw}))),
-                   inputs_raw = distinct(bind_rows(lapply(full,function(i){
-                     if (is.data.frame(i$inputs_raw) && nrow(i$inputs_raw)==0){return(NULL)}
-                     i$inputs_raw}))),
-                   outputsTableRef = distinct(bind_rows(lapply(full,function(i){
-                     if (is.data.frame(i$outputsTableRef) && nrow(i$outputsTableRef)==0){return(NULL)}
-                     i$outputsTableRef})))
+  out <- new_neuronBag(outputs = distinct(do.call(rbind,lapply(full,function(i){i$outputs}))),
+                   inputs = distinct(do.call(rbind,lapply(full,function(i){i$inputs}))),
+                   names = distinct(do.call(rbind,lapply(full,function(i) i$names))),
+                   outputs_raw = distinct(do.call(rbind,lapply(full,function(i){i$outputs_raw}))),
+                   inputs_raw = distinct(do.call(rbind,lapply(full,function(i){i$inputs_raw}))),
+                   outputsTableRef = distinct(do.call(rbind,lapply(full,function(i){i$outputsTableRef})))
   )
   return(out)
 }

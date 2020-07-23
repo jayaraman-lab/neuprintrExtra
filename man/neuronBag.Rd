@@ -50,10 +50,10 @@ which keeps the type name used in the database.}
 Builds a neuronBag object either from a vector of query strings or a metadata \code{data.frame}.
 }
 \details{
-\strong{neuronBag}s carry information about input and output connectivity of a group of neurons,
+A \strong{neuronBag} carries information about input and output connectivity of a group of neurons,
  at the neuron and type level, while keeping track of eventual type changes that occured. Particularly useful in combination 
- with retyping functions. Methods exist for filtering (\code{filter}), concatenating (\code(c)) and all retyping utilities.
+ with retyping functions. Methods exist for filtering (\code{filter}), concatenating (\code{c}) and all retyping utilities.
 }
 \seealso{
-\code{\link{lateralize_types}} \code{\link{cxRetyping}} \code{\link{redefine_types}}
+\code{\link{lateralize_types}}, \code{\link{cxRetyping}}, \code{\link{redefine_types}} for retyping a bag.
 }

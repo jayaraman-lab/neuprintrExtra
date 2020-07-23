@@ -2,7 +2,7 @@
 % Please edit documentation in R/connectionTables.R
 \name{processConnectionTable}
 \alias{processConnectionTable}
-\title{Internal function, exposed only for fringy cases like comparing different versions of the dataset.}
+\title{Internal function, exposed only for fringe cases like comparing different versions of the dataset.}
 \usage{
 processConnectionTable(
   myConnections,
@@ -21,5 +21,5 @@ processConnectionTable(
 )
 }
 \description{
-Internal function, exposed only for fringy cases like comparing different versions of the dataset.
+Internal function, exposed only for fringe cases like comparing different versions of the dataset.
 }

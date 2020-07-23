@@ -7,6 +7,12 @@ new_neuronBag <- function(outputs,
                           outputs_raw,
                           inputs_raw,
                           outputsTableRef){
+  stopifnot(is.data.frame(outputs))
+  stopifnot(is.data.frame(inputs))
+  stopifnot(is.data.frame(names))
+  stopifnot(is.data.frame(outputs_raw))
+  stopifnot(is.data.frame(inputs_raw))
+  
   res <- list(outputs=outputs,
               inputs=inputs,
               names=names,
@@ -18,7 +24,21 @@ new_neuronBag <- function(outputs,
 }
 
 ## Validator
-validate_neuronBag <- function(nBag){}
+validate_neuronBag <- function(nBag){
+  ## Check essential column names
+  nameNames <- c("bodyid","upstream","downstream","name","type","databaseType")
+  typeTableNames <- c( "type.from","type.to","databaseType.to","databaseType.from","outputContributionTotal","previous.type.to","previous.type.from","outputContribution","supertype.to1","supertype.from1","supertype.to2",
+                       "supertype.from2","supertype.to3","supertype.from3","n_targets","n_type","absoluteWeight","weight","weightRelative","weightRelativeTotal","varWeight","sdWeight","tt")   
+  connTableNames <- c("weight","from","to","name.from","type.from","type.to","databaseType.to","databaseType.from","outputContributionTotal","previous.type.to","previous.type.from","outputContribution","supertype.to1","supertype.from1","supertype.to2",
+                      "supertype.from2","supertype.to3","supertype.from3","weightRelative","weightRelativeTotal")
+  stopifnot(all(nameNames %in% names(nBag$names)))
+  stopifnot(all(nameNames %in% names(nBag$outputsTableRef)))
+  stopifnot(all(typeTableNames %in% names(nBag$inputs)))
+  stopifnot(all(typeTableNames %in% names(nBag$outputs)))
+  stopifnot(all(connTableNames %in% names(nBag$inputs_raw)))
+  stopifnot(all(connTableNames %in% names(nBag$outputs_raw)))
+  nBag
+}
 
 #' Test if x is a neuronBag
 #' @param x An object to be tested
@@ -102,19 +122,18 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
   }
   inputsR <- retype.na(inputsR)
 
-  return(new_neuronBag(outputs = OUTByTypes,
-                   inputs = INByTypes,
-                   names = typeQuery,
-                   outputs_raw = outputsR,
-                   inputs_raw = inputsR,
-                   outputsTableRef = rbind(outputsTableRef,unknowns)
+  validate_neuronBag(new_neuronBag(outputs = OUTByTypes,
+                                   inputs = INByTypes,
+                                   names = typeQuery,
+                                   outputs_raw = outputsR,
+                                   inputs_raw = inputsR,
+                                   outputsTableRef = rbind(outputsTableRef,unknowns)
   ))
 }
 
 #### Methods -------------------------------------------------
 
 ## Concatenate neuronBags
-#' @export
 c.neuronBag <- function(...){
   full <- list(...)
   out <- new_neuronBag(outputs = distinct(do.call(rbind,lapply(full,function(i){i$outputs}))),
@@ -124,7 +143,7 @@ c.neuronBag <- function(...){
                    inputs_raw = distinct(do.call(rbind,lapply(full,function(i){i$inputs_raw}))),
                    outputsTableRef = distinct(do.call(rbind,lapply(full,function(i){i$outputsTableRef})))
   )
-  return(out)
+  validate_neuronBag(out)
 }
 
 
@@ -134,7 +153,6 @@ c.neuronBag <- function(...){
 #' @param filterPartners : Whether to apply the filter to input/output neurons to
 #' @param ... to be passed to a filtering function applied to the \code{names} field
 #'
-#' @export
 filter.neuronBag <- function(.nbag,filterPartners=FALSE,...){
 
   .nbag$names <- filter(.nbag$names,...)
@@ -154,7 +172,7 @@ filter.neuronBag <- function(.nbag,filterPartners=FALSE,...){
   }
 
   .nbag$outputsTableRef <- filter(.nbag$outputsTableRef,type %in% .nbag$outputs$type.to)
-  .nbag
+  validate_neuronBag(.nbag)
 }
 
 #' Convenience to filter a neuronBag to just connections between the central neurons of a bag

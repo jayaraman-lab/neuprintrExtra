@@ -73,35 +73,29 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
     if (verbose) message("Calculate raw outputs")
     outputsR <- getConnectionTable(typeQuery,synapseType = "POST",by.roi=by.roi,verbose=verbose,...)
   }else{
-    outputsR <- NULL}
+    outputsR <- getConnectionTable(character(),"POST",by.roi=by.roi,verbose=verbose,...)}
   
   if (!omitInputs){
     if (verbose) message("Calculate raw inputs")
     inputsR <- getConnectionTable(typeQuery,synapseType = "PRE",by.roi=by.roi,verbose=verbose,...)
   }else{
-    inputsR <- NULL}
+    inputsR <- getConnectionTable(character(),"PRE",by.roi=by.roi,verbose=verbose,...)}
   
 
   if (verbose) message("Calculate type to type outputs")
-  if (length(outputsR)==0){OUTByTypes <- NULL
-    outputsTableRef <- NULL
-    unknowns <- NULL
-  }else{
-    OUTByTypes <- getTypeToTypeTable(outputsR)
-    outputsR <- retype.na(outputsR)
-    outputsTableRef <- getTypesTable(unique(outputsR$type.to))
-    unknowns <- retype.na_meta(neuprint_get_meta(unique(outputsR$to[!(outputsR$to %in% outputsTableRef$bodyid)])) %>% mutate(databaseType=NA))
-  }
-
+  
+  OUTByTypes <- getTypeToTypeTable(outputsR)
+  outputsR <- retype.na(outputsR)
+  outputsTableRef <- getTypesTable(unique(outputsR$type.to))
+  unknowns <- retype.na_meta(neuprint_get_meta(unique(outputsR$to[!(outputsR$to %in% outputsTableRef$bodyid)])) %>% mutate(databaseType=NA))
+  
   if (verbose) message("Calculate type to type inputs")
-  if (omitInputs){INByTypes <- NULL} else {
-    if(nrow(inputsR)==0){INByTypes <- NULL}else{
-    if (selfRef){
-      INByTypes <- getTypeToTypeTable(inputsR,typesTable = typeQuery)
-    }else{
-      INByTypes <- getTypeToTypeTable(inputsR)
-    }
-    inputsR <- retype.na(inputsR)}}
+  if (selfRef){
+    INByTypes <- getTypeToTypeTable(inputsR,typesTable = typeQuery)
+  }else{
+    INByTypes <- getTypeToTypeTable(inputsR)
+  }
+  inputsR <- retype.na(inputsR)
 
   return(new_neuronBag(outputs = OUTByTypes,
                    inputs = INByTypes,

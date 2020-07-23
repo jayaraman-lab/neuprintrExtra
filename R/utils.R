@@ -5,10 +5,10 @@
 #' @return A data frame of instances of those types, including a databaseType column (used internally by other functions)
 #' @export
 getTypesTable <- function(types){
-  typesTable <- bind_rows(lapply(types,function(t) neuprint_search(t,field="type",fixed=TRUE,exact=TRUE)))
-
-  if (length(typesTable)>0){typesTable <- typesTable %>%
-    mutate(databaseType = type)}
+  typesTable <- neuprint_get_meta(1)
+  typesTable <- rbind(typesTable,do.call(rbind,lapply(types,function(t) neuprint_search(t,field="type",fixed=TRUE,exact=TRUE))))
+  typesTable <- typesTable %>%
+    mutate(databaseType = type)
   return(typesTable)
 }
 
@@ -22,4 +22,10 @@ getRoiInfo <- function(bodyids,...){
   roiInfo <-  tidyr::pivot_longer(roiInfo,cols=-bodyid,names_to=c("roi","field"),names_sep="\\.",values_to="count")
   roiInfo <- tidyr::pivot_wider(roiInfo,names_from = "field",values_from="count")
   roiInfo
+}
+
+empty_connTable <- function(has.roi = FALSE){
+  res <- data.frame(bodyid=numeric(),partner=numeric(),prepost=integer(),weight=integer())
+  if (has.roi){res <- mutate(res,roi=character(),ROIweight=integer())}
+  res
 }

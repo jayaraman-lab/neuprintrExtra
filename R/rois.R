@@ -252,8 +252,6 @@ combineRois.data.frame <- function(connections,rois,newRoi){
   newRegionTable
 }
 
-#' @export 
-combineRois.NULL <- function(connections,rois,newRoi){return(NULL)}
 
 #' @export
 combineRois.neuronBag <- function(connections,rois,newRoi,...){

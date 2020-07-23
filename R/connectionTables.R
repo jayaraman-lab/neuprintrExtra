@@ -29,19 +29,19 @@ getConnectionTable.default = function(bodyIDs, synapseType, slctROI=NULL,by.roi=
 #' @export
 getConnectionTable.data.frame <- function(bodyIDs,synapseType, slctROI=NULL,by.roi=FALSE,synThresh=3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,computeKnownRatio=FALSE,...){
   refMeta <- bodyIDs
-  bodyIDs <- neuprint_ids(bodyIDs$bodyid)
+  bodyIDs <- neuprint_ids(bodyIDs$bodyid,mustWork = FALSE)
 
   if (verbose) message("Pull connections")
-  myConnections_raw <- neuprint_connection_table(bodyIDs, synapseType, slctROI,by.roi=by.roi,chunk=chunk_connections,...)
-
+  if (length(bodyIDs)==0){myConnections_raw <- empty_connTable(by.roi | !(is.null(slctROI)))}else{
+    myConnections_raw <- neuprint_connection_table(bodyIDs, synapseType, slctROI,by.roi=by.roi,chunk=chunk_connections,...)
+  }
+  
   if (by.roi | !is.null(slctROI)){
     myConnections_raw <- myConnections_raw %>% tidyr::drop_na(ROIweight)
     myConnections <- myConnections_raw %>% filter(ROIweight>synThresh)
   }else{
     myConnections <- myConnections_raw %>% filter(weight>synThresh)
   }
-
-  if (nrow(myConnections)==0){return(NULL)}
 
   if (verbose) message("Pull metadata")
   partnerMeta <- neuprint_get_meta(myConnections$partner,chunk=chunk_meta,...)
@@ -58,7 +58,7 @@ getConnectionTable.data.frame <- function(bodyIDs,synapseType, slctROI=NULL,by.r
   processConnectionTable(myConnections,myConnections_raw,refMeta,partnerMeta,refMetaOrig,synapseType,by.roi,slctROI,verbose,chunk_meta,chunk_connections,computeKnownRatio,...)
 }
 
-#' Internal function, exposed only for fringy cases like comparing different versions of the dataset.
+#' Internal function, exposed only for fringe cases like comparing different versions of the dataset.
 #' @export
 processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partnerMeta,refMetaOrig,synapseType,by.roi,slctROI,verbose,chunk_meta,chunk_connections,computeKnownRatio,...){
 
@@ -263,7 +263,6 @@ getTypeToTypeTable <- function(connectionTable,
                                pThresh = 0.05,
                                typesTable = NULL,
                                oldTable = NULL){
-  if (is.null(connectionTable) | length(connectionTable)==0){return(NULL)}
   ## Counting instances for each post type
   if (is.null(typesTable) & any(connectionTable$type.to != connectionTable$databaseType.to,na.rm=T))
   {

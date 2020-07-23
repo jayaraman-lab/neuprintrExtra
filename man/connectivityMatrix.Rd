@@ -15,19 +15,19 @@ connectivityMatrix(
 )
 }
 \arguments{
-\item{connObj}{: a connection table}
+\item{connObj}{a connection table}
 
-\item{slctROIs}{: which ROIs to consider. If NULL (the default), all the ROIs present in the table are used (columns of the matrix are then appended with .roi for each ROI)}
+\item{slctROIs}{which ROIs to consider. If NULL (the default), all the ROIs present in the table are used (columns of the matrix are then appended with .roi for each ROI)}
 
-\item{allToAll}{: whether to build a square matrix or just a from -> to matrix}
+\item{allToAll}{whether to build a square matrix or just a from -> to matrix}
 
-\item{from}{: which field to use as a "source" (default "name.from")}
+\item{from}{which field to use as a "source" (default "name.from")}
 
-\item{to}{: which field to use as a "target" (default "name.to")}
+\item{to}{which field to use as a "target" (default "name.to")}
 
-\item{value}{: which field to use to fill the matrix (default "weightRelative")}
+\item{value}{which field to use to fill the matrix (default "weightRelative")}
 
-\item{ref}{: which channel will be used as the "reference" (to be the columns of the output). The
+\item{ref}{which channel will be used as the "reference" (to be the columns of the output). The
 other channel gets .roi affixed to their names in case several ROIs are considered}
 }
 \description{

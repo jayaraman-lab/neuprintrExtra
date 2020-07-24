@@ -94,6 +94,7 @@ neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,
 #' @export
 neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,...){
  
+  if(!("databaseType" %in% names(typeQuery))){typeQuery <- mutate(typeQuery,databaseType=type)}
   if (!omitOutputs){
     if (verbose) message("Calculate raw outputs")
     outputsR <- getConnectionTable(typeQuery,synapseType = "POST",by.roi=by.roi,verbose=verbose,...)

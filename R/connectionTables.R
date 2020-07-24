@@ -378,11 +378,11 @@ getTypeToTypeTable <- function(connectionTable,
     sTable <- sTable%>% filter(pVal < pThresh | (outputContribution > majorOutputThreshold & weight > singleNeuronThresholdN) |
                                  (paste0(previous.type.to,previous.type.from,roi) %in% paste0(oldTable$type.to,oldTable$type.from,oldTable$roi))) %>%
       select(-pVal)
-    sTable <- bind_rows(sTable,connectionTableOld)
+    sTable <- rbind(sTable,connectionTableOld)
   }
 
 
-  return(bind_rows(sTable,loners))
+  return(rbind(sTable,loners))
 
 }
 

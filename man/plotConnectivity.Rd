@@ -15,7 +15,8 @@ plotConnectivity(
   cmax = NULL,
   replaceIds = TRUE,
   orderIn = NULL,
-  orderOut = NULL
+  orderOut = NULL,
+  showTable = "inputs"
 )
 }
 \arguments{
@@ -35,13 +36,12 @@ plotConnectivity(
 
 \item{replaceIds}{When plotting neuron to neuron connections: if TRUE (and connObj is either a table or a connectivityCluster), replace the bodyids with their corresponding name. For matrices also accepts a vector of names}
 
-\item{orderIn}{Optional ordering of the inputs (ignored and replaced by the clustering order if connObj is a connectivityCluster). Can be a logical if connObj is a connectivityCluster clustered with both inputs and outputs (see Details)}
+\item{orderIn}{Optional ordering of the inputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).}
 
 \item{orderOut}{Optional ordering of the outputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).}
+
+\item{showTable}{When both inputs and outputs have been used for a clustering, which connectivity table to show.}
 }
 \description{
 Plot a connectivity matrix
-}
-\details{
-When both inputs and outputs have been used for a clustering, either orderIn or orderOut must be set to TRUE to chose which connectivity table to show.
 }

@@ -93,9 +93,9 @@ haneschPlot <- function(roiTable,
 #'@param theme A theme to use
 #'@param cmax Maximum fill value for the color scale
 #'@param replaceIds When plotting neuron to neuron connections: if TRUE (and connObj is either a table or a connectivityCluster), replace the bodyids with their corresponding name. For matrices also accepts a vector of names
-#'@param orderIn Optional ordering of the inputs (ignored and replaced by the clustering order if connObj is a connectivityCluster). Can be a logical if connObj is a connectivityCluster clustered with both inputs and outputs (see Details)
+#'@param orderIn Optional ordering of the inputs (ignored and replaced by the clustering order if connObj is a connectivityCluster). 
 #'@param orderOut Optional ordering of the outputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).
-#'@details When both inputs and outputs have been used for a clustering, either orderIn or orderOut must be set to TRUE to chose which connectivity table to show.
+#'@param showTable When both inputs and outputs have been used for a clustering, which connectivity table to show.
 #'@export
 plotConnectivity <- function(connObj,
                              slctROIs=NULL,
@@ -106,7 +106,8 @@ plotConnectivity <- function(connObj,
                              cmax=NULL,
                              replaceIds=TRUE,
                              orderIn=NULL,
-                             orderOut=NULL){
+                             orderOut=NULL,
+                             showTable="inputs"){
   UseMethod("plotConnectivity")
 }
 
@@ -120,7 +121,8 @@ plotConnectivity.data.frame <- function(connObj,
                                         cmax=NULL,
                                         replaceIds=TRUE,
                                         orderIn=NULL,
-                                        orderOut=NULL){
+                                        orderOut=NULL,
+                                        showTable="inputs"){
   xaxis <- match.arg(xaxis)
   grouping <-match.arg(grouping)
   if (grouping=="neuron") {grouping <- ""}else{
@@ -146,7 +148,8 @@ plotConnectivity.matrix <- function(connObj,
                                     cmax=NULL,
                                     replaceIds=NULL,
                                     orderIn=NULL,
-                                    orderOut=NULL){
+                                    orderOut=NULL,
+                                    showTable="inputs"){
   xaxis <- match.arg(xaxis)
   if(is.null(cmax)){cmax <- max(connObj)}
   connDf <- conn_mat2df(connObj,orderIn=orderIn,orderOut=orderOut)
@@ -182,21 +185,21 @@ plotConnectivity.connectivityCluster <- function(connObj,
                                                  theme=theme_minimal(),
                                                  cmax=NULL,
                                                  replaceIds=TRUE,
-                                                 orderIn=FALSE,
-                                                 orderOut=FALSE){
-  xaxis=match.arg(xaxis)
+                                                 orderIn=NULL,
+                                                 orderOut=NULL,
+                                                 showTable="inputs"){
+  showTable <- match.arg(showTable)
+  xaxis <- match.arg(xaxis)
   grouping <- connObj$grouping
-  if(is.null(connObj$inputsTable)){orderIn <- TRUE
-                                   orderOut <- FALSE}
-  if(is.null(connObj$outputsTable)){orderOut <- TRUE
-                                    orderIn <- FALSE}
-  stopifnot(any(c(orderIn,orderOut)))
-  if(orderOut){connTa <- connObj$inputsTable}else{connTa <- connObj$outputsTable}
   
-  if (orderOut){orderOut <- connObj$hc$order
-                orderIn <- NULL}else{
+  if(is.null(connObj$inputsTable)){showTable <- "outputs"}
+  if(is.null(connObj$outputsTable)){showTable <- "inputs"}
+  
+  if(showTable=="inputs"){connTa <- connObj$inputsTable}else{connTa <- connObj$outputsTable}
+  
+  if(showTable=="inputs"){orderOut <- connObj$hc$order
+                }else{
     orderIn <- connObj$hc$order
-    orderOut <- NULL
   }
   
   plotConnectivity(connTa,grouping=grouping,replaceIds=replaceIds,orderIn=orderIn,orderOut=orderOut,xaxis=xaxis,cmax=cmax,theme=theme)

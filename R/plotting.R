@@ -150,11 +150,23 @@ plotConnectivity.matrix <- function(connObj,
   xaxis <- match.arg(xaxis)
   if(is.null(cmax)){cmax <- max(connObj)}
   connDf <- conn_mat2df(connObj,orderIn=orderIn,orderOut=orderOut)
-  xVar <- ifelse(xaxis=="inputs","Inputs","Outputs")
-  yVar <- ifelse(xaxis=="inputs","Outputs","Inputs")
+  if (is.null(orderIn)){orderIn=1:length(dimnames(connObj)$Inputs)}
+  if (is.null(orderOut)){orderOut=1:length(dimnames(connObj)$Outputs)}
+  if (xaxis=="inputs"){
+    xVar <- "Inputs"
+    yVar <- "Outputs"
+    orderX <- orderIn
+    orderY <- orderOut
+  }else{
+    xVar <- "Outputs"
+    yVar <- "Inputs"
+    orderX <- orderOut
+    orderY <- orderIn
+  }
   p <- ggplot(connDf,aes(x=!!sym(xVar),y=!!sym(yVar),fill=value)) + geom_tile()
   if (!is.null(replaceIds)){
-    p <- p + scale_x_discrete(labels=replaceIds[[ifelse(xaxis=="inputs","from","to")]])+scale_y_discrete(labels=replaceIds[[ifelse(xaxis=="inputs","to","from")]])
+    p <- p + scale_x_discrete(labels=replaceIds[[ifelse(xaxis=="inputs","from","to")]][orderX])+
+      scale_y_discrete(labels=replaceIds[[ifelse(xaxis=="inputs","to","from")]][orderY])
   }
   p +
     scale_fill_gradient2(low="thistle", mid="blueviolet", high="black", 

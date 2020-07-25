@@ -2,12 +2,22 @@
 % Please edit documentation in R/connectivityCluster.R
 \name{connectivityCluster}
 \alias{connectivityCluster}
+\alias{clusterBag}
 \title{Clustering neurons based on connectivity tables}
 \usage{
 connectivityCluster(
   inputsTable = NULL,
   outputsTable = NULL,
   ROIs = NULL,
+  unit = c("type", "neuron", "supertype1", "supertype2", "supertype3", "databaseType"),
+  distance = cos_dist,
+  knownStats = FALSE
+)
+
+clusterBag(
+  nBag,
+  ROIs = NULL,
+  clusterOn = c("inputs", "outputs", "both"),
   unit = c("type", "neuron", "supertype1", "supertype2", "supertype3", "databaseType"),
   distance = cos_dist,
   knownStats = FALSE
@@ -25,6 +35,10 @@ connectivityCluster(
 \item{distance}{Which distance measure to use (defaults to \code{\link{cos_dist}})}
 
 \item{knownStats}{Whether or not to use \code{knownOutputContribution} and \code{knownWeightRelative} instead of the standard measures}
+
+\item{nBag}{a neuron bag}
+
+\item{clusterOn}{whether to cluster on the input vector, the output vector, or both}
 }
 \value{
 an object of class \code{connectivityCluster}. The object is a list with components:
@@ -41,10 +55,16 @@ Clustering neurons based on connectivity tables
 }
 \details{
 \itemize{
- \item If both \code{inputsTable} and \code{outputsTable} are present, the clustering will be run on the combined connectivity vector
+ \item If both \code{inputsTable} and \code{outputsTable} are present, the clustering will be run on the combined connectivity vector. This is
+ controlled by the \code{clusterOn} argument in \code{clusterBag}.
  \item \code{weightRelative} is used for working on input vectors, and \code{outputContribution} to work on output vectors
  }
 }
+\section{Functions}{
+\itemize{
+\item \code{clusterBag}: Cluster neurons in a bag
+}}
+
 \seealso{
 \code{\link{clusterBag}}
 }

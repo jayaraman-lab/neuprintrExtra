@@ -28,7 +28,7 @@ connectivityMatrix <- function(connObj,
   connObj[[to]] <- as.character(connObj[[to]])
   connObj[[from]] <- as.character(connObj[[from]])
   if (nrow(distinct_at(connObj,c(from,to,"roi"))) != nrow(connObj)){
-    stop("Multiple entries for some of the from/to combinations. You need to either
+    stop("Multiple entries for some of the from/to/roi combinations. You need to either
          use different from/to or summarize your data.frame beforehand.")}
 
   if (allToAll){
@@ -60,7 +60,6 @@ connectivityMatrix <- function(connObj,
       }
     }else{
       outs <- unique(paste(connObj[[to]],connObj[["roi"]],sep="."))
-
       outMat <- matrix(0,nrow=length(ins),ncol=length(outs),dimnames=list("Inputs"=ins,"Outputs"=outs))
 
       for (l in 1:nrow(connObj)){
@@ -75,8 +74,6 @@ connectivityMatrix <- function(connObj,
     }
     if (ref=="outputs") outMat <-  t(outMat)
   }
-
-
   outMat
 }
 
@@ -123,3 +120,15 @@ bin_dist <- function(mat,threshold=0.01){
   dist(mat>threshold,method="binary")
 }
 
+#' Turn a connectivity matrix back into a data.frame
+conn_mat2df <- function(connMat,
+                        orderIn=NULL,
+                        orderOut=NULL,
+                        thresh=0){
+  if (is.null(orderIn)){orderIn=1:length(dimnames(connMat)$Inputs)}
+  if (is.null(orderOut)){orderOut=1:length(dimnames(connMat)$Outputs)}
+  connMat[connMat<=thresh] <- NA
+  reshape2::melt(connMat,na.rm=TRUE) %>% 
+    mutate(Inputs=factor(Inputs,levels=dimnames(connMat)$Inputs[orderIn]),
+           Outputs=factor(Outputs,levels=dimnames(connMat)$Outputs[orderOut]))
+}

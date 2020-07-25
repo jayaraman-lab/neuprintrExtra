@@ -110,6 +110,7 @@ plotConnectivity <- function(connObj,
   UseMethod("plotConnectivity")
 }
 
+#'@export
 plotConnectivity.data.frame <- function(connObj,
                                         slctROIs=NULL,
                                         grouping=c("type","neuron","supertype1","supertype2","supertype3","databaseType","cluster"),
@@ -135,6 +136,7 @@ plotConnectivity.data.frame <- function(connObj,
   plotConnectivity(connMat,grouping=grouping,replaceIds=replacement,xaxis=xaxis,cmax=cmax,theme=theme)
 }
 
+#'@export
 plotConnectivity.matrix <- function(connObj,
                                     slctROIs=NULL,
                                     grouping=c("type","neuron","supertype1","supertype2","supertype3","databaseType"),
@@ -159,6 +161,7 @@ plotConnectivity.matrix <- function(connObj,
                          midpoint =0.5*cmax, limits=c(0,cmax))  + theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))+coord_fixed()
 }
 
+#'@export
 plotConnectivity.connectivityCluster <- function(connObj,
                                                  slctROIs=NULL,
                                                  grouping=c("type","neuron","supertype1","supertype2","supertype3","databaseType"),

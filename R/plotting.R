@@ -133,7 +133,7 @@ plotConnectivity.data.frame <- function(connObj,
   if(grouping=="" & replaceIds){
     replacement <- list("from"=connObj$name.from[match(dimnames(connMat)$Inputs,connObj$from)],"to"=connObj$name.to[match(dimnames(connMat)$Outputs,connObj$to)])
   }
-  plotConnectivity(connMat,grouping=grouping,replaceIds=replacement,xaxis=xaxis,cmax=cmax,theme=theme)
+  plotConnectivity(connMat,grouping=grouping,replaceIds=replacement,xaxis=xaxis,cmax=cmax,theme=theme,orderIn=orderIn,orderOut=orderOut)
 }
 
 #'@export
@@ -149,7 +149,7 @@ plotConnectivity.matrix <- function(connObj,
                                     orderOut=NULL){
   xaxis <- match.arg(xaxis)
   if(is.null(cmax)){cmax <- max(connObj)}
-  connDf <- conn_mat2df(connObj)
+  connDf <- conn_mat2df(connObj,orderIn=orderIn,orderOut=orderOut)
   xVar <- ifelse(xaxis=="inputs","Inputs","Outputs")
   yVar <- ifelse(xaxis=="inputs","Outputs","Inputs")
   p <- ggplot(connDf,aes(x=!!sym(xVar),y=!!sym(yVar),fill=value)) + geom_tile()
@@ -181,9 +181,10 @@ plotConnectivity.connectivityCluster <- function(connObj,
   stopifnot(any(c(orderIn,orderOut)))
   if(orderOut){connTa <- connObj$inputsTable}else{connTa <- connObj$outputsTable}
   
-  #connMat <- connectivityMatrix(connTa,slctROIs=slctROIs,allToAll=FALSE,from=from,to=to,value=value,xaxis="inputs")
-  if (orderOut){orderOut <- connObj$hc$order}else{
+  if (orderOut){orderOut <- connObj$hc$order
+                orderIn <- NULL}else{
     orderIn <- connObj$hc$order
+    orderOut <- NULL
   }
   
   plotConnectivity(connTa,grouping=grouping,replaceIds=replaceIds,orderIn=orderIn,orderOut=orderOut,xaxis=xaxis,cmax=cmax,theme=theme)

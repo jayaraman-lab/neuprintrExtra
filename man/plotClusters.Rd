@@ -6,10 +6,11 @@
 \usage{
 plotClusters(
   connCl,
-  order = NULL,
+  orderX = connCl$hc$order,
+  orderY = connCl$hc$order,
   colorAxis = FALSE,
   axesPalette = paletteer::paletteer_d("Polychrome::palette36")[3:36],
-  theming = theme_minimal,
+  theme = theme_minimal(),
   replaceIdWithNames = TRUE,
   h = NULL,
   k = NULL
@@ -18,13 +19,15 @@ plotClusters(
 \arguments{
 \item{connCl}{A \code{\link{connectivityCluster}} object}
 
-\item{order}{Optional ordering of the units (by default the HClust order)}
+\item{orderX}{Optional ordering of the groupings (by default the HClust order)}
+
+\item{orderY}{Optional ordering of the groupings (by default the HClust order)}
 
 \item{colorAxis}{Whether or not to color the axis labels per cluster (FALSE by default)}
 
 \item{axesPalette}{If \code{colorAxis} is TRUE, the palette to use}
 
-\item{theming}{A ggplot theme to use for the plot}
+\item{theme}{A ggplot theme to use for the plot}
 
 \item{replaceIdWithNames}{In case of neuron to neuron clustering, whether or not to replace the bodyids by neuron names on the axis labels}
 

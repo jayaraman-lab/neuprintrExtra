@@ -9,7 +9,8 @@ connectivityCluster(
   inputsTable = NULL,
   outputsTable = NULL,
   ROIs = NULL,
-  unit = c("type", "neuron", "supertype1", "supertype2", "supertype3", "databaseType"),
+  grouping = c("type", "neuron", "supertype1", "supertype2", "supertype3",
+    "databaseType"),
   distance = cos_dist,
   knownStats = FALSE
 )
@@ -18,7 +19,8 @@ clusterBag(
   nBag,
   ROIs = NULL,
   clusterOn = c("inputs", "outputs", "both"),
-  unit = c("type", "neuron", "supertype1", "supertype2", "supertype3", "databaseType"),
+  grouping = c("type", "neuron", "supertype1", "supertype2", "supertype3",
+    "databaseType"),
   distance = cos_dist,
   knownStats = FALSE
 )
@@ -30,7 +32,7 @@ clusterBag(
 
 \item{ROIs}{Which ROIs to consider. If NULL (the default) uses all the ROI present}
 
-\item{unit}{Unit on which the clustering is to be made (neuron or type, or various supertypes)}
+\item{grouping}{grouping on which the clustering is to be made (neuron or type, or various supertypes)}
 
 \item{distance}{Which distance measure to use (defaults to \code{\link{cos_dist}})}
 
@@ -47,7 +49,7 @@ an object of class \code{connectivityCluster}. The object is a list with compone
   \item{outputsTable}{The table of output connections to the neurons being clustered (can be NULL if clustered on inputs)}
   \item{distance}{object containing a dissimilarity measure between the neurons being considered}
   \item{hc}{\code{\link{hclust}} object, result of clustering}
-  \item{unit}{Unit on which the clustering was made (neuron or type, or various supertypes)}
+  \item{grouping}{grouping on which the clustering was made (neuron or type, or various supertypes)}
 }
 }
 \description{

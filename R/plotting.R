@@ -81,3 +81,107 @@ haneschPlot <- function(roiTable,
   hanesch + theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))
 
 }
+
+
+#'Plot a connectivity matrix
+#'
+#'@param connObj A connectivity object. Either a connectivity table, a matrix with \code{dimnames} Inputs and Outputs(as returned by \code{\link{connectivityMatrix}}) or a \code{\link{connectivityCluster}} object.
+#'@param slctROIs For connectivity tables, you can specify a selection of ROIs
+#'@param grouping Which variable to use. Will be ignored when \code{connObj} is a \code{\link{connectivityCluster}} (the decision has already been made while clustering)
+#'@param value Which variable to use as a plotting value
+#'@param xaxis Should inputs or outputs be on the x axis (will match the value to "inputs" or "outputs")
+#'@param theme A theme to use
+#'@param cmax Maximum fill value for the color scale
+#'@param replaceIds When plotting neuron to neuron connections: if TRUE (and connObj is either a table or a connectivityCluster), replace the bodyids with their corresponding name. For matrices also accepts a vector of names
+#'@param orderIn Optional ordering of the inputs (ignored and replaced by the clustering order if connObj is a connectivityCluster). Can be a logical if connObj is a connectivityCluster clustered with both inputs and outputs (see Details)
+#'@param orderOut Optional ordering of the outputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).
+#'@details When both inputs and outputs have been used for a clustering, either orderIn or orderOut must be set to TRUE to chose which connectivity table to show.
+#'@export
+plotConnectivity <- function(connObj,
+                             slctROIs=NULL,
+                             grouping=c("type","neuron","supertype1","supertype2","supertype3","databaseType"),
+                             value="weightRelative",
+                             xaxis=c("inputs","outputs"),
+                             theme=theme_minimal(),
+                             cmax=NULL,
+                             replaceIds=TRUE,
+                             orderIn=NULL,
+                             orderOut=NULL){
+  UseMethod("plotConnectivity")
+}
+
+plotConnectivity.data.frame <- function(connObj,
+                                        slctROIs=NULL,
+                                        grouping=c("type","neuron","supertype1","supertype2","supertype3","databaseType","cluster"),
+                                        value="weightRelative",
+                                        xaxis=c("inputs","outputs"),
+                                        theme=theme_minimal(),
+                                        cmax=NULL,
+                                        replaceIds=TRUE,
+                                        orderIn=NULL,
+                                        orderOut=NULL){
+  xaxis <- match.arg(xaxis)
+  grouping <-match.arg(grouping)
+  if (grouping=="neuron") {grouping <- ""}else{
+    grouping=paste0(grouping,".")}
+  from <- paste0(grouping,"from")
+  to <- paste0(grouping,"to")
+  
+  connMat <- connectivityMatrix(connObj,slctROIs=slctROIs,from=from,to=to,value=value,ref=xaxis)
+  replacement <- NULL
+  if(grouping=="" & replaceIds){
+    replacement <- list("from"=connObj$name.from[match(dimnames(connMat)$Inputs,connObj$from)],"to"=connObj$name.to[match(dimnames(connMat)$Outputs,connObj$to)])
+  }
+  plotConnectivity(connMat,grouping=grouping,replaceIds=replacement,xaxis=xaxis,cmax=cmax,theme=theme)
+}
+
+plotConnectivity.matrix <- function(connObj,
+                                    slctROIs=NULL,
+                                    grouping=c("type","neuron","supertype1","supertype2","supertype3","databaseType"),
+                                    value="weightRelative",
+                                    xaxis=c("inputs","outputs"),
+                                    theme=theme_minimal(),
+                                    cmax=NULL,
+                                    replaceIds=NULL,
+                                    orderIn=NULL,
+                                    orderOut=NULL){
+  xaxis <- match.arg(xaxis)
+  if(is.null(cmax)){cmax <- max(connObj)}
+  connDf <- conn_mat2df(connObj)
+  xVar <- ifelse(xaxis=="inputs","Inputs","Outputs")
+  yVar <- ifelse(xaxis=="inputs","Outputs","Inputs")
+  p <- ggplot(connDf,aes(x=!!sym(xVar),y=!!sym(yVar),fill=value)) + geom_tile()
+  if (!is.null(replaceIds)){
+    p <- p + scale_x_discrete(labels=replaceIds[[ifelse(xaxis=="inputs","from","to")]])+scale_y_discrete(labels=replaceIds[[ifelse(xaxis=="inputs","to","from")]])
+  }
+  p +
+    scale_fill_gradient2(low="thistle", mid="blueviolet", high="black", 
+                         midpoint =0.5*cmax, limits=c(0,cmax))  + theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))+coord_fixed()
+}
+
+plotConnectivity.connectivityCluster <- function(connObj,
+                                                 slctROIs=NULL,
+                                                 grouping=c("type","neuron","supertype1","supertype2","supertype3","databaseType"),
+                                                 value="weightRelative",
+                                                 xaxis=c("inputs","outputs"),
+                                                 theme=theme_minimal(),
+                                                 cmax=NULL,
+                                                 replaceIds=TRUE,
+                                                 orderIn=FALSE,
+                                                 orderOut=FALSE){
+  xaxis=match.arg(xaxis)
+  grouping <- connObj$grouping
+  if(is.null(connObj$inputsTable)){orderIn <- TRUE
+                                   orderOut <- FALSE}
+  if(is.null(connObj$outputsTable)){orderOut <- TRUE
+                                    orderIn <- FALSE}
+  stopifnot(any(c(orderIn,orderOut)))
+  if(orderOut){connTa <- connObj$inputsTable}else{connTa <- connObj$outputsTable}
+  
+  #connMat <- connectivityMatrix(connTa,slctROIs=slctROIs,allToAll=FALSE,from=from,to=to,value=value,xaxis="inputs")
+  if (orderOut){orderOut <- connObj$hc$order}else{
+    orderIn <- connObj$hc$order
+  }
+  
+  plotConnectivity(connTa,grouping=grouping,replaceIds=replaceIds,orderIn=orderIn,orderOut=orderOut,xaxis=xaxis,cmax=cmax,theme=theme)
+}

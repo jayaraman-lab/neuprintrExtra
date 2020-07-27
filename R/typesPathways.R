@@ -43,7 +43,7 @@ get_type2typePath <- function(type.from,
     type.from_loc <- bag$outputsTableRef
     res[[n]] <- bag$outputs
   }
-  for (n in upHalf){
+  for (n in rev(upHalf)){
     bag <- neuronBag(type.to_loc,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,selfRef=TRUE,...)   
     if (is.list(ROI)){
       bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r)})

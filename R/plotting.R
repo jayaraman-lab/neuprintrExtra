@@ -102,6 +102,8 @@ plotConnectivity <- function(connObj,
                              grouping=c("type","neuron","supertype1","supertype2","supertype3","databaseType"),
                              value="weightRelative",
                              xaxis=c("inputs","outputs"),
+                             facetInputs=".",
+                             facetOutputs=".",
                              theme=theme_minimal(),
                              cmax=NULL,
                              replaceIds=TRUE,
@@ -117,6 +119,8 @@ plotConnectivity.data.frame <- function(connObj,
                                         grouping=c("type","neuron","supertype1","supertype2","supertype3","databaseType","cluster"),
                                         value="weightRelative",
                                         xaxis=c("inputs","outputs"),
+                                        facetInputs=".",
+                                        facetOutputs=".",
                                         theme=theme_minimal(),
                                         cmax=NULL,
                                         replaceIds=TRUE,
@@ -125,17 +129,47 @@ plotConnectivity.data.frame <- function(connObj,
                                         showTable="inputs"){
   xaxis <- match.arg(xaxis)
   grouping <-match.arg(grouping)
+  if(is.null(cmax)){cmax <- max(connObj[[value]])}
   if (grouping=="neuron") {grouping <- ""}else{
     grouping=paste0(grouping,".")}
   from <- paste0(grouping,"from")
   to <- paste0(grouping,"to")
   
-  connMat <- connectivityMatrix(connObj,slctROIs=slctROIs,from=from,to=to,value=value,ref=xaxis)
+  connObj$Inputs <- connObj[[from]]
+  connObj$Outputs <- connObj[[to]]
+  
+  if (is.null(orderIn)){orderIn <- 1:length(unique(connObj$Inputs))}
+  if (is.null(orderOut)){orderOut <- 1:length(unique(connObj$Outputs))}
+  
+  connObj$Inputs <- factor(connObj$Inputs,levels=unique(connObj$Inputs)[orderIn])
+  connObj$Outputs <- factor(connObj$Outputs,levels=unique(connObj$Outputs)[orderOut])
+  
   replacement <- NULL
   if(grouping=="" & replaceIds){
-    replacement <- list("from"=connObj$name.from[match(dimnames(connMat)$Inputs,connObj$from)],"to"=connObj$name.to[match(dimnames(connMat)$Outputs,connObj$to)])
+    replacement <- list("from"=connObj$name.from[match(levels(connObj$Inputs),connObj$from)],"to"=connObj$name.to[match(levels(connObj$Outputs),connObj$to)])
   }
-  plotConnectivity(connMat,grouping=grouping,replaceIds=replacement,xaxis=xaxis,cmax=cmax,theme=theme,orderIn=orderIn,orderOut=orderOut)
+  
+  if (xaxis=="inputs"){
+    xVar <- "Inputs"
+    yVar <- "Outputs"
+  }else{
+    xVar <- "Outputs"
+    yVar <- "Inputs"
+  }
+  p <- ggplot(connObj,aes(x=!!sym(xVar),y=!!sym(yVar),fill=!!(sym(value)))) + geom_tile()
+  if (replaceIds){
+    p <- p + scale_x_discrete(labels=replacement[[ifelse(xaxis=="inputs","from","to")]])+
+      scale_y_discrete(labels=replacement[[ifelse(xaxis=="inputs","to","from")]])
+  }
+  facetX <- ifelse(xaxis=="inputs",facetInputs,facetOutputs)
+  facetY <- ifelse(xaxis=="inputs",facetOutputs,facetInputs)
+  facetExpr <- paste0(facetY," ~ ",facetX)
+  p <- p + facet_grid(as.formula(facetExpr),scale="free",space="free")
+  
+  p +
+    scale_fill_gradient2(name=value,low="thistle", mid="blueviolet", high="black", 
+                         midpoint =0.5*cmax, limits=c(0,cmax))  + theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))
+ 
 }
 
 #'@export
@@ -144,6 +178,8 @@ plotConnectivity.matrix <- function(connObj,
                                     grouping=c("type","neuron","supertype1","supertype2","supertype3","databaseType"),
                                     value="weightRelative",
                                     xaxis=c("inputs","outputs"),
+                                    facetInputs=".",
+                                    facetOutputs=".",
                                     theme=theme_minimal(),
                                     cmax=NULL,
                                     replaceIds=NULL,
@@ -182,6 +218,8 @@ plotConnectivity.connectivityCluster <- function(connObj,
                                                  grouping=c("type","neuron","supertype1","supertype2","supertype3","databaseType"),
                                                  value="weightRelative",
                                                  xaxis=c("inputs","outputs"),
+                                                 facetInputs=".",
+                                                 facetOutputs=".",
                                                  theme=theme_minimal(),
                                                  cmax=NULL,
                                                  replaceIds=TRUE,
@@ -202,5 +240,5 @@ plotConnectivity.connectivityCluster <- function(connObj,
     orderIn <- connObj$hc$order
   }
   
-  plotConnectivity(connTa,grouping=grouping,replaceIds=replaceIds,orderIn=orderIn,orderOut=orderOut,xaxis=xaxis,cmax=cmax,theme=theme)
+  plotConnectivity(connTa,grouping=grouping,replaceIds=replaceIds,facetInputs=facetInputs,facetOutputs=facetOutputs,orderIn=orderIn,orderOut=orderOut,xaxis=xaxis,cmax=cmax,theme=theme)
 }

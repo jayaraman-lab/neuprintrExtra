@@ -242,5 +242,5 @@ plotConnectivity.connectivityCluster <- function(connObj,
     orderIn <- connObj$hc$order
   }
   
-  plotConnectivity(connTa,grouping=grouping,replaceIds=replaceIds,facetInputs=facetInputs,facetOutputs=facetOutputs,orderIn=orderIn,orderOut=orderOut,xaxis=xaxis,cmax=cmax,theme=theme)
+  plotConnectivity(connTa,grouping=grouping,replaceIds=replaceIds,value=value,facetInputs=facetInputs,facetOutputs=facetOutputs,orderIn=orderIn,orderOut=orderOut,xaxis=xaxis,cmax=cmax,theme=theme)
 }

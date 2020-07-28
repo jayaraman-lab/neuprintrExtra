@@ -90,6 +90,8 @@ haneschPlot <- function(roiTable,
 #'@param grouping Which variable to use. Will be ignored when \code{connObj} is a \code{\link{connectivityCluster}} (the decision has already been made while clustering)
 #'@param value Which variable to use as a plotting value
 #'@param xaxis Should inputs or outputs be on the x axis (will match the value to "inputs" or "outputs")
+#'@param facetInputs Variable to facet the inputs on (nothing by default)
+#'@param facetOutputs Variable to facet the outputs on (nothing by default)
 #'@param theme A theme to use
 #'@param cmax Maximum fill value for the color scale
 #'@param replaceIds When plotting neuron to neuron connections: if TRUE (and connObj is either a table or a connectivityCluster), replace the bodyids with their corresponding name. For matrices also accepts a vector of names

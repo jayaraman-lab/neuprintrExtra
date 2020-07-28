@@ -11,6 +11,8 @@ plotConnectivity(
     "databaseType"),
   value = "weightRelative",
   xaxis = c("inputs", "outputs"),
+  facetInputs = ".",
+  facetOutputs = ".",
   theme = theme_minimal(),
   cmax = NULL,
   replaceIds = TRUE,
@@ -29,6 +31,10 @@ plotConnectivity(
 \item{value}{Which variable to use as a plotting value}
 
 \item{xaxis}{Should inputs or outputs be on the x axis (will match the value to "inputs" or "outputs")}
+
+\item{facetInputs}{Variable to facet the inputs on (nothing by default)}
+
+\item{facetOutputs}{Variable to facet the outputs on (nothing by default)}
 
 \item{theme}{A theme to use}
 

@@ -157,7 +157,7 @@ plotConnectivity.data.frame <- function(connObj,
     yVar <- "Inputs"
   }
   p <- ggplot(connObj,aes(x=!!sym(xVar),y=!!sym(yVar),fill=!!(sym(value)))) + geom_tile()
-  if (replaceIds){
+  if (grouping=="" & replaceIds){
     p <- p + scale_x_discrete(labels=replacement[[ifelse(xaxis=="inputs","from","to")]])+
       scale_y_discrete(labels=replacement[[ifelse(xaxis=="inputs","to","from")]])
   }

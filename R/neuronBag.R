@@ -137,6 +137,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
 #### Methods -------------------------------------------------
 
 ## Concatenate neuronBags
+#' @export
 c.neuronBag <- function(...){
   full <- list(...)
   out <- new_neuronBag(outputs = distinct(do.call(rbind,lapply(full,function(i){i$outputs}))),
@@ -156,6 +157,7 @@ c.neuronBag <- function(...){
 #' @param filterPartners : Whether to apply the filter to input/output neurons to
 #' @param ... to be passed to a filtering function applied to the \code{names} field
 #'
+#' @export
 filter.neuronBag <- function(.nbag,filterPartners=FALSE,...){
 
   .nbag$names <- filter(.nbag$names,...)

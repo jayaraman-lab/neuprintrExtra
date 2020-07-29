@@ -121,14 +121,14 @@ bin_dist <- function(mat,threshold=0.01){
 }
 
 #' Turn a connectivity matrix back into a data.frame
-conn_mat2df <- function(connMat,
-                        orderIn=NULL,
-                        orderOut=NULL,
-                        thresh=0){
-  if (is.null(orderIn)){orderIn=1:length(dimnames(connMat)$Inputs)}
-  if (is.null(orderOut)){orderOut=1:length(dimnames(connMat)$Outputs)}
-  connMat[connMat<=thresh] <- NA
-  reshape2::melt(connMat,na.rm=TRUE) %>% 
-    mutate(Inputs=factor(Inputs,levels=dimnames(connMat)$Inputs[orderIn]),
-           Outputs=factor(Outputs,levels=dimnames(connMat)$Outputs[orderOut]))
-}
+#conn_mat2df <- function(connMat,
+#                        orderIn=NULL,
+#                        orderOut=NULL,
+#                        thresh=0){
+#  if (is.null(orderIn)){orderIn=1:length(dimnames(connMat)$Inputs)}
+#  if (is.null(orderOut)){orderOut=1:length(dimnames(connMat)$Outputs)}
+#  connMat[connMat<=thresh] <- NA
+#  reshape2::melt(connMat,na.rm=TRUE) %>% 
+#    mutate(Inputs=factor(Inputs,levels=dimnames(connMat)$Inputs[orderIn]),
+#           Outputs=factor(Outputs,levels=dimnames(connMat)$Outputs[orderOut]))
+#}

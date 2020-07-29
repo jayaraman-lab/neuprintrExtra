@@ -9,8 +9,7 @@ connectivityCluster(
   inputsTable = NULL,
   outputsTable = NULL,
   ROIs = NULL,
-  grouping = c("type", "neuron", "supertype1", "supertype2", "supertype3",
-    "databaseType"),
+  grouping = "type",
   distance = cos_dist,
   knownStats = FALSE
 )
@@ -19,7 +18,7 @@ clusterBag(
   nBag,
   ROIs = NULL,
   clusterOn = c("inputs", "outputs", "both"),
-  grouping = c("type", "neuron", "supertype1", "supertype2", "supertype3",
+  grouping = c("type", "neuron", "bodyid", "supertype1", "supertype2", "supertype3",
     "databaseType"),
   distance = cos_dist,
   knownStats = FALSE

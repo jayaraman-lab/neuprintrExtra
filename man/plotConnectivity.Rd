@@ -7,12 +7,11 @@
 plotConnectivity(
   connObj,
   slctROIs = NULL,
-  grouping = c("type", "neuron", "supertype1", "supertype2", "supertype3",
-    "databaseType"),
+  grouping,
   value = "weightRelative",
   xaxis = c("inputs", "outputs"),
-  facetInputs = ".",
-  facetOutputs = ".",
+  facetInputs = NULL,
+  facetOutputs = NULL,
   theme = theme_minimal(),
   cmax = NULL,
   replaceIds = TRUE,
@@ -27,7 +26,8 @@ plotConnectivity(
 
 \item{slctROIs}{For connectivity tables, you can specify a selection of ROIs}
 
-\item{grouping}{Which variable to use. Will be ignored when \code{connObj} is a \code{\link{connectivityCluster}} (the decision has already been made while clustering)}
+\item{grouping}{Which variable to use. Will be ignored when \code{connObj} is a \code{\link{connectivityCluster}} 
+(the decision has already been made while clustering). Any variable postfixed by "to" or "from" in the table is a valid value, as well as "bodyid" and "neuron"}
 
 \item{value}{Which variable to use as a plotting value}
 
@@ -49,7 +49,7 @@ plotConnectivity(
 
 \item{legendName}{Optional override the default name for the color legend (by default a prettification of value)}
 
-\item{showTable}{When both inputs and outputs have been used for a clustering, which connectivity table to show.}
+\item{showTable}{When both inputs and outputs have been used for a clustering (via \code{\link{clusterBag}}), which connectivity table to show.}
 }
 \description{
 Plot a connectivity matrix

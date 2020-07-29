@@ -35,12 +35,11 @@ return(res)
 connectivityCluster <- function(inputsTable=NULL,
                                 outputsTable=NULL,
                                 ROIs=NULL,
-                                grouping=c("type","neuron","supertype1","supertype2","supertype3","databaseType"),
+                                grouping="type",
                                 distance=cos_dist,
                                 knownStats=FALSE){
-  grouping <-match.arg(grouping)
   groupingOld <- grouping
-  if (grouping=="neuron") {grouping <- ""}else{
+  if (grepl("neuron",grouping) | grepl("bodyid",grouping)){grouping <- ""}else{
     grouping=paste0(grouping,".")}
   from <- paste0(grouping,"from")
   to <- paste0(grouping,"to")
@@ -76,7 +75,7 @@ connectivityCluster <- function(inputsTable=NULL,
 clusterBag <- function(nBag,
                        ROIs=NULL,
                        clusterOn = c("inputs","outputs","both"),
-                       grouping=c("type","neuron","supertype1","supertype2","supertype3","databaseType"),
+                       grouping=c("type","neuron","bodyid","supertype1","supertype2","supertype3","databaseType"),
                        distance=cos_dist,
                        knownStats=FALSE){
   grouping <- match.arg(grouping)

@@ -17,6 +17,7 @@ return(res)
 #' @param grouping grouping on which the clustering is to be made (neuron or type, or various supertypes)
 #' @param distance Which distance measure to use (defaults to \code{\link{cos_dist}})
 #' @param knownStats Whether or not to use \code{knownOutputContribution} and \code{knownWeightRelative} instead of the standard measures
+#' @param unitNames Optional vector argument of the neurons/types one wants to cluster
 #' @param ... Arguments to be passed to \code{\link{hclust}}
 #' @details \itemize{
 #'  \item If both \code{inputsTable} and \code{outputsTable} are present, the clustering will be run on the combined connectivity vector. This is
@@ -39,6 +40,7 @@ connectivityCluster <- function(inputsTable=NULL,
                                 grouping="type",
                                 distance=cos_dist,
                                 knownStats=FALSE,
+                                unitNames=NULL,
                                 ...){
   groupingOld <- grouping
   if (grepl("neuron",grouping) | grepl("bodyid",grouping)){grouping <- ""}else{
@@ -46,24 +48,25 @@ connectivityCluster <- function(inputsTable=NULL,
   from <- paste0(grouping,"from")
   to <- paste0(grouping,"to")
   
+  if(is.null(unitNames)){unitNames <- unique(c(inputsTable[[to]],outputsTable[[from]]))}
+  
   if (!is.null(inputsTable)){
     stat <- ifelse(knownStats,"knownWeightRelative","weightRelative")
     if (!is.null(ROIs)){inputsTable <- filter(inputsTable,roi %in% ROIs)}
-    inputsMat <- connectivityMatrix(inputsTable,slctROIs = ROIs,allToAll = FALSE,from = from,to=to,value = stat,ref="outputs")
+    inputsMat <- connectivityMatrix(inputsTable,slctROIs = ROIs,allToAll = FALSE,from = from,to=to,outs=unitNames,value = stat,ref="outputs")
     connMat <- inputsMat
   }
   
   if (!is.null(outputsTable)){
     stat <- ifelse(knownStats,"knownOutputContribution","outputContribution")
     if (!is.null(ROIs)){outputsTable <- filter(outputsTable,roi %in% ROIs)}
-    outputsMat <- connectivityMatrix(outputsTable,slctROIs = ROIs,allToAll = FALSE,from = from,to=to,value = stat,ref="inputs")
+    outputsMat <- connectivityMatrix(outputsTable,slctROIs = ROIs,allToAll = FALSE,from = from,to=to,ins=unitNames,value = stat,ref="inputs")
     connMat <- outputsMat
   }
   
   if (!is.null(inputsTable) && !is.null(outputsTable)){
-    outputsMat <- outputsMat[rownames(inputsMat),,drop=FALSE]
-    colnames(outputsMat) <- paste0(colnames(outputsMat),".out")
-    colnames(inputsMat) <- paste0(colnames(inputsMat),".in")
+    colnames(outputsMat) <- paste0(colnames(outputsMat),".out",recycle0 = T)
+    colnames(inputsMat) <- paste0(colnames(inputsMat),".in",recycle0 = T)
     connMat <- cbind(inputsMat,outputsMat)
   }
   
@@ -84,15 +87,16 @@ clusterBag <- function(nBag,
                        knownStats=FALSE,
                        ...){
   grouping <- match.arg(grouping)
+  if(grouping=="neuron"){grouping <- "bodyid"}
   clusterOn <- match.arg(clusterOn)
-  if (grouping=="neuron"){if (clusterOn=="outputs"){inp <- NULL}else{inp <- nBag$inputs_raw}
-                      if (clusterOn=="inputs"){out <- NULL}else{out <- nBag$outputs_raw}
-                      
+  if (grouping=="neuron"){
+    if (clusterOn=="outputs"){inp <- NULL}else{inp <- nBag$inputs_raw}
+      if (clusterOn=="inputs"){out <- NULL}else{out <- nBag$outputs_raw}
                       }else{
                         if (clusterOn=="outputs"){inp <- NULL}else{inp <- nBag$inputs}
                         if (clusterOn=="inputs"){out <- NULL}else{out <- nBag$outputs}
                       }
-  connectivityCluster(inp,out,ROIs,grouping,distance,knownStats)
+  connectivityCluster(inp,out,ROIs,grouping,unitNames=unique(nBag$names[[grouping]]),distance,knownStats)
 }
 
 #' Test if x is a connectivityCluster object

@@ -6,15 +6,15 @@
 \usage{
 plotConnectivity(
   connObj,
-  slctROIs = NULL,
-  grouping,
-  value = "weightRelative",
+  slctROI = NULL,
+  grouping = "type",
+  connectionMeasure = "weightRelative",
   xaxis = c("inputs", "outputs"),
   facetInputs = NULL,
   facetOutputs = NULL,
   theme = theme_minimal(),
   cmax = NULL,
-  replaceIds = TRUE,
+  replacementLabels = NULL,
   orderIn = NULL,
   orderOut = NULL,
   legendName = NULL,
@@ -24,12 +24,12 @@ plotConnectivity(
 \arguments{
 \item{connObj}{A connectivity object. Either a connectivity table, a matrix with \code{dimnames} Inputs and Outputs(as returned by \code{\link{connectivityMatrix}}) or a \code{\link{connectivityCluster}} object.}
 
-\item{slctROIs}{For connectivity tables, you can specify a selection of ROIs}
+\item{slctROI}{For connectivity tables, you can specify a ROI}
 
 \item{grouping}{Which variable to use. Will be ignored when \code{connObj} is a \code{\link{connectivityCluster}} 
 (the decision has already been made while clustering). Any variable postfixed by "to" or "from" in the table is a valid value, as well as "bodyid" and "neuron"}
 
-\item{value}{Which variable to use as a plotting value}
+\item{connectionMeasure}{Which variable to use as a plotting value}
 
 \item{xaxis}{Should inputs or outputs be on the x axis (will match the value to "inputs" or "outputs")}
 
@@ -39,18 +39,26 @@ plotConnectivity(
 
 \item{theme}{A theme to use}
 
-\item{cmax}{Maximum fill value for the color scale}
+\item{cmax}{Maximum fill value for the color scale. By default the maximum value found in the table.}
 
-\item{replaceIds}{When plotting neuron to neuron connections: if TRUE (and connObj is either a table or a connectivityCluster), replace the bodyids with their corresponding name. For matrices also accepts a vector of names}
+\item{replacementLabels}{A column prefix to use as a replacement for the axis labels (useful to replace bodyids with names for example)}
 
-\item{orderIn}{Optional ordering of the inputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).}
+\item{orderIn}{A vector of input bodyid/types/names in the desired order. 
+Optional ordering of the inputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).}
 
-\item{orderOut}{Optional ordering of the outputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).}
+\item{orderOut}{A vector of output bodyid/types/names in the desired order. 
+Optional ordering of the outputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).}
 
-\item{legendName}{Optional override the default name for the color legend (by default a prettification of value)}
+\item{legendName}{Optional override the default name for the color legend (by default a prettification of connectionMeasure)}
 
 \item{showTable}{When both inputs and outputs have been used for a clustering (via \code{\link{clusterBag}}), which connectivity table to show.}
 }
+\value{
+A ggplot object
+}
 \description{
 Plot a connectivity matrix
+}
+\details{
+orderIn and orderOut are passed as levels to a factor to order the axis.
 }

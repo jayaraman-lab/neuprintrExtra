@@ -11,7 +11,9 @@ connectivityCluster(
   ROIs = NULL,
   grouping = "type",
   distance = cos_dist,
-  knownStats = FALSE
+  knownStats = FALSE,
+  unitNames = NULL,
+  ...
 )
 
 clusterBag(
@@ -21,7 +23,8 @@ clusterBag(
   grouping = c("type", "neuron", "bodyid", "supertype1", "supertype2", "supertype3",
     "databaseType"),
   distance = cos_dist,
-  knownStats = FALSE
+  knownStats = FALSE,
+  ...
 )
 }
 \arguments{
@@ -36,6 +39,8 @@ clusterBag(
 \item{distance}{Which distance measure to use (defaults to \code{\link{cos_dist}})}
 
 \item{knownStats}{Whether or not to use \code{knownOutputContribution} and \code{knownWeightRelative} instead of the standard measures}
+
+\item{...}{Arguments to be passed to \code{\link{hclust}}}
 
 \item{nBag}{a neuron bag}
 

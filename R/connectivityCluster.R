@@ -152,7 +152,7 @@ plotClusters <- function(connCl,
     }
     if(!is.null(replacementLabels)){
       if (is.null(connCl$inputsTable)){newNames <- connCl$outputsTable[[paste0(replacementLabels,".from")]][match(rownames(ddM),connCl$outputsTable[[from]])]}else{
-        newNames <- connCl$inputsTable[[paste0(replacementLabels,".from")]][match(rownames(ddM),connCl$inputsTable[[to]])]
+        newNames <- connCl$inputsTable[[paste0(replacementLabels,".to")]][match(rownames(ddM),connCl$inputsTable[[to]])]
       }
       p <- p + scale_x_discrete(labels=newNames)+scale_y_discrete(labels=newNames)
     }

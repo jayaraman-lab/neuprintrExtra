@@ -48,14 +48,14 @@ connectivityCluster <- function(inputsTable=NULL,
   
   if (!is.null(inputsTable)){
     stat <- ifelse(knownStats,"knownWeightRelative","weightRelative")
-    inputsTable <- filter(inputsTable,roi==ROIs)
+    if (!is.null(ROIs)){inputsTable <- filter(inputsTable,roi %in% ROIs)}
     inputsMat <- connectivityMatrix(inputsTable,slctROIs = ROIs,allToAll = FALSE,from = from,to=to,value = stat,ref="outputs")
     connMat <- inputsMat
   }
   
   if (!is.null(outputsTable)){
     stat <- ifelse(knownStats,"knownOutputContribution","outputContribution")
-    outputsTable <- filter(outputsTable,roi==ROIs)
+    if (!is.null(ROIs)){outputsTable <- filter(outputsTable,roi %in% ROIs)}
     outputsMat <- connectivityMatrix(outputsTable,slctROIs = ROIs,allToAll = FALSE,from = from,to=to,value = stat,ref="inputs")
     connMat <- outputsMat
   }

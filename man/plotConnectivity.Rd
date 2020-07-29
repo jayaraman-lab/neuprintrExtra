@@ -43,10 +43,10 @@ plotConnectivity(
 
 \item{replacementLabels}{A column prefix to use as a replacement for the axis labels (useful to replace bodyids with names for example)}
 
-\item{orderIn}{A vector of input bodyid/types/names in the desired order. 
+\item{orderIn}{A vector of input bodyid/types/names in the desired order, or a connectivityCluster object. 
 Optional ordering of the inputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).}
 
-\item{orderOut}{A vector of output bodyid/types/names in the desired order. 
+\item{orderOut}{A vector of output bodyid/types/names in the desired order, or a connectivityCluster object. 
 Optional ordering of the outputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).}
 
 \item{legendName}{Optional override the default name for the color legend (by default a prettification of connectionMeasure)}

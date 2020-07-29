@@ -40,6 +40,8 @@ clusterBag(
 
 \item{knownStats}{Whether or not to use \code{knownOutputContribution} and \code{knownWeightRelative} instead of the standard measures}
 
+\item{unitNames}{Optional vector argument of the neurons/types one wants to cluster}
+
 \item{...}{Arguments to be passed to \code{\link{hclust}}}
 
 \item{nBag}{a neuron bag}

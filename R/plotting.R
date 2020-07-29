@@ -96,9 +96,9 @@ haneschPlot <- function(roiTable,
 #'@param theme A theme to use
 #'@param cmax Maximum fill value for the color scale. By default the maximum value found in the table.
 #'@param replacementLabels A column prefix to use as a replacement for the axis labels (useful to replace bodyids with names for example)
-#'@param orderIn A vector of input bodyid/types/names in the desired order. 
+#'@param orderIn A vector of input bodyid/types/names in the desired order, or a connectivityCluster object. 
 #'Optional ordering of the inputs (ignored and replaced by the clustering order if connObj is a connectivityCluster). 
-#'@param orderOut A vector of output bodyid/types/names in the desired order. 
+#'@param orderOut A vector of output bodyid/types/names in the desired order, or a connectivityCluster object. 
 #'Optional ordering of the outputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).
 #'@param legendName Optional override the default name for the color legend (by default a prettification of connectionMeasure)
 #'@param showTable When both inputs and outputs have been used for a clustering (via \code{\link{clusterBag}}), which connectivity table to show.
@@ -140,8 +140,6 @@ plotConnectivity.data.frame <- function(connObj,
   xaxis <- match.arg(xaxis)
   if(!is.null(slctROI)){connObj <- filter(connObj,roi==slctROI)}
   if(length(unique(connObj$roi))>1){stop("The data frame to plot should only contain one ROI -- you can use the `slctROI` argument")}
-  facetInputs <- ifelse(is.null(facetInputs),".",facetInputs)
-  facetOutputs <- ifelse(is.null(facetOutputs),".",facetOutputs)
   
   if(is.null(cmax)){cmax <- max(connObj[[connectionMeasure]])}
   if(is.null(legendName)){legendName <- stringr::str_to_title(gsub("([a-z])([A-Z])", "\\1 \\2", connectionMeasure))}
@@ -160,6 +158,9 @@ plotConnectivity.data.frame <- function(connObj,
   if (is.null(orderIn)){orderIn <- unique(connObj$Inputs)}
   if (is.null(orderOut)){orderOut <- unique(connObj$Outputs)}
   
+  if(is.connectivityCluster(orderIn)){orderIn <- orderIn$hc$labels[orderIn$hc$order]}
+  if(is.connectivityCluster(orderOut)){orderOut <- orderIn$hc$labels[orderOut$hc$order]}
+  
   connObj$Inputs <- factor(connObj$Inputs,levels=orderIn)
   connObj$Outputs <- factor(connObj$Outputs,levels=orderOut)
   
@@ -177,11 +178,14 @@ plotConnectivity.data.frame <- function(connObj,
   }
   p <- ggplot(connObj,aes(x=!!sym(xVar),y=!!sym(yVar),fill=!!(sym(connectionMeasure)))) + geom_tile()
   
-  
-  facetX <- ifelse(xaxis=="inputs",facetInputs,facetOutputs)
-  facetY <- ifelse(xaxis=="inputs",facetOutputs,facetInputs)
-  facetExpr <- paste0(facetY," ~ ",facetX)
-  p <- p + facet_grid(as.formula(facetExpr),scale="free",space="free")
+  if (!is.null(facetInputs) | !is.null(facetOutputs)){
+    facetInputs <- ifelse(is.null(facetInputs),".",facetInputs)
+    facetOutputs <- ifelse(is.null(facetOutputs),".",facetOutputs)
+    facetX <- ifelse(xaxis=="inputs",facetInputs,facetOutputs)
+    facetY <- ifelse(xaxis=="inputs",facetOutputs,facetInputs)
+    facetExpr <- paste0(facetY," ~ ",facetX)
+    p <- p + facet_grid(as.formula(facetExpr),scale="free",space="free")
+  }
   
   if (!is.null(replacementLabels)){
     p <- p + scale_x_discrete(breaks= levels(connObj$Inputs),labels=replacing[[ifelse(xaxis=="inputs","from","to")]])+

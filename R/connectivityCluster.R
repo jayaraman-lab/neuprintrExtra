@@ -42,8 +42,9 @@ connectivityCluster <- function(inputsTable=NULL,
                                 knownStats=FALSE,
                                 unitNames=NULL,
                                 ...){
+  if (grouping=="neuron"){grouping <- "bodyid"}
   groupingOld <- grouping
-  if (grepl("neuron",grouping) | grepl("bodyid",grouping)){grouping <- ""}else{
+  if (grouping=="bodyid"){grouping <- ""}else{
     grouping=paste0(grouping,".")}
   from <- paste0(grouping,"from")
   to <- paste0(grouping,"to")
@@ -152,10 +153,38 @@ plotClusters <- function(connCl,
     p
 } 
 
-#plotClusterChain : comparing clustering of neurons connected to each other
+#' Add a cluster column to the tables of a connectivityCluster object 
+#' Add a cluster column to the tables of a connectivityCluster object, either for the neurons being clustered (with \code{setClusters}) or for the partner neurons 
+#' (with \code{addClusters}) 
+#' @param connCl A connectivityCluster object to augment
+#' @param h To be passed to \code{\link{cutree}} to define the clusters
+#' @param k To be passed to \code{\link{cutree}} to define the clusters
+#' @return A connectivityCluster, whith added columns cluster.from and cluster.to in the corresponding connectivity table
+#' @export
+setClusters <- function(connCl,h=0.8,k=NULL){
+  clusts <- cutree(connCl$hc,h=h,k=k)
+  grouping <- connCl$grouping
+  if (grouping=="bodyid"){grouping <- ""}else{
+    grouping=paste0(grouping,".")}
+  from <- paste0(grouping,"from")
+  to <- paste0(grouping,"to")
+  if (!is.null(connCl$inputsTable)){connCl$inputsTable <- mutate(connCl$inputsTable,cluster.to=clusts[!!sym(to)])}
+  if (!is.null(connCl$outputsTable)){connCl$outputsTable <- mutate(connCl$outputsTable,cluster.from=clusts[!!sym(from)])}
+  connCl
+}
 
-plotClusterChain <- function(connCluster1,
-                             connCluster2,
-                             chainConnectivity){
-  
+#' @describeIn setClusters Add clustering of the partners
+#' @param partnerClusters Either a named vector (as returned by cutree) or a \code{\link{connectivityCluster}} object defining a clustering on the partner neurons in
+#' \code{connCl} 
+#' @export
+addClusters <- function(connCl,partnerClusters,h=0.8,k=NULL){
+  if(is.connectivityCluster(partnerClusters)){partnerClusters <- cutree(partnerClusters$hc,h=h,k=k)}
+  grouping <- connCl$grouping
+  if (grouping=="bodyid"){grouping <- ""}else{
+    grouping=paste0(grouping,".")}
+  from <- paste0(grouping,"from")
+  to <- paste0(grouping,"to")
+  if (!is.null(connCl$inputsTable)){connCl$inputsTable <- mutate(connCl$inputsTable,cluster.from=partnerClusters[!!sym(from)])}
+  if (!is.null(connCl$inputsTable)){connCl$outputsTable <- mutate(connCl$outputsTable,cluster.to=partnerClusters[!!sym(to)])}
+  connCl
 }

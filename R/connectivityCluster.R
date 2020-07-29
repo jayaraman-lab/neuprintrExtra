@@ -17,6 +17,7 @@ return(res)
 #' @param grouping grouping on which the clustering is to be made (neuron or type, or various supertypes)
 #' @param distance Which distance measure to use (defaults to \code{\link{cos_dist}})
 #' @param knownStats Whether or not to use \code{knownOutputContribution} and \code{knownWeightRelative} instead of the standard measures
+#' @param ... Arguments to be passed to \code{\link{hclust}}
 #' @details \itemize{
 #'  \item If both \code{inputsTable} and \code{outputsTable} are present, the clustering will be run on the combined connectivity vector. This is
 #'  controlled by the \code{clusterOn} argument in \code{clusterBag}.
@@ -37,7 +38,8 @@ connectivityCluster <- function(inputsTable=NULL,
                                 ROIs=NULL,
                                 grouping="type",
                                 distance=cos_dist,
-                                knownStats=FALSE){
+                                knownStats=FALSE,
+                                ...){
   groupingOld <- grouping
   if (grepl("neuron",grouping) | grepl("bodyid",grouping)){grouping <- ""}else{
     grouping=paste0(grouping,".")}
@@ -77,7 +79,8 @@ clusterBag <- function(nBag,
                        clusterOn = c("inputs","outputs","both"),
                        grouping=c("type","neuron","bodyid","supertype1","supertype2","supertype3","databaseType"),
                        distance=cos_dist,
-                       knownStats=FALSE){
+                       knownStats=FALSE,
+                       ...){
   grouping <- match.arg(grouping)
   clusterOn <- match.arg(clusterOn)
   if (grouping=="neuron"){if (clusterOn=="outputs"){inp <- NULL}else{inp <- nBag$inputs_raw}

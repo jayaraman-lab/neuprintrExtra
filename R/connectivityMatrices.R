@@ -4,6 +4,8 @@
 #' @param allToAll  whether to build a square matrix or just a from -> to matrix
 #' @param from  which field to use as a "source" (default "name.from")
 #' @param to  which field to use as a "target" (default "name.to")
+#' @param ins optional vector of names : which inputs to consider (by default all present in the table). If missing from the table, will be filled with zeros.
+#' @param outs optional vector of names : which outputs to consider (by default all present in the table). If missing from the table, will be filled with zeros.
 #' @param value  which field to use to fill the matrix (default "weightRelative")
 #' @param ref  which channel will be used as the "reference" (to be the columns of the output). The
 #' other channel gets .roi affixed to their names in case several ROIs are considered
@@ -14,6 +16,8 @@ connectivityMatrix <- function(connObj,
                                allToAll=FALSE,
                                from="name.from",
                                to="name.to",
+                               ins=NULL,
+                               outs=NULL,
                                value="weightRelative",
                                ref=c("inputs","outputs")){
 
@@ -31,45 +35,32 @@ connectivityMatrix <- function(connObj,
     stop("Multiple entries for some of the from/to/roi combinations. You need to either
          use different from/to or summarize your data.frame beforehand.")}
 
-  if (allToAll){
-    bare <- unique(c(connObj[[from]],connObj[[to]]))
-    if (length(slctROIs)==1){
-      ins <- bare
-      outs <- bare
+  if (is.null(ins)){ins <- unique(connObj[[from]])}
+  if (is.null(outs)){outs <- unique(connObj[[to]])}
+  if (allToAll){ins <- unique(c(ins,outs))
+                outs <- unique(c(ins,outs))}
+  if (length(slctROIs)>1){
+    if(ref=="inputs"){
+      ins <- sapply(ins,paste0,".",unique(connObj[["rois"]]))
     }else{
-      if (ref=="inputs"){
-        ins <- unique(c(paste(connObj[[from]],connObj[["roi"]],sep="."),c(paste(connObj[[to]],connObj[["roi"]],sep="."))))
-        outs <- bare
-      }else{
-        ins <- bare
-        outs <- unique(c(paste(connObj[[from]],connObj[["roi"]],sep="."),c(paste(connObj[[to]],connObj[["roi"]],sep="."))))
-      }
+      outs <- sapply(outs,paste0,".",unique(connObj[["rois"]]))
     }
-  }else{
-    ins <- unique(connObj[[from]])
-    outs <- unique(connObj[[to]])
   }
-
+  
+  outMat <- matrix(0,nrow=length(ins),ncol=length(outs),dimnames=list("Inputs"=ins,"Outputs"=outs))
   if (length(slctROIs)>1){
     if (ref=="inputs"){
-      ins <- unique(paste(connObj[[from]],connObj[["roi"]],sep="."))
-      outMat <- matrix(0,nrow=length(ins),ncol=length(outs),dimnames=list("Inputs"=ins,"Outputs"=outs))
-
-      for (l in 1:nrow(connObj)){
+      for (l in seq(1,nrow(connObj),length.out=nrow(connObj))){
         outMat[paste0(connObj[[from]][l],".",connObj[["roi"]][l]),connObj[[to]][l]] <- connObj[[value]][l]
       }
     }else{
-      outs <- unique(paste(connObj[[to]],connObj[["roi"]],sep="."))
-      outMat <- matrix(0,nrow=length(ins),ncol=length(outs),dimnames=list("Inputs"=ins,"Outputs"=outs))
-
-      for (l in 1:nrow(connObj)){
+      for (l in seq(1,nrow(connObj),length.out=nrow(connObj))){
         outMat[connObj[[from]][l],paste0(connObj[[to]][l],".",connObj[["roi"]][l])] <- connObj[[value]][l]
       }
       outMat <- t(outMat)
     }
   }else{
-    outMat <- matrix(0,nrow=length(ins),ncol=length(outs),dimnames=list("Inputs"=ins,"Outputs"=outs))
-    for (l in 1:nrow(connObj)){
+    for (l in seq(1,nrow(connObj),length.out=nrow(connObj))){
       outMat[connObj[[from]][l],connObj[[to]][l]] <- connObj[[value]][l]
     }
     if (ref=="outputs") outMat <-  t(outMat)

@@ -10,6 +10,8 @@ connectivityMatrix(
   allToAll = FALSE,
   from = "name.from",
   to = "name.to",
+  ins = NULL,
+  outs = NULL,
   value = "weightRelative",
   ref = c("inputs", "outputs")
 )
@@ -24,6 +26,10 @@ connectivityMatrix(
 \item{from}{which field to use as a "source" (default "name.from")}
 
 \item{to}{which field to use as a "target" (default "name.to")}
+
+\item{ins}{optional vector of names : which inputs to consider (by default all present in the table). If missing from the table, will be filled with zeros.}
+
+\item{outs}{optional vector of names : which outputs to consider (by default all present in the table). If missing from the table, will be filled with zeros.}
 
 \item{value}{which field to use to fill the matrix (default "weightRelative")}
 

@@ -97,6 +97,7 @@ haneschPlot <- function(roiTable,
 #'@param replaceIds When plotting neuron to neuron connections: if TRUE (and connObj is either a table or a connectivityCluster), replace the bodyids with their corresponding name. For matrices also accepts a vector of names
 #'@param orderIn Optional ordering of the inputs (ignored and replaced by the clustering order if connObj is a connectivityCluster). 
 #'@param orderOut Optional ordering of the outputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).
+#'@param legendName Optional override the default name for the color legend (by default a prettification of value)
 #'@param showTable When both inputs and outputs have been used for a clustering, which connectivity table to show.
 #'@export
 plotConnectivity <- function(connObj,
@@ -111,6 +112,7 @@ plotConnectivity <- function(connObj,
                              replaceIds=TRUE,
                              orderIn=NULL,
                              orderOut=NULL,
+                             legendName=NULL,
                              showTable="inputs"){
   UseMethod("plotConnectivity")
 }
@@ -128,10 +130,12 @@ plotConnectivity.data.frame <- function(connObj,
                                         replaceIds=TRUE,
                                         orderIn=NULL,
                                         orderOut=NULL,
+                                        legendName=NULL,
                                         showTable="inputs"){
   xaxis <- match.arg(xaxis)
   grouping <-match.arg(grouping)
   if(is.null(cmax)){cmax <- max(connObj[[value]])}
+  if(is.null(legendName)){legendName <- stringr::str_to_title(gsub("([a-z])([A-Z])", "\\1 \\2", value))}
   if (grouping=="neuron") {grouping <- ""}else{
     grouping=paste0(grouping,".")}
   from <- paste0(grouping,"from")
@@ -169,8 +173,8 @@ plotConnectivity.data.frame <- function(connObj,
   p <- p + facet_grid(as.formula(facetExpr),scale="free",space="free")
   
   p +
-    scale_fill_gradient2(name=value,low="thistle", mid="blueviolet", high="black", 
-                         midpoint =0.5*cmax, limits=c(0,cmax))  + theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))
+    scale_fill_gradient2(name=legendName,low="thistle", mid="blueviolet", high="black", 
+                         midpoint =0.5*cmax, limits=c(0,cmax))  +theme+ theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))
  
 }
 
@@ -187,9 +191,11 @@ plotConnectivity.matrix <- function(connObj,
                                     replaceIds=NULL,
                                     orderIn=NULL,
                                     orderOut=NULL,
+                                    legendName=NULL,
                                     showTable="inputs"){
   xaxis <- match.arg(xaxis)
   if(is.null(cmax)){cmax <- max(connObj)}
+  if(is.null(legendName)){legendName <- stringr::str_to_title(gsub("([a-z])([A-Z])", "\\1 \\2", value))}
   connDf <- conn_mat2df(connObj,orderIn=orderIn,orderOut=orderOut)
   if (is.null(orderIn)){orderIn=1:length(dimnames(connObj)$Inputs)}
   if (is.null(orderOut)){orderOut=1:length(dimnames(connObj)$Outputs)}
@@ -210,8 +216,8 @@ plotConnectivity.matrix <- function(connObj,
       scale_y_discrete(labels=replaceIds[[ifelse(xaxis=="inputs","to","from")]][orderY])
   }
   p +
-    scale_fill_gradient2(low="thistle", mid="blueviolet", high="black", 
-                         midpoint =0.5*cmax, limits=c(0,cmax))  + theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))+coord_fixed()
+    scale_fill_gradient2(name=legendName,low="thistle", mid="blueviolet", high="black", 
+                         midpoint =0.5*cmax, limits=c(0,cmax))  + theme + theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))+coord_fixed()
 }
 
 #'@export
@@ -227,6 +233,7 @@ plotConnectivity.connectivityCluster <- function(connObj,
                                                  replaceIds=TRUE,
                                                  orderIn=NULL,
                                                  orderOut=NULL,
+                                                 legendName=NULL,
                                                  showTable="inputs"){
   showTable <- match.arg(showTable)
   xaxis <- match.arg(xaxis)
@@ -242,5 +249,5 @@ plotConnectivity.connectivityCluster <- function(connObj,
     orderIn <- connObj$hc$order
   }
   
-  plotConnectivity(connTa,grouping=grouping,replaceIds=replaceIds,value=value,facetInputs=facetInputs,facetOutputs=facetOutputs,orderIn=orderIn,orderOut=orderOut,xaxis=xaxis,cmax=cmax,theme=theme)
+  plotConnectivity(connTa,grouping=grouping,replaceIds=replaceIds,value=value,facetInputs=facetInputs,facetOutputs=facetOutputs,orderIn=orderIn,orderOut=orderOut,xaxis=xaxis,cmax=cmax,theme=theme,legendName=legendName)
 }

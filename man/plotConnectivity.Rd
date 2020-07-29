@@ -18,6 +18,7 @@ plotConnectivity(
   replaceIds = TRUE,
   orderIn = NULL,
   orderOut = NULL,
+  legendName = NULL,
   showTable = "inputs"
 )
 }
@@ -45,6 +46,8 @@ plotConnectivity(
 \item{orderIn}{Optional ordering of the inputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).}
 
 \item{orderOut}{Optional ordering of the outputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).}
+
+\item{legendName}{Optional override the default name for the color legend (by default a prettification of value)}
 
 \item{showTable}{When both inputs and outputs have been used for a clustering, which connectivity table to show.}
 }

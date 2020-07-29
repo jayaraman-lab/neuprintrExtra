@@ -61,7 +61,7 @@ connectivityCluster <- function(inputsTable=NULL,
   }
   
   if (!is.null(inputsTable) && !is.null(outputsTable)){
-    outputsMat <- outputsMat[rownames(inputsMat),]
+    outputsMat <- outputsMat[rownames(inputsMat),,drop=FALSE]
     colnames(outputsMat) <- paste0(colnames(outputsMat),".out")
     colnames(inputsMat) <- paste0(colnames(inputsMat),".in")
     connMat <- cbind(inputsMat,outputsMat)

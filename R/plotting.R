@@ -86,35 +86,35 @@ haneschPlot <- function(roiTable,
 #'Plot a connectivity matrix
 #'
 #'@param connObj A connectivity object. Either a connectivity table, a matrix with \code{dimnames} Inputs and Outputs(as returned by \code{\link{connectivityMatrix}}) or a \code{\link{connectivityCluster}} object.
-#'@param slctROIs For connectivity tables, you can specify a selection of ROIs
+#'@param slctROI For connectivity tables, you can specify a ROI
 #'@param grouping Which variable to use. Will be ignored when \code{connObj} is a \code{\link{connectivityCluster}} 
 #'(the decision has already been made while clustering). Any variable postfixed by "to" or "from" in the table is a valid value, as well as "bodyid" and "neuron"
-#'@param value Which variable to use as a plotting value
+#'@param connectionMeasure Which variable to use as a plotting value
 #'@param xaxis Should inputs or outputs be on the x axis (will match the value to "inputs" or "outputs")
 #'@param facetInputs Variable to facet the inputs on (nothing by default)
 #'@param facetOutputs Variable to facet the outputs on (nothing by default)
 #'@param theme A theme to use
 #'@param cmax Maximum fill value for the color scale. By default the maximum value found in the table.
-#'@param replaceIds When plotting neuron to neuron connections: if TRUE (and connObj is either a table or a connectivityCluster), replace the bodyids with their corresponding name. For matrices also accepts a vector of names
+#'@param replacementLabels A column prefix to use as a replacement for the axis labels (useful to replace bodyids with names for example)
 #'@param orderIn A vector of input bodyid/types/names in the desired order. 
 #'Optional ordering of the inputs (ignored and replaced by the clustering order if connObj is a connectivityCluster). 
 #'@param orderOut A vector of output bodyid/types/names in the desired order. 
 #'Optional ordering of the outputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).
-#'@param legendName Optional override the default name for the color legend (by default a prettification of value)
+#'@param legendName Optional override the default name for the color legend (by default a prettification of connectionMeasure)
 #'@param showTable When both inputs and outputs have been used for a clustering (via \code{\link{clusterBag}}), which connectivity table to show.
 #'@details orderIn and orderOut are passed as levels to a factor to order the axis.
 #'@return A ggplot object
 #'@export
 plotConnectivity <- function(connObj,
-                             slctROIs=NULL,
-                             grouping,
-                             value="weightRelative",
+                             slctROI=NULL,
+                             grouping="type",
+                             connectionMeasure="weightRelative",
                              xaxis=c("inputs","outputs"),
                              facetInputs=NULL,
                              facetOutputs=NULL,
                              theme=theme_minimal(),
                              cmax=NULL,
-                             replaceIds=TRUE,
+                             replacementLabels=NULL,
                              orderIn=NULL,
                              orderOut=NULL,
                              legendName=NULL,
@@ -124,32 +124,35 @@ plotConnectivity <- function(connObj,
 
 #'@export
 plotConnectivity.data.frame <- function(connObj,
-                                        slctROIs=NULL,
+                                        slctROI=NULL,
                                         grouping="type",
-                                        value="weightRelative",
+                                        connectionMeasure="weightRelative",
                                         xaxis=c("inputs","outputs"),
                                         facetInputs=NULL,
                                         facetOutputs=NULL,
                                         theme=theme_minimal(),
                                         cmax=NULL,
-                                        replaceIds=TRUE,
+                                        replacementLabels=FALSE,
+                                        replacement=NULL,
                                         orderIn=NULL,
                                         orderOut=NULL,
                                         legendName=NULL,
                                         showTable="inputs"){
   xaxis <- match.arg(xaxis)
+  if(!is.null(slctROI)){connObj <- filter(connObj,roi==slctROI)}
+  if(length(unique(connObj$roi))>1){stop("The data frame to plot should only contain one ROI -- you can use the `slctROI` argument")}
   facetInputs <- ifelse(is.null(facetInputs),".",facetInputs)
   facetOutputs <- ifelse(is.null(facetOutputs),".",facetOutputs)
   
-  if(is.null(cmax)){cmax <- max(connObj[[value]])}
-  if(is.null(legendName)){legendName <- stringr::str_to_title(gsub("([a-z])([A-Z])", "\\1 \\2", value))}
+  if(is.null(cmax)){cmax <- max(connObj[[connectionMeasure]])}
+  if(is.null(legendName)){legendName <- stringr::str_to_title(gsub("([a-z])([A-Z])", "\\1 \\2", connectionMeasure))}
   if (grepl("bodyid",grouping) | grepl("neuron",grouping)) {grouping <- ""}else{
     grouping=paste0(grouping,".")}
   from <- paste0(grouping,"from")
   to <- paste0(grouping,"to")
   
   if (nrow(distinct_at(connObj,c(from,to,"roi"))) != nrow(connObj)){
-    stop(paste0("Multiple entries for some of the ", from,"/",to,"/roi combinations. You need to either
+    stop(paste0("Multiple entries for some of the ", from,"/",to," combinations. You need to either
          use different from/to or summarize your data.frame beforehand."))}
   
   connObj$Inputs <- connObj[[from]]
@@ -161,9 +164,9 @@ plotConnectivity.data.frame <- function(connObj,
   connObj$Inputs <- factor(connObj$Inputs,levels=orderIn)
   connObj$Outputs <- factor(connObj$Outputs,levels=orderOut)
   
-  replacement <- NULL
-  if(grouping=="" & replaceIds){
-    replacement <- list("from"=connObj$name.from[match(levels(connObj$Inputs),connObj$from)],"to"=connObj$name.to[match(levels(connObj$Outputs),connObj$to)])
+  if(!is.null(replacementLabels)){
+    replacing <- list("from"=connObj[[paste0(replacementLabels,".from")]][match(levels(connObj$Inputs),connObj$Inputs)],
+                      "to"=connObj[[paste0(replacementLabels,".to")]][match(levels(connObj$Outputs),connObj$Outputs)])
   }
   
   if (xaxis=="inputs"){
@@ -173,16 +176,18 @@ plotConnectivity.data.frame <- function(connObj,
     xVar <- "Outputs"
     yVar <- "Inputs"
   }
-  p <- ggplot(connObj,aes(x=!!sym(xVar),y=!!sym(yVar),fill=!!(sym(value)))) + geom_tile()
-  if (grouping=="" & replaceIds){
-    p <- p + scale_x_discrete(labels=replacement[[ifelse(xaxis=="inputs","from","to")]])+
-      scale_y_discrete(labels=replacement[[ifelse(xaxis=="inputs","to","from")]])
-  }
+  p <- ggplot(connObj,aes(x=!!sym(xVar),y=!!sym(yVar),fill=!!(sym(connectionMeasure)))) + geom_tile()
+  
   
   facetX <- ifelse(xaxis=="inputs",facetInputs,facetOutputs)
   facetY <- ifelse(xaxis=="inputs",facetOutputs,facetInputs)
   facetExpr <- paste0(facetY," ~ ",facetX)
   p <- p + facet_grid(as.formula(facetExpr),scale="free",space="free")
+  
+  if (!is.null(replacementLabels)){
+    p <- p + scale_x_discrete(breaks= levels(connObj$Inputs),labels=replacing[[ifelse(xaxis=="inputs","from","to")]])+
+      scale_y_discrete(breaks= levels(connObj$Outputs),labels=replacing[[ifelse(xaxis=="inputs","to","from")]])
+  }
   
   p +
     scale_fill_gradient2(name=legendName,low="thistle", mid="blueviolet", high="black", 
@@ -192,15 +197,15 @@ plotConnectivity.data.frame <- function(connObj,
 
 #'@export
 plotConnectivity.connectivityCluster <- function(connObj,
-                                                 slctROIs=NULL,
+                                                 slctROI=NULL,
                                                  grouping=NULL,
-                                                 value="weightRelative",
+                                                 connectionMeasure="weightRelative",
                                                  xaxis=c("inputs","outputs"),
                                                  facetInputs=NULL,
                                                  facetOutputs=NULL,
                                                  theme=theme_minimal(),
                                                  cmax=NULL,
-                                                 replaceIds=TRUE,
+                                                 replacementLabels=NULL,
                                                  orderIn=NULL,
                                                  orderOut=NULL,
                                                  legendName=NULL,
@@ -219,5 +224,9 @@ plotConnectivity.connectivityCluster <- function(connObj,
     orderIn <- connObj$hc$labels[connObj$hc$order]
   }
   
-  plotConnectivity(connTa,grouping=grouping,replaceIds=replaceIds,value=value,facetInputs=facetInputs,facetOutputs=facetOutputs,orderIn=orderIn,orderOut=orderOut,xaxis=xaxis,cmax=cmax,theme=theme,legendName=legendName)
+  plotConnectivity(connTa,grouping=grouping,replacementLabels=replacementLabels,
+                   slctROI = slctROI,
+                   connectionMeasure=connectionMeasure,facetInputs=facetInputs,facetOutputs=facetOutputs,
+                   orderIn=orderIn,orderOut=orderOut,xaxis=xaxis,cmax=cmax,theme=theme,
+                   legendName=legendName)
 }

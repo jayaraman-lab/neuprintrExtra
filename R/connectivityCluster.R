@@ -114,7 +114,7 @@ is.connectivityCluster <- function(x) inherits(x,"connectivityCluster")
 #' @param colorAxis Whether or not to color the axis labels per cluster (FALSE by default)
 #' @param axesPalette If \code{colorAxis} is TRUE, the palette to use
 #' @param theme A ggplot theme to use for the plot
-#' @param replaceIdWithNames In case of neuron to neuron clustering, whether or not to replace the bodyids by neuron names on the axis labels
+#' @param replacementLabels A column prefix to use as a replacement for the axis labels (useful to replace bodyids with names for example)
 #' @param h To be passed to \code{\link{cutree}} if \code{colorAxis} is TRUE. Either \code{h} or \code{k} must be set in that case. 
 #' @param k To be passed to \code{\link{cutree}} if \code{colorAxis} is TRUE. Either \code{h} or \code{k} must be set in that case. 
 #' @export
@@ -124,9 +124,15 @@ plotClusters <- function(connCl,
                          colorAxis=FALSE,
                          axesPalette=paletteer::paletteer_d("Polychrome::palette36")[3:36],
                          theme=theme_minimal(),
-                         replaceIdWithNames=TRUE,
+                         replacementLabels=NULL,
                          h=NULL,
                          k=NULL){
+    grouping <- connCl$grouping
+    if (grouping=="bodyid"){grouping <- ""}else{
+      grouping=paste0(grouping,".")}
+    from <- paste0(grouping,"from")
+    to <- paste0(grouping,"to") 
+  
     ddM <- as.matrix(connCl$distance)
     
     ddM <- ddM[orderX,orderY]
@@ -144,9 +150,9 @@ plotClusters <- function(connCl,
     if (colorAxis){p <- p +
       theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5,colour = connCols),axis.text.y = element_text(colour = connCols))
     }
-    if (replaceIdWithNames & connCl$grouping=="neuron"){
-      if (is.null(connCl$inputsTable)){newNames <- connCl$outputsTable$name.from[match(rownames(ddM),connCl$outputsTable$from)]}else{
-        newNames <- connCl$inputsTable$name.to[match(rownames(ddM),connCl$inputsTable$to)]
+    if(!is.null(replacementLabels)){
+      if (is.null(connCl$inputsTable)){newNames <- connCl$outputsTable[[paste0(replacementLabels,".from")]][match(rownames(ddM),connCl$outputsTable[[from]])]}else{
+        newNames <- connCl$inputsTable[[paste0(replacementLabels,".from")]][match(rownames(ddM),connCl$inputsTable[[to]])]
       }
       p <- p + scale_x_discrete(labels=newNames)+scale_y_discrete(labels=newNames)
     }

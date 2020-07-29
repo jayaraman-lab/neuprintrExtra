@@ -11,7 +11,7 @@ plotClusters(
   colorAxis = FALSE,
   axesPalette = paletteer::paletteer_d("Polychrome::palette36")[3:36],
   theme = theme_minimal(),
-  replaceIdWithNames = TRUE,
+  replacementLabels = NULL,
   h = NULL,
   k = NULL
 )
@@ -29,7 +29,7 @@ plotClusters(
 
 \item{theme}{A ggplot theme to use for the plot}
 
-\item{replaceIdWithNames}{In case of neuron to neuron clustering, whether or not to replace the bodyids by neuron names on the axis labels}
+\item{replacementLabels}{A column prefix to use as a replacement for the axis labels (useful to replace bodyids with names for example)}
 
 \item{h}{To be passed to \code{\link{cutree}} if \code{colorAxis} is TRUE. Either \code{h} or \code{k} must be set in that case.}
 

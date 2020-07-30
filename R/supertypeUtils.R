@@ -89,7 +89,7 @@ supertype.neuronBag <- function(types,unicodeDelta=TRUE){
   for (lev in 1:3){
     for (ty in c(".from",".to")){
       for (tab in c("inputs","outputs","inputs_raw","outputs_raw")){
-        types[[tab]][[paste0("supertype",ty,lev)]] <- supertype(types[[tab]][[paste0("databaseType",ty)]],level=lev,unicodeDelta=unicodeDelta)
+        types[[tab]][[paste0("supertype",lev,ty)]] <- supertype(types[[tab]][[paste0("databaseType",ty)]],level=lev,unicodeDelta=unicodeDelta)
       }
     }
     types$names[[paste0("supertype",lev)]] <-  supertype(types$names[[paste0("databaseType")]],level=lev,unicodeDelta=unicodeDelta)
@@ -103,7 +103,7 @@ supertype.data.frame <- function(types,level=1:3,unicodeDelta=TRUE){
   renamable <- names(types)[names(types) %in% c("databaseType","databaseType.from","databaseType.to")]
   for (lev in level){
     for (ty in renamable){
-        types[[paste0(sub("databaseType","supertype",ty),lev)]] <- supertype(types[[ty]],level=lev,unicodeDelta=unicodeDelta)
+        types[[sub("databaseType",paste0("supertype",lev),ty)]] <- supertype(types[[ty]],level=lev,unicodeDelta=unicodeDelta)
     }
   }
   types

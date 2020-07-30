@@ -310,7 +310,7 @@ getTypeToTypeTable <- function(connectionTable,
   loners <- connectionTable %>% filter(n==1) %>%
     group_by_if(names(.) %in% c("type.from","type.to","roi","previous.type.from","previous.type.to","outputContribution","outputContributionTotal","knownOutputContribution",
                                 "knownOutputContributionTotal", "output_completedness","output_completednessTotal", "input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight","knownTotalPreROIweight","knownTotalPreWeight",
-                                "databaseType.to","databaseType.from",paste0("supertype.to",1:3),paste0("supertype.from",1:3))) %>%
+                                "databaseType.to","databaseType.from",paste0("supertype",1:3,".to"),paste0("supertype",1:3,".from"))) %>%
     mutate_at(vars(any_of(c("weightRelative","weightRelativeTotal","knownWeightRelative","knownWeightRelativeTotal"))),sum) %>%
     mutate(weight = sum(ROIweight),
            absoluteWeight = sum(ROIweight),
@@ -320,11 +320,11 @@ getTypeToTypeTable <- function(connectionTable,
 
   group_In <- names(connectionTable)[names(connectionTable) %in% c("type.from","to","type.to","roi","previous.type.from","previous.type.to","n","outputContribution","outputContributionTotal","knownOutputContribution","knownOutputContributionTotal",
                                                                    "output_completedness","output_completednessTotal","input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight","knownTotalPreROIweight","knownTotalPreWeight",
-                                                                   "databaseType.to","databaseType.from",paste0("supertype.to",1:3),paste0("supertype.from",1:3))]
+                                                                   "databaseType.to","databaseType.from",paste0("supertype",1:3,".to"),paste0("supertype",1:3,".from"))]
 
   group_Out <- names(connectionTable)[names(connectionTable) %in% c("type.from","type.to","roi","previous.type.from","previous.type.to","outputContribution","outputContributionTotal","knownOutputContribution","knownOutputContributionTotal",
                                                                     "output_completedness","output_completednessTotal","input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight","knownTotalPreROIweight","knownTotalPreWeight",
-                                                                    "databaseType.to","databaseType.from",paste0("supertype.to",1:3),paste0("supertype.from",1:3))]
+                                                                    "databaseType.to","databaseType.from",paste0("supertype",1:3,".to"),paste0("supertype",1:3,".from"))]
 
   ## Main filter. Could potentially be rewritten in more optimal ways.
   if ("knownWeightRelative" %in% names(connectionTable)){

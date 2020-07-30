@@ -120,20 +120,20 @@ tables2path <- function(inputTable,outputTable,stat="weightRelative",n=1){
  
   res <- inner_join(inputTable,outputTable,by=c("type.to"="type.from",
                                                 "databaseType.to"="databaseType.from",
-                                                "supertype.to1"="supertype.from1",
-                                                "supertype.to2"="supertype.from2",
-                                                "supertype.to3"="supertype.from3"
+                                                "supertype1.to"="supertype1.from",
+                                                "supertype2.to"="supertype2.from",
+                                                "supertype3.to"="supertype3.from"
                                                 ),suffix=c(paste0("_N",n),paste0("_N",n+1)))  %>% 
     rename(!!paste0("type_N",n) := "type.to",
            "type.to"=!!paste0("type.to_N",n+1),
            !!paste0("databaseType_N",n):="databaseType.to",
            "databaseType.to"=!!paste0("databaseType.to_N",n+1),
-           !!paste0("supertype1_N",n):="supertype.to1",
-           "supertype.to1"=!!paste0("supertype.to1_N",n+1),
-           !!paste0("supertype2_N",n):="supertype.to2",
-           "supertype.to2"=!!paste0("supertype.to2_N",n+1),
-           !!paste0("supertype3_N",n):="supertype.to3",
-           "supertype.to3"=!!paste0("supertype.to3_N",n+1)) %>% 
+           !!paste0("supertype1_N",n):="supertype1.to",
+           "supertype1.to"=!!paste0("supertype1.to_N",n+1),
+           !!paste0("supertype2_N",n):="supertype2.to",
+           "supertype2.to"=!!paste0("supertype2.to_N",n+1),
+           !!paste0("supertype3_N",n):="supertype3.to",
+           "supertype3.to"=!!paste0("supertype3.to_N",n+1)) %>% 
     rename_with(paste0,"_N",n+1,.cols = any_of(stat)) %>%
     rename_with(paste0,"_N",n+1,.cols = any_of("roi"))
   

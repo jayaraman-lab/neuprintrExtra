@@ -213,7 +213,7 @@ combineRois.data.frame <- function(connections,rois,newRoi){
     mutate_at(vars(any_of(c("totalPreROIweight","knownTotalPreROIweight"))),~sum(.[match(rois,roi)],na.rm=TRUE)) %>%
     group_by_if(names(.) %in% c(paste0(c("","name.","type.","databaseType.","previous.type."),"to"),
                                 paste0(c("","name.","type.","databaseType.","previous.type."),"from"),
-                                paste0("supertype.to",1:3),paste0("supertype.from",1:3)))
+                                paste0("supertype",1:3,".to"),paste0("supertype",1:3,".from")))
 
   if ("knownWeightRelative" %in% names(newRegionTable)){
     newRegionTable <- summarize(newRegionTable,roi=newRoi,

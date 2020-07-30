@@ -5,8 +5,8 @@
 \title{Builds a data frame of pathways between 2 collections of types}
 \usage{
 get_type2typePath(
-  type.from,
-  type.to,
+  type.from = NULL,
+  type.to = NULL,
   by.roi = TRUE,
   ROI = NULL,
   n_steps = 2,
@@ -24,7 +24,8 @@ get_type2typePath(
 \item{by.roi}{return results by ROI or just global weights?}
 
 \item{ROI}{which ROIs to consider. Can be a vector of ROI names, a list of vectors of ROI names, or NULL. If NULL (the default), consider all ROIs. 
-If a character vector, restrict to those ROIs. If a list, each element of the list will be ROI that will be combined together (and named as the element name in the list) using combineRois}
+If a character vector, restrict to those ROIs. If a list, each element of the list will be ROI that will be combined together 
+(and named as the element name in the list) using combineRois}
 
 \item{renaming}{a renaming function to use (by default \code{cxRetyping})}
 
@@ -34,8 +35,16 @@ If a character vector, restrict to those ROIs. If a list, each element of the li
 
 \item{...}{: to be passed to neuronBag when building the path}
 
-\item{n_step}{an integer or vector of integers. If a vector paths of all those lenghts will be listed}
+\item{n_step}{an integer or vector of integers. If a vector paths of all those lenghts will be listed.}
 }
 \description{
 Builds a data frame of pathways between 2 collections of types
+}
+\details{
+\itemize{
+\item If n_steps is 3, only paths of length 3 will be listed. To get all paths of length 1 to 3, you need to pass 1:3 to n_steps. 
+All vectors of integers are possible for n_steps.
+\item If \code{type.from} or \code{type.to} are left unspecified, all pathways of the specified length to (resp. from) the specified type are listed.
+Use at your own risk, as this can potentially result in very large objects.
+}
 }

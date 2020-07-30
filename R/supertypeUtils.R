@@ -63,7 +63,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^FS.*",types)] <- "FS"
   supertype[grepl("^EL.*",types)] <- "EL"
   supertype[grepl("^ER[1-6].*",types)] <- "ER"
-  supertype[grepl("^SA.*",types)] <- "SA"
+  supertype[grepl("^SA[1-3].*",types)] <- "SA"
   supertype[grepl("SpsP.*",types)] <- "SPS-PB"
   supertype[grepl("^OA_V.*",types)] <- "OA"
   supertype[grepl("^P[1|6].*",types)] <- "P"

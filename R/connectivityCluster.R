@@ -191,6 +191,6 @@ addClusters <- function(connCl,partnerClusters,h=0.8,k=NULL){
   from <- paste0(grouping,"from")
   to <- paste0(grouping,"to")
   if (!is.null(connCl$inputsTable)){connCl$inputsTable <- mutate(connCl$inputsTable,cluster.from=partnerClusters[!!sym(from)])}
-  if (!is.null(connCl$inputsTable)){connCl$outputsTable <- mutate(connCl$outputsTable,cluster.to=partnerClusters[!!sym(to)])}
+  if (!is.null(connCl$outputsTable)){connCl$outputsTable <- mutate(connCl$outputsTable,cluster.to=partnerClusters[!!sym(to)])}
   connCl
 }

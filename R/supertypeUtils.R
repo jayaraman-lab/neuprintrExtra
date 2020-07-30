@@ -17,73 +17,38 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype <- types
   supertype[is.na(types)] <- "Other"
   
-  supertype[grepl("^FB.*",types)] <- stringr::str_extract(types,"FB[1-9]")[grepl("^FB.*",types)]
+  supertype <- stringr::str_extract(types,"[A-Z]+")
+  supertype[grepl("^FB[1-9].*",types)] <- stringr::str_extract(types,"FB[1-9]")[grepl("^FB[1-9].*",types)]
   supertype[grepl("^vDelta.*",types)] <- stringr::str_extract(types,"vDelta[A-O]")[grepl("^vDelta.*",types)]
   supertype[grepl("^hDelta.*",types)] <- stringr::str_extract(types,"hDelta[A-M]")[grepl("^hDelta.*",types)]
-  supertype[grepl("^FC.*",types)] <- stringr::str_extract(types,"FC[1-9]")[grepl("^FC.*",types)]
-  supertype[grepl("^FS.*",types)] <- stringr::str_extract(types,"FS[1-9]")[grepl("^FS.*",types)]
-  supertype[grepl("^FR.*",types)] <- "FR"
-  supertype[grepl("^EL.*",types)] <- "EL"
+  supertype[grepl("^FC[1-9].*",types)] <- stringr::str_extract(types,"FC[1-9]")[grepl("^FC[1-9].*",types)]
+  supertype[grepl("^FS[1-9].*",types)] <- stringr::str_extract(types,"FS[1-9]")[grepl("^FS[1-9].*",types)]
+  supertype[grepl("^FR[1-9].*",types)] <- stringr::str_extract(types,"FR[1-9]")[grepl("^FR[1-9].*",types)]
+  supertype[grepl("^SA[1-9].*",types)] <- stringr::str_extract(types,"SA[1-9]")[grepl("^SA[1-9].*",types)]
   supertype[grepl("^ER[1-6].*",types)] <- stringr::str_extract(types,"ER[1-6]")[grepl("^ER[1-6].*",types)]
-  supertype[grepl("^PFR.*",types)] <- "PFR"
-  supertype[grepl("^PFN.*",types)] <- stringr::str_extract(types,"PFN[a|d|m|p|v]")[grepl("^PFN.*",types)]
-  supertype[grepl("^LNO.*",types)] <- "LNO"
-  supertype[grepl("^LCNO.*",types)] <- "LCNO"
-  supertype[grepl("^GLNO.*",types)] <- "GLNO"
-  supertype[types %in% c("L-L(c)1","AoL-L(c)","L-LC(c)1","VeL-CLVe(c)1","L-Lic(c)","VeL-LVeC(c)",
-                        "CL-LC(c)","VeL-LVe(c)2","CL-L(c)1","L-LC(c)2","VeLC-L(c)","CL-L(c)2",
-                        "VeL-L(c)","CL-L(c)2","VeLC-LVe(c)3","VeL-LC(c)","L-L(c)2")] <- "L-L(c)"
-  supertype[grepl("^C.*Sm$",types)] <- "C-Sm"
-  supertype[types %in% c("CL-AtIb(c)1","CL-AtIb(c)2","CL-IbAtl(b)1","CL-SmIb","CL-AtIb(b)2","CL-AtIb(b)3")] <- "CL-Ib"
-  supertype[types %in% c("LCPl-SmSi","WplL-Sm")] <- "L-Sm"
-  supertype[types %in% c("IbSpVeL-(LIb)(c)Sm(b)","VeLC-(LC)(c)Sm(b)")] <- "L-Sm(b)"
-  supertype[types %in% c("L-VeSpIp","L-EpVeSp","L-VeSp","LVe-SpIp","LW-Sp")] <-  "L-Sp"
-  supertype[startsWith(types,"L-Ve")] <- "L-Ve"
-  supertype[startsWith(types,"L-WP")] <- "L-WP"
-  supertype[startsWith(types,"LVe")] <- "LVe"
-  supertype[startsWith(types,"Pl-C")] <- "Pl-C"
-  supertype[types %in% c("SpVeL-(?)(c)","SpVeL-LSpIp(c)1","SpVeL-LSpIp(c)2")] <- "SpVeL-X(c)"
-  supertype[types %in% c("VeLC-CLVe(c)","VeLC-LVe(c)")] <- "VeL-LVe"
-  supertype[types %in% c("WL-(X)(c)","VeWL-VeX(c)","LW-X(c)")] <- "WL-X(c)"
-  supertype[grepl("^MBON.*",types)] <- stringr::str_extract(types,"MBON[0-4][0-9]")[grepl("^MBON.*",types)]
-  supertype[grepl("^SMP.*",types)] <- "SMP"
-  supertype[grepl("^SIP.*",types)] <- "SIP"
-  supertype[grepl("^LAL.*",types)] <- "LAL"
-  supertype[grepl("^CRE.*",types)] <- "CRE"
-  supertype[grepl("^WED.*",types)] <- "WED"
-  supertype[grepl("^AOTU.*",types)] <- "AOTU"
-  supertype[grepl("^AVLP.*",types)] <- "AVLP"
-  supertype[grepl("^PVLP.*",types)] <- "PVLP"
-  supertype[grepl("^PLP.*",types)] <- "PLP"
-  supertype[grepl("^SLP.*",types)] <- "SLP"
-  supertype[grepl("^IB.*",types)] <- "IB"
-  supertype[grepl("^ATL.*",types)] <- "ATL"
-  supertype[grepl("^VES.*",types)] <- "VES"
-  supertype[grepl("^SAD.*",types)] <- "SAD"
+  supertype[grepl("^PFN[a|d|m|p|v].*",types)] <- stringr::str_extract(types,"PFN[a|d|m|p|v]")[grepl("^PFN[a|d|m|p|v].*",types)]
+  supertype[grepl("^MBON[0-5][0-9].*",types)] <- stringr::str_extract(types,"MBON[0-5][0-9]")[grepl("^MBON[0-5][0-9].*",types)]
+  supertype[grepl("^ExR.*",types)] <- "ExR"
+  supertype[grepl("^SpsP.*",types)] <- "SPS-PB"
+  supertype[grepl("^OA_V.*",types)] <- "OA"
+  supertype[grepl("^TuBu.*",types)] <- "TuBu"
+  supertype[grepl("^Delta7",types)] <- "Delta7"
+  supertype[grepl("^LPsP.*",types)] <- "LPsPB"
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   
   if (level == 1){return(supertype)}
 
-  supertype[grepl("^FB.*",types)] <- "FBt"
+  supertype[grepl("^FB[1-9].*",types)] <- "FBt"
   supertype[grepl("^vDelta.*",types)] <- "vDelta"
   supertype[grepl("^hDelta.*",types)] <- "hDelta"
-  supertype[grepl("^PFL.*",types)] <- "PFL"
-  supertype[grepl("^PFN.*",types)] <- "PFN"
-  supertype[grepl("^PFR.*",types)] <- "PFR"
-  supertype[grepl("^PEN.*",types)] <- "PEN"
+  supertype[grepl("^PFN[a|d|m|p|v].*",types)] <- "PFN"
   supertype[grepl("^LNO.*|^LCNO.*|^GLNO.*",types)] <- "LNO"
-  supertype[grepl("^ExR.*",types)] <- "ExR"
-  supertype[grepl("^FC.*",types)] <- "FC"
-  supertype[grepl("^FR.*",types)] <- "FR"
-  supertype[grepl("^FS.*",types)] <- "FS"
-  supertype[grepl("^EL.*",types)] <- "EL"
+  supertype[grepl("^FC[1-9].*",types)] <- "FC"
+  supertype[grepl("^FR[1-9].*",types)] <- "FR"
+  supertype[grepl("^FS[1-9].*",types)] <- "FS"
   supertype[grepl("^ER[1-6].*",types)] <- "ER"
-  supertype[grepl("^SA[1-3].*",types)] <- "SA"
-  supertype[grepl("SpsP.*",types)] <- "SPS-PB"
-  supertype[grepl("^OA_V.*",types)] <- "OA"
-  supertype[grepl("^P[1|6].*",types)] <- "P"
-  supertype[grepl("^TuBu.*",types)] <- "TuBu"
-  supertype[grepl("^MBON.*",types)] <- "MBON"
+  supertype[grepl("^SA[1-9].*",types)] <- "SA"
+  supertype[grepl("^MBON[0-5][0-9].*",types)] <- "MBON"
 
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   if (level == 2){return(supertype)}
@@ -91,11 +56,11 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^Delta7|^P[1|6].*",types)] <- "PB Interneurons"
   supertype[grepl("^PF.*",types)] <- "FB Columnar"
   supertype[grepl("^EPG.*|^PEG.*|^PEN.*|^EL.*",types)] <- "EB Columnar"
-  supertype[grepl("^FC.*|^FR.*|^FS.*",types)] <- "FB Output"
+  supertype[grepl("^FC[1-9].*|^FR[1-9].*|^FS[1-9].*",types)] <- "FB Output"
   supertype[grepl("^FB[1-9].*",types)] <- "FB Tangential"
   supertype[grepl("^[h|v]Delta.*",types)] <- "FB Interneuron"
 
-  supertype[types == supertype] <- "Other"
+  supertype[is.na(supertype)] <- "Other"
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   supertype
 }

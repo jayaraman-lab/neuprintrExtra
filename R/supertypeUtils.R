@@ -45,6 +45,21 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[types %in% c("SpVeL-(?)(c)","SpVeL-LSpIp(c)1","SpVeL-LSpIp(c)2")] <- "SpVeL-X(c)"
   supertype[types %in% c("VeLC-CLVe(c)","VeLC-LVe(c)")] <- "VeL-LVe"
   supertype[types %in% c("WL-(X)(c)","VeWL-VeX(c)","LW-X(c)")] <- "WL-X(c)"
+  supertype[grepl("^MBON.*",types)] <- stringr::str_extract(types,"MBON[0-4][0-9]")[grepl("^MBON.*",types)]
+  supertype[grepl("^SMP.*",types)] <- "SMP"
+  supertype[grepl("^SIP.*",types)] <- "SIP"
+  supertype[grepl("^LAL.*",types)] <- "LAL"
+  supertype[grepl("^CRE.*",types)] <- "CRE"
+  supertype[grepl("^WED.*",types)] <- "WED"
+  supertype[grepl("^AOTU.*",types)] <- "AOTU"
+  supertype[grepl("^AVLP.*",types)] <- "AVLP"
+  supertype[grepl("^PVLP.*",types)] <- "PVLP"
+  supertype[grepl("^PLP.*",types)] <- "PLP"
+  supertype[grepl("^SLP.*",types)] <- "SLP"
+  supertype[grepl("^IB.*",types)] <- "IB"
+  supertype[grepl("^ATL.*",types)] <- "ATL"
+  supertype[grepl("^VES.*",types)] <- "VES"
+  supertype[grepl("^SAD.*",types)] <- "SAD"
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   
   if (level == 1){return(supertype)}
@@ -68,6 +83,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^OA_V.*",types)] <- "OA"
   supertype[grepl("^P[1|6].*",types)] <- "P"
   supertype[grepl("^TuBu.*",types)] <- "TuBu"
+  supertype[grepl("^MBON.*",types)] <- "MBON"
 
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   if (level == 2){return(supertype)}

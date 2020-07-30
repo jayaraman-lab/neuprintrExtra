@@ -158,11 +158,12 @@ pathDf2graphDf <- function(pathDf){
   toCols <- c(sort(pathColNames[grep("type_",pathColNames)]), "type.to")
   weightBaseName <- sub("_path","",pathColNames[grep("_path",pathColNames)])
   weights <- sort(pathColNames[grep(paste0(weightBaseName,"_N"),pathColNames)])
+  rois <- sort(pathColNames[grep("roi_",pathColNames)])
   
   
   for (i in seq(3)){
-    assign( paste0("fromSupertype",i), c(paste0("supertype",i,".from"),pathColNames[grep(paste0("supertype",i,"_N"),pathColNames)]) )
-    assign( paste0("toSupertype",i),  c(pathColNames[grep(paste0("supertype",i,"_N"),pathColNames)], paste0("supertype",i,".to")) )
+    assign( paste0("fromSupertype",i), c(paste0("supertype",i,".from"),sort(pathColNames[grep(paste0("supertype",i,"_N"),pathColNames)])))
+    assign( paste0("toSupertype",i),  c(sort(pathColNames[grep(paste0("supertype",i,"_N"),pathColNames)]), paste0("supertype",i,".to")) )
   }
   
   graphDataFrame = data.frame(from = character(),
@@ -179,6 +180,8 @@ pathDf2graphDf <- function(pathDf){
     nas = is.na(toNodes)
     toNodes[nas] = pathDf$type.to[nas]
     pathDf$type.to[nas] = NA
+    
+    
     
     toST1[nas] =pathDf$supertype1.to[nas]
     pathDf$supertype1.to[nas] = NA
@@ -198,6 +201,9 @@ pathDf2graphDf <- function(pathDf){
                      supertype3.from = pathDf[[fromSupertype3[step]]],
                      supertype3.to = toST3)
     tmp[[weightBaseName]] <- pathDf[[weights[step]]]
+    if(length(rois)>0){
+      tmp$roi <- pathDf[[rois[step]]]
+    }
     graphDataFrame = bind_rows(graphDataFrame,unique(tidyr::drop_na(tmp)))
   }
   

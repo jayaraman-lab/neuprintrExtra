@@ -50,17 +50,12 @@ getConnectionTable.data.frame <- function(bodyIDs,synapseType, slctROI=NULL,by.r
   myConnections <- filter(myConnections,partnerMeta$status =="Traced")
   partnerMeta <- filter(partnerMeta,status == "Traced")
   
-  if (computeKnownRatio){
-    rawPartnerMeta <- neuprint_get_meta(myConnections_raw$partner,chunk=chunk_meta,...)
-    myConnections_raw <- filter(myConnections_raw,rawPartnerMeta$status=="Traced")
-  }
-
-  processConnectionTable(myConnections,myConnections_raw,refMeta,partnerMeta,refMetaOrig,synapseType,by.roi,slctROI,verbose,chunk_meta,chunk_connections,computeKnownRatio,...)
+  processConnectionTable(myConnections,synThresh,refMeta,partnerMeta,refMetaOrig,synapseType,by.roi,slctROI,verbose,chunk_meta,chunk_connections,computeKnownRatio,...)
 }
 
 #' Internal function, exposed only for fringe cases like comparing different versions of the dataset.
 #' @export
-processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partnerMeta,refMetaOrig,synapseType,by.roi,slctROI,verbose,chunk_meta,chunk_connections,computeKnownRatio,...){
+processConnectionTable <- function(myConnections,synThresh,refMeta,partnerMeta,refMetaOrig,synapseType,by.roi,slctROI,verbose,chunk_meta,chunk_connections,computeKnownRatio,...){
 
 
   refMeta <- slice(refMeta,match(myConnections$bodyid,bodyid))
@@ -76,15 +71,18 @@ processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partn
   ## Normalization is always from the perspective of the output (fraction of inputs to the output neuron)
   if (synapseType == "PRE"){
     if (computeKnownRatio){
-      knownTablePost <- myConnections_raw  %>% mutate(from = ifelse(prepost==1,bodyid,partner),
-                                                      to = ifelse(prepost==1,partner,bodyid)) %>% select(-bodyid,-partner)
+      knownTablePost <- myConnections
       if (length(myConnections$from)==0){knownTablePre <- empty_connTable(by.roi | !(is.null(slctROI)))}else{
-      knownTablePre <- neuprint_connection_table(unique(myConnections$from),"POST",slctROI,by.roi=by.roi,chunk=chunk_connections,...)}
-      knownTablePre <- knownTablePre %>% mutate(from = bodyid,to = partner) %>% select(-bodyid,-partner,-prepost)
+        knownTablePre <- neuprint_connection_table(unique(myConnections$from),"POST",slctROI,by.roi=by.roi,chunk=chunk_connections,...)}
+        knownTablePre <- knownTablePre %>% mutate(from = bodyid,to = partner) %>% select(-bodyid,-partner,-prepost)
 
       if (by.roi | !is.null(slctROI)){
         knownTablePre <- tidyr::drop_na(knownTablePre,ROIweight)
+        knownTablePre <- filter(knownTablePre,ROIweight>synThresh)
+      }else{
+        knownTablePre <- filter(knownTablePre,weight>synThresh)
       }
+        
       knownPreMeta <- neuprint_get_meta(knownTablePre$to,chunk=chunk_meta,...)
       knownTablePre <- filter(knownTablePre,knownPreMeta$status=="Traced")
     }
@@ -94,13 +92,15 @@ processConnectionTable <- function(myConnections,myConnections_raw,refMeta,partn
                             databaseType.from = type.from)
   } else {
     if (computeKnownRatio){
-      knownTablePre <- myConnections_raw  %>% mutate(from = ifelse(prepost==1,bodyid,partner),
-                                                     to = ifelse(prepost==1,partner,bodyid)) %>% select(-bodyid,-partner)
+      knownTablePre <- myConnections
       if (length(myConnections$to)==0){knownTablePost <- empty_connTable(by.roi | !(is.null(slctROI)))}else{
-      knownTablePost <- neuprint_connection_table(unique(myConnections$to),"PRE",slctROI,by.roi=by.roi,chunk=chunk_connections,...)}
-      knownTablePost <- knownTablePost %>% mutate(from = partner,to = bodyid) %>% select(-bodyid,-partner,-prepost)
+        knownTablePost <- neuprint_connection_table(unique(myConnections$to),"PRE",slctROI,by.roi=by.roi,chunk=chunk_connections,...)}
+        knownTablePost <- knownTablePost %>% mutate(from = partner,to = bodyid) %>% select(-bodyid,-partner,-prepost)
       if (by.roi | !is.null(slctROI)){
         knownTablePost <- tidyr::drop_na(knownTablePost,ROIweight)
+        knownTablePost <- filter(knownTablePost,ROIweight>synThresh)
+      }else{
+        knownTablePost <- filter(knownTablePost,weight>synThresh)
       }
       knownPostMeta <- neuprint_get_meta(knownTablePost$from,chunk=chunk_meta,...)
       knownTablePost <- filter(knownTablePost,knownPostMeta$status=="Traced")

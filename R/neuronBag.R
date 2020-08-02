@@ -139,7 +139,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
 ## Concatenate neuronBags
 #' @export
 c.neuronBag <- function(...){
-  full <- list(...)
+  full <- list2(...)
   out <- new_neuronBag(outputs = distinct(do.call(rbind,lapply(full,function(i){i$outputs}))),
                    inputs = distinct(do.call(rbind,lapply(full,function(i){i$inputs}))),
                    names = distinct(do.call(rbind,lapply(full,function(i) i$names))),

@@ -6,7 +6,7 @@
 \usage{
 processConnectionTable(
   myConnections,
-  myConnections_raw,
+  synThresh,
   refMeta,
   partnerMeta,
   refMetaOrig,

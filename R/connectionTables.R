@@ -288,10 +288,10 @@ getTypeToTypeTable <- function(connectionTable,
 
   ## Gather the completedness measures average per type
   connectionTable <- group_by(connectionTable,type.to,roi) %>%
-                                                            mutate_at(vars(any_of(c("input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight"))),~mean(.[match(unique(to),to)])) %>% ungroup()
+            mutate_at(vars(any_of(c("input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight"))),~mean(.[match(unique(to),to)])) %>% ungroup()
 
   connectionTable <- group_by(connectionTable,type.from,roi) %>%
-    mutate_at(vars(any_of(c("output_completedness","output_completednessTotal","knownTotalPreROIweight","knownTotalPreWeight"))),mean) %>% ungroup()
+    mutate_at(vars(any_of(c("output_completedness","output_completednessTotal","knownTotalPreROIweight","knownTotalPreWeight"))),~mean(.[match(unique(from),from)])) %>% ungroup()
 
 
   ## Gather the outputContributions
@@ -316,13 +316,13 @@ getTypeToTypeTable <- function(connectionTable,
            absoluteWeight = sum(ROIweight),
            n_type = 1,
            n_targets = 1) %>%
-    summarize_at(vars(any_of(c("weightRelative","weightRelativeTotal","knownWeightRelative","knownWeightRelativeTotal","weight","absoluteWeight","n_type","n_targets"))),first) %>% ungroup()
+    summarize_at(vars(any_of(c("weightRelative","weightRelativeTotal","knownWeightRelative","knownWeightRelativeTotal","weight","absoluteWeight","n_type","n_from","n_targets"))),first) %>% ungroup()
 
-  group_In <- names(connectionTable)[names(connectionTable) %in% c("type.from","to","type.to","roi","previous.type.from","previous.type.to","n","outputContribution","outputContributionTotal","knownOutputContribution","knownOutputContributionTotal",
+  group_In <- names(connectionTable)[names(connectionTable) %in% c("type.from","to","type.to","roi","previous.type.from","previous.type.to","n","n_from","outputContribution","outputContributionTotal","knownOutputContribution","knownOutputContributionTotal",
                                                                    "output_completedness","output_completednessTotal","input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight","knownTotalPreROIweight","knownTotalPreWeight",
                                                                    "databaseType.to","databaseType.from",paste0("supertype",1:3,".to"),paste0("supertype",1:3,".from"))]
 
-  group_Out <- names(connectionTable)[names(connectionTable) %in% c("type.from","type.to","roi","previous.type.from","previous.type.to","outputContribution","outputContributionTotal","knownOutputContribution","knownOutputContributionTotal",
+  group_Out <- names(connectionTable)[names(connectionTable) %in% c("type.from","type.to","roi","previous.type.from","previous.type.to","n_from","outputContribution","outputContributionTotal","knownOutputContribution","knownOutputContributionTotal",
                                                                     "output_completedness","output_completednessTotal","input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight","knownTotalPreROIweight","knownTotalPreWeight",
                                                                     "databaseType.to","databaseType.from",paste0("supertype",1:3,".to"),paste0("supertype",1:3,".from"))]
 

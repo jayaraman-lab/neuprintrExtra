@@ -52,6 +52,8 @@ If a character vector, restrict to those ROIs. If a list, each element of the li
 \item{addContraPaths}{Experimental: simulate the opposite side of the brain assuming symetry. The new ROI will be called roi_contra. Only ROIs containing "(R)" 
 in their name will be considered}
 
+\item{thresholdPerROI}{Optional filtering of the connection tables to limit to types containing at least \code{thresholdPerROI} synapses of the right polarity in the ROI considered.}
+
 \item{...}{: to be passed to neuronBag when building the path}
 
 \item{n_step}{an integer or vector of integers. If a vector paths of all those lenghts will be listed.}

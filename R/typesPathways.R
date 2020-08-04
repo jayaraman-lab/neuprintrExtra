@@ -12,6 +12,8 @@
 #' @param excludeLoops Logical, whether to exclude paths containing duplicates (TRUE by default)
 #' @param addContraPaths Experimental: simulate the opposite side of the brain assuming symetry. The new ROI will be called roi_contra. Only ROIs containing "(R)" 
 #' in their name will be considered
+#' @param thresholdPerROI Optional filtering of the connection tables to limit to types containing at least \code{thresholdPerROI} synapses of the right 
+#' polarity in the ROI considered (forces to run the connection tables with \code{computeKnownRatio} set to TRUE)
 #' @param ... : to be passed to neuronBag when building the path
 #' @details \itemize{
 #' \item If n_steps is 3, only paths of length 3 will be listed. To get all paths of length 1 to 3, you need to pass 1:3 to n_steps. 
@@ -53,6 +55,9 @@ get_type2typePath_raw <- function(type.from=NULL,
   stopifnot("At least one of type.from or type.to must be specified"=!is.null(type.from) | !is.null(type.to))
   if (addContraPaths & is.null(ROI)){stop("You should specify a set of (preferably right side) ROIs for `addContraPaths` to make sense.")}
   
+  computeKnownRatio <- FALSE
+  if(!is.null(thresholdPerROI)){computeKnownRatio <- TRUE}
+  
   res <- vector("list",max(n_steps))
   
   if(!is.null(type.from)){
@@ -87,12 +92,13 @@ get_type2typePath_raw <- function(type.from=NULL,
   type.from_toAdd <- character(0)
   
   for (n in downHalf){
-    bag <- neuronBag(type.from_loc,slctROI=ROIraw,by.roi=by.roi,omitInputs=TRUE,selfRef=TRUE,...)  
+    bag <- neuronBag(type.from_loc,slctROI=ROIraw,by.roi=by.roi,omitInputs=TRUE,selfRef=TRUE,computeKnownRatio=computeKnownRatio,...)  
     if (is.list(ROI)){
       bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r)})
       bag <- do.call(c,bag_list)
     }
     bag <- renaming(bag)
+    if(!is.null(thresholdPerROI)){bag$outputs <- filter(bag$outputs,knownTotalROIweight>thresholdPerROI & knownTotalPreROIweight>thresholdPerROI)}
     
     if (addContraPaths){
       resLoc <- addContraSide(bag$outputs)
@@ -115,12 +121,13 @@ get_type2typePath_raw <- function(type.from=NULL,
   known_targets <- unique(type.from_loc$type)
   type.to_toAdd <- character(0)
   for (n in rev(upHalf)){
-    bag <- neuronBag(type.to_loc,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,selfRef=TRUE,...)   
+    bag <- neuronBag(type.to_loc,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,selfRef=TRUE,computeKnownRatio=computeKnownRatio,...)   
     if (is.list(ROI)){
       bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r)})
       bag <- do.call(c,bag_list)
     }
     bag <- renaming(bag)
+    if(!is.null(thresholdPerROI)){bag$inputs <- filter(bag$inputs,knownTotalROIweight>thresholdPerROI & knownTotalPreROIweight>thresholdPerROI)}
     
     if (addContraPaths){
       resLoc <- addContraSide(bag$inputs)
@@ -129,7 +136,7 @@ get_type2typePath_raw <- function(type.from=NULL,
     }
     type.to_loc <- getTypesTable(unique(resLoc$databaseType.from)) %>% mutate(databaseType=type)
     unknowns <- retype.na_meta(neuprint_get_meta(unique(bag$inputs_raw$from[!(bag$inputs_raw$from %in% type.to_loc$bodyid)]))) %>% mutate(databaseType=NA)
-    if (length(unknowns != 0)){type.to_loc <- bind_rows(type.to_loc,unknowns)}
+    if (length(unknowns != 0)){type.to_loc <- rbind(type.to_loc,unknowns)}
     
     type.to_loc <- renaming(type.to_loc)
     type.to_loc <- filter(type.to_loc,type %in% resLoc$type.from)

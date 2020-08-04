@@ -118,7 +118,8 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
       
       outputsR <- group_by(outputsR,from)  %>% mutate(knownTotalPreWeight=sum(weight[match(to,to)])) %>%
         group_by(from,roi) %>% mutate(knownTotalPreROIweight=sum(ROIweight),
-                                      knownOutputContribution = ROIweight/knownTotalPreROIweight) %>% ungroup()
+                                      knownOutputContribution = ROIweight/knownTotalPreROIweight,
+                                      knownOutputContributionTotal = weight/knownTotalPreWeight) %>% ungroup()
       
       outputsR <- mutate(outputsR,
                          knownTotalWeight = allInsToOuts$knownTotalWeight[match(outputsR$to,allInsToOuts$to)],
@@ -149,6 +150,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
         group_by(from) %>% mutate(knownTotalPreWeight=sum(weight[match(to,to)])) %>%
         group_by(from,roi) %>% mutate(knownTotalPreROIweight=sum(ROIweight)) %>% ungroup() %>%
         mutate(knownOutputContribution = ROIweight/knownTotalPreROIweight,
+               knownOutputContributionTotal = weight/knownTotalPreWeight,
                output_completedness = knownTotalPreROIweight/totalPreROIweight
                ) %>% group_by(to)  %>% mutate(knownTotalWeight=sum(weight)) %>%
         group_by(to,roi) %>% mutate(knownTotalROIweight=sum(ROIweight)) %>% ungroup() 
@@ -160,6 +162,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
                         knownTotalPreWeight = allOutsFromIns$knownTotalPreWeight[match(inputsR$from,allOutsFromIns$from)],
                         knownTotalPreROIweight = allOutsFromIns$knownTotalPreROIweight[match(paste0(inputsR$from,inputsR$roi),paste0(allOutsFromIns$from,allOutsFromIns$roi))],
                         knownOutputContribution = ROIweight/knownTotalPreROIweight,
+                        knownOutputContributionTotal = weight/knownTotalPreWeight,
                         knownWeightRelativeTotal = weight/knownTotalWeight,
                         knownWeightRelative = ROIweight/knownTotalROIweight,
                         output_completedness = knownTotalPreROIweight/totalPreROIweight,

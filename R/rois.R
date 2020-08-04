@@ -257,15 +257,29 @@ combineRois.data.frame <- function(connections,rois,newRoi){
 combineRois.neuronBag <- function(connections,rois,newRoi,...){
   new_inputsR <- combineRois(connections$inputs_raw,rois,newRoi)
   new_outputsR <- combineRois(connections$outputs_raw,rois,newRoi)
-  new_inputs <- getTypeToTypeTable(new_inputsR,typesTable = connections$names,...)
-  new_outputs <- getTypeToTypeTable(new_outputsR,typesTable = connections$outputsTableRef,...)
-  new_neuronBag(outputs = new_outputs,
+  
+  if("allInsToOuts" %in% names(connections[["ref"]])){
+    connections$ref$allInsToOuts <- combineRois(connections$ref$allInsToOuts,rois,newRoi)
+    connections$ref$outputs_ref <-getTypeToTypeTable(connections$ref$allInsToOuts,typesTable = connections$ref$outputTableRefFull,...)
+    new_outputs <- processTypeToTypeFullOutputs(connections$ref$outputs_ref,new_outputsR)
+  }else{
+    new_outputs <- getTypeToTypeTable(new_outputsR,typesTable = connections$outputsTableRef,...)
+  }
+  if("allOutsFromIns" %in% names(connections[["ref"]])){
+    connections$ref$allOutsFromIns <- combineRois(connections$ref$allOutsFromIns,rois,newRoi)
+    connections$ref$inputs_ref <- getTypeToTypeTable(connections$ref$allOutsFromIns,typesTable=connections$ref$inputsTableRefFull,...)
+    new_inputs <- processTypeToTypeFullInputs(connections$ref$inputs_ref,new_inputsR)
+  }else{
+    new_inputs <- getTypeToTypeTable(new_inputsR,typesTable = connections$names,...)
+  }
+  nBag <- new_neuronBag(outputs = new_outputs,
                 inputs = new_inputs,
                 names = connections$names,
                 inputs_raw = new_inputsR,
                 outputs_raw = new_outputsR,
                 outputsTableRef = connections$outputsTableRef)
-
+  if("ref" %in% names(connections)){nBag$ref <- connections$ref}
+  nBag
 }
 
 #' Build a per roi summary of innervation for neurons in a neuronBag

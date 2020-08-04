@@ -92,7 +92,7 @@ neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,
 }
 
 #' @export
-neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,...){
+neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,...){
  
   if(!("databaseType" %in% names(typeQuery))){
     warning("No 'databaseType' field. Assuming the 'type' column contains database types.")
@@ -100,12 +100,48 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
   if (!omitOutputs){
     if (verbose) message("Calculate raw outputs")
     outputsR <- getConnectionTable(typeQuery,synapseType = "POST",by.roi=by.roi,verbose=verbose,...)
+    if (computeKnownRatio){
+      if (verbose) message("Calculate full raw inputs to outputs")
+      allInsToOuts <- getConnectionTable(unique(outputsR$to),synapseType="PRE",by.roi=by.roi,verbose=verbose,...) %>%
+        group_by(to) %>% distinct(from,.keep_all=TRUE) %>% mutate(knownTotalWeight=sum(weight)) %>%
+        group_by(to,roi) %>% mutate(knownTotalROIweight=sum(ROIweight)) %>% ungroup()
+      
+      outputsR <- group_by(outputsR,from) %>% distinct(to,.keep_all=TRUE) %>% mutate(knownTotalPreWeight=sum(weight)) %>%
+        group_by(from,roi) %>% mutate(knownTotalPreROIweight=sum(ROIweight),
+                                      knownOutputContribution = ROIweight/knownTotalPreROIweight) %>% ungroup()
+      
+      outputsR <- mutate(outputsR,
+                         knownTotalWeight = allInsToOuts$knownTotalWeight[match(outputsR$to,allInsToOuts$to)],
+                         knownWeightRelativeTotal = weight/knownTotalWeight,
+                         knownTotalROIweight = allInsToOuts$knownTotalROIweight[match(paste0(outputsR$to,outputsR$roi),paste0(allInsToOuts$to,allInsToOuts$roi))],
+                         knownWeightRelative = ROIweight/knownTotalROIweight,
+                         output_completedness = knownTotalPreROIweight/totalPreROIweight,
+                         input_completedness = knownTotalROIweight/totalROIweight)
+    }
   }else{
     outputsR <- getConnectionTable(character(),"POST",by.roi=by.roi,verbose=verbose,...)}
   
   if (!omitInputs){
     if (verbose) message("Calculate raw inputs")
     inputsR <- getConnectionTable(typeQuery,synapseType = "PRE",by.roi=by.roi,verbose=verbose,...)
+    if (computeKnownRatio){
+      if (verbose) message("Calculate full raw outputs of inputs")
+      allOutsFromIns <- getConnectionTable(unique(inputsR$from),synapseType="POST",by.roi=by.roi,verbose=verbose,...) %>% 
+        group_by(from) %>% distinct(to,.keep_all=TRUE) %>% mutate(knownTotalPreWeight=sum(weight)) %>%
+        group_by(from,roi) %>% mutate(knownTotalPreROIweight=sum(ROIweight)) %>% ungroup()
+      
+      inputsR <- group_by(inputsR,to) %>% distinct(from,.keep_all=TRUE) %>% mutate(knownTotalWeight=sum(weight)) %>%
+        group_by(to,roi) %>% mutate(knownTotalROIweight=sum(ROIweight)) %>% ungroup()
+      
+      inputsR <- mutate(inputsR,
+                        knownTotalPreWeight = allOutsFromIns$knownTotalPreWeight[match(inputsR$from,allOutsFromIns$from)],
+                        knownTotalPreROIweight = allOutsFromIns$knownTotalPreROIweight[match(paste0(inputsR$from,inputsR$roi),paste0(allOutsFromIns$from,allOutsFromIns$roi))],
+                        knownOutputContribution = ROIweight/knownTotalPreROIweight,
+                        knownWeightRelativeTotal = weight/knownTotalWeight,
+                        knownWeightRelative = ROIweight/knownTotalROIweight,
+                        output_completedness = knownTotalPreROIweight/totalPreROIweight,
+                        input_completedness = knownTotalROIweight/totalROIweight)
+    }
   }else{
     inputsR <- getConnectionTable(character(),"PRE",by.roi=by.roi,verbose=verbose,...)}
   

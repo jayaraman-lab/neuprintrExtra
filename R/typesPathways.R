@@ -9,6 +9,8 @@
 #' @param renaming a renaming function to use (by default \code{cxRetyping})
 #' @param stat the stat to consider (by default "weightRelative")
 #' @param excludeLoops Logical, whether to exclude paths containing duplicates (TRUE by default)
+#' @param addContraPaths Experimental: simulate the opposite side of the brain assuming symetry. The new ROI will be called roi_contra. Only ROIs containing "(R)" 
+#' in their name will be considered
 #' @param ... : to be passed to neuronBag when building the path
 #' @details \itemize{
 #' \item If n_steps is 3, only paths of length 3 will be listed. To get all paths of length 1 to 3, you need to pass 1:3 to n_steps. 
@@ -25,8 +27,11 @@ get_type2typePath <- function(type.from=NULL,
                               renaming=cxRetyping,
                               stat="weightRelative",
                               excludeLoops=TRUE,
+                              addContraPaths=FALSE,
+                              thresholdPerROI=NULL,
                               ...){
   stopifnot("At least one of type.from or type.to must be specified"=!is.null(type.from) | !is.null(type.to))
+  if (addContraPaths & is.null(ROI)){stop("You should specify a set of (preferably right side) ROIs for `addContraPaths` to make sense.")}
   
   res <- vector("list",max(n_steps))
   
@@ -57,6 +62,10 @@ get_type2typePath <- function(type.from=NULL,
     upHalf <- 1:max(n_steps)
   }
   
+  knownConnections <- getTypeToTypeTable(getConnectionTable(NULL,"PRE"))
+  known_sources <- unique(type.from_loc$type)
+  type.from_toAdd <- character(0)
+  
   for (n in downHalf){
     bag <- neuronBag(type.from_loc,slctROI=ROIraw,by.roi=by.roi,omitInputs=TRUE,selfRef=TRUE,...)  
     if (is.list(ROI)){
@@ -64,9 +73,27 @@ get_type2typePath <- function(type.from=NULL,
       bag <- do.call(c,bag_list)
     }
     bag <- renaming(bag)
-    type.from_loc <- bag$outputsTableRef
-    res[[n]] <- bag$outputs
+    
+    if (addContraPaths){
+      resLoc <- addContraSide(bag$outputs)
+      outRef <- renaming(getTypesTable(unique(res$databaseType.to)) %>% mutate(databaseType = type)) %>% filter(type %in% res$type.to)
+    }else{
+      resLoc <- bag$outputs
+      outRef <- bag$outputsTableRef
+    }
+    type.from_loc <- filter(outRef,!(type %in% known_sources))
+    
+    res[[n]] <- distinct(rbind(resLoc,filter(knownConnections,type.from %in% type.from_toAdd)))
+    
+    type.from_toAdd <- filter(outRef,(type %in% known_sources))
+    knownConnections <- distinct(rbind(knownConnections,bag$outputs))
+    known_sources <- unique(knownConnections$type.from)
+    
   }
+  
+  knownConnections <- getTypeToTypeTable(getConnectionTable(NULL,"PRE"))
+  known_targets <- unique(type.from_loc$type)
+  type.to_toAdd <- character(0)
   for (n in rev(upHalf)){
     bag <- neuronBag(type.to_loc,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,selfRef=TRUE,...)   
     if (is.list(ROI)){
@@ -74,13 +101,26 @@ get_type2typePath <- function(type.from=NULL,
       bag <- do.call(c,bag_list)
     }
     bag <- renaming(bag)
-    type.to_loc <- getTypesTable(unique(bag$inputs_raw$databaseType.from)) %>% mutate(databaseType=type)
+    
+    if (addContraPaths){
+      resLoc <- addContraSide(bag$inputs)
+    }else{
+      resLoc <- bag$inputs
+    }
+    type.to_loc <- getTypesTable(unique(resLoc$databaseType.from)) %>% mutate(databaseType=type)
     unknowns <- retype.na_meta(neuprint_get_meta(unique(bag$inputs_raw$from[!(bag$inputs_raw$from %in% type.to_loc$bodyid)]))) %>% mutate(databaseType=NA)
     if (length(unknowns != 0)){type.to_loc <- bind_rows(type.to_loc,unknowns)}
     
     type.to_loc <- renaming(type.to_loc)
-    type.to_loc <- filter(type.to_loc,type %in% bag$inputs$type.from)
-    res[[n]] <- bag$inputs
+    type.to_loc <- filter(type.to_loc,type %in% resLoc$type.from)
+    
+    type.to_loc_old <- type.to_loc
+    type.to_loc <- filter(type.to_loc,!(type %in% known_targets))
+    res[[n]] <- rbind(resLoc,filter(knownConnections,type.to %in% type.to_toAdd))
+    
+    type.to_toAdd <- filter(type.to_loc_old,type %in% known_targets)
+    knownConnections <- distinct(rbind(knownConnections,resLoc))
+    known_targets <- unique(knownConnections$type.to)
   }
   
   res <- tableChain2path(res,n_steps=n_steps,stat=stat,excludeLoops=excludeLoops,type.to=type.to)
@@ -185,6 +225,35 @@ tableChain2path <- function(...,n_steps=NULL,stat="weightRelative",excludeLoops=
                  loop,
                  starts_with("supertype"),
                  starts_with("databaseType"))
+}
+
+
+#' Functions to deal with crossing to the bad side of the brain
+addContraSide <- function(connTable){
+  rbind(connTable,simulatedContraSide(connTable))
+}
+
+
+simulatedContraSide <- function(connTable){
+  simulated <- connTable %>% mutate(type.from=lrInvert(type.from),
+                                    type.to=lrInvert(type.to),
+                                    roi = paste0(roi,"_contra"))
+  
+  simulated <- filter(simulated,grepl("(R)",roi) | roi=="SAD_contra" | roi=="PRW_contra") ## Non lateralized neuropiles shouldn't be simulated
+  
+  simulated
+  
+}
+
+lrInvert <- function(typeNames){
+  toReplaceLeft <- grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$",
+                         typeNames)
+  toReplaceRight <- grepl("_R$|_R[1-9]$|_R[1-9]/[1-9]$|_R[1-9]_C[1-9]$|_R[1-9]_C[1-9]_irreg$|_R_C[1-9]_irreg$|_R_small$",
+                          typeNames)
+  typeNames[toReplaceLeft] <- gsub("_L","_R",typeNames[toReplaceLeft])
+  typeNames[toReplaceRight] <- gsub("_R","_L",typeNames[toReplaceRight])
+  
+  typeNames
 }
 
 #' Convert a type-to-type pathway dataframe to a graph dataframe

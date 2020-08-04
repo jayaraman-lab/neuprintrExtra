@@ -13,6 +13,8 @@ get_type2typePath(
   renaming = cxRetyping,
   stat = "weightRelative",
   excludeLoops = TRUE,
+  addContraPaths = FALSE,
+  thresholdPerROI = NULL,
   ...
 )
 }
@@ -32,6 +34,9 @@ If a character vector, restrict to those ROIs. If a list, each element of the li
 \item{stat}{the stat to consider (by default "weightRelative")}
 
 \item{excludeLoops}{Logical, whether to exclude paths containing duplicates (TRUE by default)}
+
+\item{addContraPaths}{Experimental: simulate the opposite side of the brain assuming symetry. The new ROI will be called roi_contra. Only ROIs containing "(R)" 
+in their name will be considered}
 
 \item{...}{: to be passed to neuronBag when building the path}
 

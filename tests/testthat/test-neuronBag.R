@@ -1,3 +1,5 @@
+context("Neuron bags")
+
 PFLNeurons <- getTypesTable("PFL1")
 PFLFull1 <- neuronBag(PFLNeurons[1,],slctROI="LAL(R)")
 

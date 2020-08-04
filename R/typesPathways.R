@@ -14,12 +14,19 @@
 #' in their name will be considered
 #' @param thresholdPerROI Optional filtering of the connection tables to limit to types containing at least \code{thresholdPerROI} synapses of the right 
 #' polarity in the ROI considered (forces to run the connection tables with \code{computeKnownRatio} set to TRUE)
+#' @param startpoints Neurons that should only "start" a path if excludeStartPoints is TRUE (can be any table with a databaseType field, useful if type.from is NULL)
+#' @param excludeStartpoints Exclude starting points from other positions in the path?
+#' @param endpoints Neurons that should only "end" a path if excludeStartPoints is TRUE (can be any table with a databaseType field, useful if type.to is NULL)
+#' @param excludeEndpoints Exclude ending points from other positions in the path?
 #' @param ... : to be passed to neuronBag when building the path
 #' @details \itemize{
 #' \item If n_steps is 3, only paths of length 3 will be listed. To get all paths of length 1 to 3, you need to pass 1:3 to n_steps. 
 #' All vectors of integers are possible for n_steps.
 #' \item If \code{type.from} or \code{type.to} are left unspecified, all pathways of the specified length to (resp. from) the specified type are listed.
 #' Use at your own risk, as this can potentially result in very large objects.
+#' \item \code{excludeStartpoints} and \code{excludeEndpoints} should be set accordingly to the type of analysis that is planned. The setting \code{excludeEndpoints} to TRUE assumes 
+#' an "input" perspective and cuts the leaves where the "desired" children have been found. To ensure maximum flexibility they both default to FALSE (as the pruning can 
+#' be done post-hoc), but the option can be useful for very big path queries.
 #' }
 #' @export
 get_type2typePath <- function(type.from=NULL,
@@ -32,6 +39,10 @@ get_type2typePath <- function(type.from=NULL,
                               excludeLoops=TRUE,
                               addContraPaths=FALSE,
                               thresholdPerROI=NULL,
+                              startpoints=type.from,
+                              excludeStartpoints=FALSE,
+                              endpoints=type.to,
+                              excludeEndpoints=FALSE,
                               ...){
   
   res <- get_type2typePath_raw(type.from,type.to,by.roi,ROI,n_steps,renaming,addContraPaths,thresholdPerROI,...)
@@ -51,6 +62,10 @@ get_type2typePath_raw <- function(type.from=NULL,
                               renaming=cxRetyping,
                               addContraPaths=FALSE,
                               thresholdPerROI=NULL,
+                              startpoints=type.from,
+                              excludeStartpoints=FALSE,
+                              endpoints=type.to,
+                              excludeEndpoints=FALSE,
                               ...){
   stopifnot("At least one of type.from or type.to must be specified"=!is.null(type.from) | !is.null(type.to))
   if (addContraPaths & is.null(ROI)){stop("You should specify a set of (preferably right side) ROIs for `addContraPaths` to make sense.")}
@@ -112,6 +127,16 @@ get_type2typePath_raw <- function(type.from=NULL,
     res[[n]] <- distinct(rbind(resLoc,filter(knownConnections,type.from %in% type.from_toAdd)))
     
     type.from_toAdd <- filter(outRef,(type %in% known_sources))
+    
+    if (excludeStartpoints & !is.null(startpoints)){
+      type.from_loc <- filter(type.from_loc,!(databaseType %in% startpoints$databaseType))
+      type.from_toAdd <- filter(type.from_toAdd,!(databaseType %in% startpoints$databaseType))
+    }
+    
+    if (excludeEndpoints & !is.null(endpoints)){
+      type.from_loc <- filter(type.from_loc,!(databaseType %in% endpoints$databaseType))
+      type.from_toAdd <- filter(type.from_toAdd,!(databaseType %in% endpoints$databaseType))
+    }
     knownConnections <- distinct(rbind(knownConnections,bag$outputs))
     known_sources <- unique(knownConnections$type.from)
     
@@ -146,6 +171,17 @@ get_type2typePath_raw <- function(type.from=NULL,
     res[[n]] <- rbind(resLoc,filter(knownConnections,type.to %in% type.to_toAdd))
     
     type.to_toAdd <- filter(type.to_loc_old,type %in% known_targets)
+    
+    if (excludeStartpoints & !is.null(startpoints)){
+      type.to_loc <- filter(type.to_loc,!(databaseType %in% startpoints$databaseType))
+      type.to_toAdd <- filter(type.to_toAdd,!(databaseType %in% startpoints$databaseType))
+    }
+    
+    if (excludeEndpoints & !is.null(endpoints)){
+      type.to_loc <- filter(type.to_loc,!(databaseType %in% endpoints$databaseType))
+      type.to_toAdd <- filter(type.to_toAdd,!(databaseType %in% endpoints$databaseType))
+    }
+    
     knownConnections <- distinct(rbind(knownConnections,resLoc))
     known_targets <- unique(knownConnections$type.to)
   }

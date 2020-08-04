@@ -2,7 +2,9 @@
 % Please edit documentation in R/typesPathways.R
 \name{get_type2typePath}
 \alias{get_type2typePath}
-\title{Builds a data frame of pathways between 2 collections of types}
+\alias{get_type2typePath_raw}
+\title{Builds a data frame of pathways between 2 collections of types
+\code{get_type2typePath} returns a pathway table, whereas \code{get_type2typePath_raw} returns a list of connection tables}
 \usage{
 get_type2typePath(
   type.from = NULL,
@@ -13,6 +15,18 @@ get_type2typePath(
   renaming = cxRetyping,
   stat = "weightRelative",
   excludeLoops = TRUE,
+  addContraPaths = FALSE,
+  thresholdPerROI = NULL,
+  ...
+)
+
+get_type2typePath_raw(
+  type.from = NULL,
+  type.to = NULL,
+  by.roi = TRUE,
+  ROI = NULL,
+  n_steps = 2,
+  renaming = cxRetyping,
   addContraPaths = FALSE,
   thresholdPerROI = NULL,
   ...
@@ -44,6 +58,7 @@ in their name will be considered}
 }
 \description{
 Builds a data frame of pathways between 2 collections of types
+\code{get_type2typePath} returns a pathway table, whereas \code{get_type2typePath_raw} returns a list of connection tables
 }
 \details{
 \itemize{
@@ -53,3 +68,8 @@ All vectors of integers are possible for n_steps.
 Use at your own risk, as this can potentially result in very large objects.
 }
 }
+\section{Functions}{
+\itemize{
+\item \code{get_type2typePath_raw}: Returns the list of connection tables (can be chained with tableChain2path)
+}}
+

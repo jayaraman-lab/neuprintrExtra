@@ -8,9 +8,9 @@ test_that("Pathway functions work",{
   
 })
 
-test_that("Contralateral pathway completion works"){
+test_that("Contralateral pathway completion works",{
   FB1ANeurons <- cxRetyping(getTypesTable("FB1A"))
   FS1BNeurons <- cxRetyping(getTypesTable("FS1B"))
   expect_is(pathDirectBoth <- get_type2typePath(FS1BNeurons,FB1ANeurons,ROI = c("SNP(R)","CX"),n_steps=1:2,addContraPaths = T),"data.frame")
   
-}
+})

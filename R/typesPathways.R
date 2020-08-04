@@ -102,7 +102,7 @@ get_type2typePath_raw <- function(type.from=NULL,
     
     if (addContraPaths){
       resLoc <- addContraSide(bag$outputs)
-      outRef <- renaming(getTypesTable(unique(res$databaseType.to)) %>% mutate(databaseType = type)) %>% filter(type %in% resLoc$type.to)
+      outRef <- renaming(getTypesTable(unique(resLoc$databaseType.to)) %>% mutate(databaseType = type)) %>% filter(type %in% resLoc$type.to)
     }else{
       resLoc <- bag$outputs
       outRef <- bag$outputsTableRef

@@ -89,7 +89,7 @@ neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FA
 #' @export
 neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,...){
   TypeNames <- distinct(bind_rows(lapply(typeQuery,neuprint_search,field="type",fixed=fixed))) %>%
-    mutate(databaseType = type)
+    mutate(databaseType = as.character(type))
   neuronBag(TypeNames,fixed=FALSE,by.roi=by.roi,verbose=verbose,omitInputs=omitInputs,omitOutputs=omitOutputs,computeKnownRatio=computeKnownRatio,...)
 }
 
@@ -100,15 +100,16 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
   
   if(!("databaseType" %in% names(typeQuery))){
     warning("No 'databaseType' field. Assuming the 'type' column contains database types.")
-    typeQuery <- mutate(typeQuery,databaseType=type)}
+    typeQuery <- mutate(typeQuery,databaseType=as.character(type))}
   if (!omitOutputs){
     if (verbose) message("Calculate raw outputs")
     outputsR <- getConnectionTable(typeQuery,synapseType = "POST",by.roi=by.roi,verbose=verbose,...)
+    outputsRTemp <- retype.na(outputsR)
+    outputsTableRef <- getTypesTable(unique(outputsRTemp$type.to))
+    unknowns <- neuprint_get_meta(unique(outputsRTemp$to[!(outputsRTemp$to %in% outputsTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
     if (computeKnownRatio){
       if (verbose) message("Calculate full raw inputs to outputs")
-      outputsRTemp <- retype.na(outputsR)
-      outputsTableRef <- getTypesTable(unique(outputsRTemp$type.to))
-      unknowns <- neuprint_get_meta(unique(outputsRTemp$to[!(outputsRTemp$to %in% outputsTableRef$bodyid)])) %>% mutate(databaseType=NA) 
+      
       allInsToOuts <- getConnectionTable(rbind(outputsTableRef,unknowns),synapseType="PRE",by.roi=by.roi,verbose=verbose,...) %>%
         group_by(to) %>% mutate(knownTotalWeight=sum(weight[match(from,from)])) %>%
         group_by(to,roi) %>% mutate(knownTotalROIweight=sum(ROIweight)) %>% ungroup() %>%
@@ -131,11 +132,15 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
       
       allInsToOuts <- left_join(allInsToOuts,outputsR)
       outputsTableRefFull <- getTypesTable(unique(allInsToOuts$type.to))
-      unknownsFull <- neuprint_get_meta(unique(allInsToOuts$to[!(allInsToOuts$to %in% outputsTableRefFull$bodyid)])) %>% mutate(databaseType=NA)
+      unknownsFull <- neuprint_get_meta(unique(allInsToOuts$to[!(allInsToOuts$to %in% outputsTableRefFull$bodyid)])) %>% mutate(databaseType=NA_character_)
       
     }
   }else{
-    outputsR <- getConnectionTable(character(),"POST",by.roi=by.roi,verbose=verbose,...)}
+    outputsR <- getConnectionTable(character(),"POST",by.roi=by.roi,verbose=verbose,...)
+    outputsRTemp <- retype.na(outputsR)
+    outputsTableRef <- getTypesTable(unique(outputsRTemp$type.to))
+    unknowns <- neuprint_get_meta(unique(outputsRTemp$to[!(outputsRTemp$to %in% outputsTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
+  }
   
   if (!omitInputs){
     if (verbose) message("Calculate raw inputs")
@@ -144,7 +149,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
       if (verbose) message("Calculate full raw outputs of inputs")
       inputsRTemp <- retype.na(inputsR)
       inputsTableRef <- getTypesTable(unique(inputsRTemp$type.from))
-      unknownsIn <- neuprint_get_meta(unique(inputsRTemp$from[!(inputsRTemp$from %in% inputsTableRef$bodyid)])) %>% mutate(databaseType=NA) 
+      unknownsIn <- neuprint_get_meta(unique(inputsRTemp$from[!(inputsRTemp$from %in% inputsTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
       inputsFullQuery <- rbind(inputsTableRef,unknownsIn)
       allOutsFromIns <- getConnectionTable(inputsFullQuery,synapseType="POST",by.roi=by.roi,verbose=verbose,...) %>% 
         group_by(from) %>% mutate(knownTotalPreWeight=sum(weight[match(to,to)])) %>%
@@ -169,7 +174,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
                         input_completedness = knownTotalROIweight/totalROIweight)
       allOutsFromIns <- left_join(allOutsFromIns,inputsR)
       inputsTableRefFull <- getTypesTable(unique(allOutsFromIns$type.to))
-      unknownsInFull <- neuprint_get_meta(unique(allOutsFromIns$to[!(allOutsFromIns$to %in% inputsTableRefFull$bodyid)])) %>% mutate(databaseType=NA)
+      unknownsInFull <- neuprint_get_meta(unique(allOutsFromIns$to[!(allOutsFromIns$to %in% inputsTableRefFull$bodyid)])) %>% mutate(databaseType=NA_character_)
     }
   }else{
     inputsR <- getConnectionTable(character(),"PRE",by.roi=by.roi,verbose=verbose,...)}

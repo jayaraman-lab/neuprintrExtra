@@ -196,11 +196,13 @@ tables2path <- function(inputTable,outputTable,stat="weightRelative",n=1){
     rename_with(paste0,"_N",n+1,.cols = any_of(stat)) %>%
     rename_with(paste0,"_N",n+1,.cols = any_of("roi"))
   
-  if (!(paste0(stat,"_path") %in% names(res))){
-    res[[paste0(stat,"_path")]] <- res[[paste0(stat,"_N",n)]]
-  }
+  for (st in stat){
+    if (!(paste0(st,"_path") %in% names(res))){
+      res[[paste0(st,"_path")]] <- res[[paste0(st,"_N",n)]]
+    }
   
-  res[[paste0(stat,"_path")]] <- res[[paste0(stat,"_path")]] * res[[paste0(stat,"_N",n+1)]]
+    res[[paste0(st,"_path")]] <- res[[paste0(st,"_path")]] * res[[paste0(st,"_N",n+1)]]
+  }
   res
 }
 
@@ -233,7 +235,8 @@ tableChain2path <- function(...,n_steps=NULL,stat="weightRelative",excludeLoops=
                               "databaseType",
                               "supertype",
                               "roi",paste0(stat,"_N1"),"n_steps"))))
-      pathTable[[paste0(stat,"_path")]] <- pathTable[[paste0(stat,"_N1")]]
+      #pathTable[[paste0(stat,"_path")]] <- pathTable[[paste0(stat,"_N1")]]
+      pathTable <- pathTable %>% rename_with(function(x) gsub("_path","_N1",x),.cols = any_of(paste0(stat,"_N1")))
     }
     pathTable 
   }))

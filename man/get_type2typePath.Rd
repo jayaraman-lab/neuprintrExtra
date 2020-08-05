@@ -17,6 +17,7 @@ get_type2typePath(
   excludeLoops = TRUE,
   addContraPaths = FALSE,
   thresholdPerROI = NULL,
+  computeKnownRatio = FALSE,
   ...
 )
 
@@ -29,6 +30,7 @@ get_type2typePath_raw(
   renaming = cxRetyping,
   addContraPaths = FALSE,
   thresholdPerROI = NULL,
+  computeKnownRatio = FALSE,
   ...
 )
 }
@@ -52,7 +54,10 @@ If a character vector, restrict to those ROIs. If a list, each element of the li
 \item{addContraPaths}{Experimental: simulate the opposite side of the brain assuming symetry. The new ROI will be called roi_contra. Only ROIs containing "(R)" 
 in their name will be considered}
 
-\item{thresholdPerROI}{Optional filtering of the connection tables to limit to types containing at least \code{thresholdPerROI} synapses of the right polarity in the ROI considered.}
+\item{thresholdPerROI}{Optional filtering of the connection tables to limit to types containing at least \code{thresholdPerROI} synapses of the right 
+polarity in the ROI considered (forces to run the connection tables with \code{computeKnownRatio} set to TRUE)}
+
+\item{computeKnownRatio}{Compute total relative metrics at each step (this is slow)}
 
 \item{...}{: to be passed to neuronBag when building the path}
 

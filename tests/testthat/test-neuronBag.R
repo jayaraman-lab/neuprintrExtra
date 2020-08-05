@@ -10,7 +10,9 @@ test_that("neuronBag construction, concatenation and retyping works",{
   PFLFull3 <- neuronBag(PFLNeurons[1,])
   expect_is(PFLFull3,"neuronBag")
   
-  expect_is(cxRetyping(PFLFull1),"neuronBag")
+  expect_is(PFLFull1Ret <- cxRetyping(PFLFull1),"neuronBag")
+  expect_is(PFLFull1RetAgain <- neuronBag(PFLNeurons[1,],slctROI="LAL(R)",renaming=cxRetyping),"neuronBag")
+  expect_equal(nrow(PFLFull1RetAgain$inputs),nrow(PFLFull1Ret$inputs))
   
   PFLCombo <- c(PFLFull1,PFLFull3)
   expect_is(PFLCombo,"neuronBag")

@@ -12,6 +12,7 @@ neuronBag(
   verbose = FALSE,
   omitInputs = FALSE,
   omitOutputs = FALSE,
+  computeKnownRatio = FALSE,
   ...
 )
 }
@@ -31,6 +32,9 @@ neurons/types in that data frame)}
 \item{omitInputs}{Skip calculation of inputs if TRUE}
 
 \item{omitOutputs}{Skip calculation of outputs if TRUE}
+
+\item{computeKnownRatio}{Computes relative weights and output contributions that sum to 1 (for types and for neurons).
+This requires keeping track of all the outputs of the inputs, and all the inputs of the outputs, in a field called \code{ref}}
 
 \item{...}{To be passed to getConnectionTable}
 }

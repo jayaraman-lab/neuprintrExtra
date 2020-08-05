@@ -11,7 +11,7 @@ tables2path(inputTable, outputTable, stat = "weightRelative", n = 1)
 
 \item{outputTable}{a type to type connection table}
 
-\item{stat}{which stat to use for pathway weights}
+\item{stat}{which stat to use for pathway weights. Can be a vector.}
 
 \item{n}{a number to label the stage in processing}
 }

@@ -16,7 +16,6 @@ processConnectionTable(
   verbose,
   chunk_meta,
   chunk_connections,
-  computeKnownRatio,
   ...
 )
 }

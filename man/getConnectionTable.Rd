@@ -13,7 +13,6 @@ getConnectionTable(
   chunk_connections = TRUE,
   chunk_meta = TRUE,
   verbose = FALSE,
-  computeKnownRatio = FALSE,
   ...
 )
 }
@@ -32,9 +31,6 @@ usually slower as it requires listing all the outputs of the input neurons to ge
 \item{chunk_meta}{: to be passed to metadata and roiInfo queries (default TRUE)}
 
 \item{verbose}{: should the function report on its progress?}
-
-\item{computeKnownRatio}{: should the function also compute ratios (weightRelative and outputContribution) relative to known synaptic partners rather
-than relative to the total number of synapses}
 
 \item{...}{Other arguments to be passed to neuprint queries (neuprint_connection_table, getRoiInfo and neuprint_get_meta)}
 

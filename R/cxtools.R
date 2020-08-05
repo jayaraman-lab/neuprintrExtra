@@ -8,7 +8,7 @@
 #' @details PFL1,3 and PFR_a and _b are renamed so that the outputs of a subtype go to the same region. All others are renamed L/R
 #'
 #' @export
-cxRetyping <- function(connections,redefinePartners=TRUE,postfix=c("raw","to","from"),verbose=TRUE){
+cxRetyping <- function(connections,redefinePartners=TRUE,postfix=c("raw","to","from"),verbose=FALSE){
   postfix <- match.arg(postfix)
   if (verbose) message("Renaming PFL3")
   connections <- redefineTypeByName(connections,typeList = c("PFL3"),pattern = "(^.*_L(?!.*irreg))|(^.*_R.*irreg)",perl=TRUE,nameModifiers = c("_L*","_R*"),redefinePartners = redefinePartners,postfix = postfix)

@@ -5,22 +5,17 @@
 #' version of the name. If the name is missing, use the bodyid for everything.
 #' @export
 retype.na <- function(connectionTable){
-  connectionTable <- connectionTable %>%
-    mutate(name.from = ifelse(is.na(name.from),as.character(from),name.from),
-           name.to = ifelse(is.na(name.to),as.character(to),name.to),
-           type.from = ifelse(is.na(type.from),gsub("_L$|_R$","",name.from),type.from),
-           type.to = ifelse(is.na(type.to),gsub("_L$|_R$","",name.to),type.to)
-    )
-
+  connectionTable$name.from[is.na(connectionTable$name.from)] <- as.character(connectionTable$from[is.na(connectionTable$name.from)])
+  connectionTable$name.to[is.na(connectionTable$name.to)] <- as.character(connectionTable$to[is.na(connectionTable$name.to)])
+  connectionTable$type.from[is.na(connectionTable$type.from)] <- gsub("_L$|_R$","",connectionTable$name.from[is.na(connectionTable$type.from)])
+  connectionTable$type.to[is.na(connectionTable$type.to)] <- gsub("_L$|_R$","",connectionTable$name.to[is.na(connectionTable$type.to)])
+  
   return(connectionTable)
 }
 
 retype.na_meta <- function(metaTable){
-  metaTable <- metaTable %>%
-    mutate(
-      name = ifelse(is.na(name),as.character(bodyid),name),
-      type = ifelse(is.na(type),gsub("_L$|_R$","",name),type)
-    )
+  metaTable$name[is.na(metaTable$name)] <- as.character(metaTable$bodyid[is.na(metaTable$name)])
+  metaTable$type[is.na(metaTable$type)] <- gsub("_L$|_R$","",metaTable$name[is.na(metaTable$type)])
 
   return(metaTable)
 }

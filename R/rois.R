@@ -22,7 +22,7 @@ getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,retyping=identity) {
   roi_Innervate <- left_join(all_neurons,roi_Innervate,by=c("bodyid","pre","post","voxels"))
   roi_Innervate <- roi_Innervate %>% select(-c(voxels,cellBodyFiber)) %>%
     tidyr::replace_na(list(ROI_pre = 0,ROI_post = 0,originalInstance=FALSE)) %>%
-    mutate(databaseType = type) ## Convenience column for when types are changed
+    mutate(databaseType = as.character(type)) ## Convenience column for when types are changed
 
   roi_Innervate <- retyping(roi_Innervate)
   roi_Innervate <-roi_Innervate %>% group_by(type) %>%

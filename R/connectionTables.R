@@ -71,14 +71,14 @@ processConnectionTable <- function(myConnections,synThresh,refMeta,partnerMeta,r
     
     outMeta <- refMeta
     inMeta <- partnerMeta
-    myConnections <- mutate(myConnections,databaseType.to = refMetaOrig$type,
+    myConnections <- mutate(myConnections,databaseType.to = as.character(refMetaOrig$type),
                             databaseType.from = type.from)
   } else {
     
     inMeta <- refMeta
     outMeta <- partnerMeta
     myConnections <- mutate(myConnections,databaseType.to = type.to,
-                            databaseType.from = refMetaOrig$type)
+                            databaseType.from = as.character(refMetaOrig$type))
   }
 
  

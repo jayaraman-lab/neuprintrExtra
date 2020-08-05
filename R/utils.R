@@ -8,7 +8,7 @@ getTypesTable <- function(types){
   typesTable <- neuprint_get_meta(1)
   typesTable <- rbind(typesTable,do.call(rbind,lapply(types,function(t) neuprint_search(t,field="type",fixed=TRUE,exact=TRUE))))
   typesTable <- typesTable %>%
-    mutate(databaseType = type)
+    mutate(databaseType = as.character(type))
   return(typesTable)
 }
 

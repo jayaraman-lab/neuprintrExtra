@@ -4,7 +4,11 @@
 \alias{get_col_name}
 \title{Small utility to generate "type.from" kind of names}
 \usage{
-get_col_name(col = "type", post = c("raw", "from", "to"))
+get_col_name(
+  col = c("bodyid", "name", "type", "databaseType", "supertype", paste0("supertype",
+    1:3)),
+  post = c("raw", "from", "to")
+)
 }
 \description{
 Small utility to generate "type.from" kind of names

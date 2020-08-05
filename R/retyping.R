@@ -91,9 +91,11 @@ redefine_types.neuronBag <- function(connections,retype_func,postfix="raw",redef
 
 #' Small utility to generate "type.from" kind of names
 #' @export
-get_col_name <- function(col="type",post=c("raw","from","to")){
+get_col_name <- function(col=c("bodyid","name","type","databaseType","supertype",paste0("supertype",1:3)),post=c("raw","from","to")){
+  col <- match.arg(col)
   post <- match.arg(post)
-  return(ifelse(post=="raw",col,paste0(col,".",post)))
+  if (post=="raw") return(col) else{
+    if (col=="bodyid") return(post) else return(paste0(col,".",post))}
 }
 
 #' Retype neurons in a table according to L/R
@@ -205,8 +207,9 @@ conditional_renamer <- function(connections,postfix,type,condition,newNames){
 sets_retyper <- function(conn,postfix,sets,nameModifiers,kind=c("bodyid","name")){
   kind <- match.arg(kind)
   typeCol <- get_col_name(col="type",postfix)
-  nameCol <- ifelse(kind=="name",get_col_name(col="name",postfix),
-                                 ifelse(postfix=="raw",kind,postfix))
+  nameCol <- get_col_name(col=kind,postfix)
+  #nameCol <- ifelse(kind=="name",get_col_name(col="name",postfix),
+  #                               ifelse(postfix=="raw",kind,postfix))
   types <- conn[[typeCol]]
   for (i in 1:length(sets)){
     types[conn[[nameCol]] %in% sets[[i]]] <- paste0(types[conn[[nameCol]] %in% sets[[i]]],nameModifiers[i])

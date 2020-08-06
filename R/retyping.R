@@ -80,7 +80,7 @@ redefine_types.neuronBag <- function(connections,retype_func,postfix="raw",redef
   }
   
   if ("allInsToOuts" %in% names(connections[["ref"]])){
-    connections$ref$outputs_ref <-getTypeToTypeTable(connections$ref$allInsToOuts,typesTable = connections$ref$outputsTableRef,oldTable=connections$ref$outputs_ref)
+    connections$ref$outputs_ref <-getTypeToTypeTable(connections$ref$allInsToOuts,typesTable = connections$outputsTableRef,oldTable=connections$ref$outputs_ref)
     connections$outputs <- processTypeToTypeFullOutputs(connections$ref$outputs_ref,connections$outputs_raw)
   }else{
     connections$outputs <- getTypeToTypeTable(connections$outputs_raw,typesTable = connections$outputsTableRef, oldTable=connections$outputs)

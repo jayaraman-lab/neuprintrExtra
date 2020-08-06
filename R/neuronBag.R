@@ -37,6 +37,10 @@ validate_neuronBag <- function(nBag){
   stopifnot(all(typeTableNames %in% names(nBag$outputs)))
   stopifnot(all(connTableNames %in% names(nBag$inputs_raw)))
   stopifnot(all(connTableNames %in% names(nBag$outputs_raw)))
+  if("ref" %in% names(nBag)){
+    refFields <- c("inputs_ref","outputs_ref","allOutsFromIns","allInsToOuts","inputs_outputsTableRef")
+    stopifnot(all(refFields %in% names(nBag$ref)))
+  }
   nBag
 }
 
@@ -139,6 +143,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
   }else{
     outputsR <- getConnectionTable(character(),"POST",by.roi=by.roi,verbose=verbose,...)
     outputsTableRef <- getTypesTable(character())
+    if(computeKnownRatio) allInsToOuts <- getConnectionTable(character(),"POST",by.roi=by.roi,verbose=verbose,...)
   }
   
   if (!omitInputs){
@@ -180,7 +185,11 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
       inputsOutTableRef <- renaming(rbind(inputsOutTableRef,unknownsInOut))
     }
   }else{
-    inputsR <- getConnectionTable(character(),"PRE",by.roi=by.roi,verbose=verbose,...)}
+    inputsR <- getConnectionTable(character(),"PRE",by.roi=by.roi,verbose=verbose,...)
+    if(computeKnownRatio){allOutsFromIns <- getConnectionTable(character(),"PRE",by.roi=by.roi,verbose=verbose,...)
+                          inputsOutTableRef <- getTypesTable(character())
+        }
+    }
   
 
   if (verbose) message("Calculate type to type outputs")
@@ -190,6 +199,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
     
   }else{
     OUTByTypes <- getTypeToTypeTable(outputsR,typesTable = outputsTableRef)
+    if(computeKnownRatio) OUTByTypesRef <-getTypeToTypeTable(allInsToOuts)
   }
   
   
@@ -199,11 +209,10 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
       INByTypes <- processTypeToTypeFullInputs(INByTypesRef,inputsR)
     }else{
       INByTypes <- getTypeToTypeTable(inputsR,typesTable = typeQuery)
+      if(computeKnownRatio) INByTypesRef <-getTypeToTypeTable(allOutsFromIns)
     }
   inputsR <- retype.na(inputsR)
 
-  
-  
   nBag <- new_neuronBag(outputs = OUTByTypes,
                                    inputs = INByTypes,
                                    names = typeQuery,
@@ -211,15 +220,14 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
                                    inputs_raw = inputsR,
                                    outputsTableRef = outputsTableRef
   )
-  if (computeKnownRatio & nrow(inputsR)>0){
+  if (computeKnownRatio){
                         nBag[["ref"]][["allOutsFromIns"]] <- allOutsFromIns
                         nBag[["ref"]][["inputs_ref"]] <- INByTypesRef
                         nBag[["ref"]][["inputs_outputsTableRef"]] <- inputsOutTableRef 
+                        nBag[["ref"]][["allInsToOuts"]] <- allInsToOuts
+                        nBag[["ref"]][["outputs_ref"]] <- OUTByTypesRef
   }
   
-  if (computeKnownRatio & nrow(outputsR)>0){nBag[["ref"]][["allInsToOuts"]] <- allInsToOuts
-                                            nBag[["ref"]][["outputs_ref"]] <- OUTByTypesRef
-  }
   
   validate_neuronBag(nBag)
   
@@ -263,6 +271,14 @@ c.neuronBag <- function(...){
                    inputs_raw = distinct(do.call(rbind,lapply(full,function(i){i$inputs_raw}))),
                    outputsTableRef = distinct(do.call(rbind,lapply(full,function(i){i$outputsTableRef})))
   )
+  
+  if (all(sapply(full,function(x) "ref" %in% names(x)))){
+    out$ref$outputs_ref <- distinct(do.call(rbind,lapply(full,function(i){i$ref$outputs_ref})))
+    out$ref$inputs_ref <- distinct(do.call(rbind,lapply(full,function(i){i$ref$inputs_ref})))
+    out$ref$allInsToOuts  <- distinct(do.call(rbind,lapply(full,function(i){i$ref$allInsToOuts})))
+    out$ref$allOutsFromIns  <- distinct(do.call(rbind,lapply(full,function(i){i$ref$allOutsFromIns})))
+    out$ref$inputs_outputsTableRef  <- distinct(do.call(rbind,lapply(full,function(i){i$ref$inputs_outputsTableRef})))
+  }
   validate_neuronBag(out)
 }
 

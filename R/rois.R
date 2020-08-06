@@ -12,7 +12,7 @@
 getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,retyping=identity) {
   roi_Innervate <- neuprint_bodies_in_ROI(ROI) %>%
     mutate(originalInstance = TRUE)
-  metaRoi <- neuprint_get_meta(roi_Innervate) %>% tidyr::drop_na(type)
+  metaRoi <- getMeta(roi_Innervate) %>% tidyr::drop_na(type)
 
   ## Get all instances of the types touching the ROI
   all_neurons <- getTypesTable(unique(metaRoi$type))
@@ -260,14 +260,14 @@ combineRois.neuronBag <- function(connections,rois,newRoi,...){
   
   if("allInsToOuts" %in% names(connections[["ref"]])){
     connections$ref$allInsToOuts <- combineRois(connections$ref$allInsToOuts,rois,newRoi)
-    connections$ref$outputs_ref <-getTypeToTypeTable(connections$ref$allInsToOuts,typesTable = connections$ref$outputTableRefFull,...)
+    connections$ref$outputs_ref <-getTypeToTypeTable(connections$ref$allInsToOuts,typesTable = connections$ref$outputTableRef,...)
     new_outputs <- processTypeToTypeFullOutputs(connections$ref$outputs_ref,new_outputsR)
   }else{
     new_outputs <- getTypeToTypeTable(new_outputsR,typesTable = connections$outputsTableRef,...)
   }
   if("allOutsFromIns" %in% names(connections[["ref"]])){
     connections$ref$allOutsFromIns <- combineRois(connections$ref$allOutsFromIns,rois,newRoi)
-    connections$ref$inputs_ref <- getTypeToTypeTable(connections$ref$allOutsFromIns,typesTable=connections$ref$inputsTableRefFull,...)
+    connections$ref$inputs_ref <- getTypeToTypeTable(connections$ref$allOutsFromIns,typesTable=connections$ref$inputs_outputsTableRef,...)
     new_inputs <- processTypeToTypeFullInputs(connections$ref$inputs_ref,new_inputsR)
   }else{
     new_inputs <- getTypeToTypeTable(new_inputsR,typesTable = connections$names,...)

@@ -4,6 +4,8 @@ FB6Bag <- neuronBag(FB6Neurons,by.roi=FALSE,selfRef=TRUE,renaming=cxRetyping)
 test_that("Pathway functions work",{
   expect_is(pathDirect <- get_type2typePath(FB6Neurons,FB6Neurons,by.roi=FALSE,n_steps=1:2,renaming=cxRetyping),"data.frame")
   expect_is(pathDirect2 <- get_type2typePath(FB6Neurons,FB6Neurons,by.roi=FALSE,n_steps=1:2,stat=c("weightRelative","outputContribution"),renaming=cxRetyping),"data.frame")
+  expect_is(pathDirect3 <- get_type2typePath(FB6Neurons,FB6Neurons,by.roi=FALSE,n_steps=1:2,stat=c("weightRelative","outputContribution"),renaming=cxRetyping,ROI = "FB"),"data.frame")
+  expect_is(pathDirect4 <- get_type2typePath(FB6Neurons,FB6Neurons,by.roi=FALSE,n_steps=1:2,stat=c("weightRelative","outputContribution"),renaming=cxRetyping,ROI = list("combo"=c("FB","SNP(R)"))),"data.frame")
   expect_is(pathFromBag <- tableChain2path(FB6Bag$outputs,FB6Bag$inputs,type.to=cxRetyping(FB6Neurons)),"data.frame")
   expect_equal(pathDirect,pathFromBag)
   

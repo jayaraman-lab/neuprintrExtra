@@ -56,7 +56,7 @@ create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,ver
 #' Create a neuronBag
 #' 
 #' Builds a neuronBag object either from a vector of query strings or a metadata \code{data.frame}.
-#' @param typeQuery Either a vector of queries (similar to neuprint_search queries) or a
+#' @param typeQuery Either a vector of queries (similar to a \code{getTypesTable} queries) or a
 #' metadata \code{data.frame} for a set of neurons. If a \code{data.frame} it needs to contain all the
 #' instances of the types. 
 #' @param fixed If typeQuery is a query string, is it fixed?
@@ -88,8 +88,7 @@ neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FA
 
 #' @export
 neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,...){
-  TypeNames <- distinct(bind_rows(lapply(typeQuery,neuprint_search,field="type",fixed=fixed))) %>%
-    mutate(databaseType = as.character(type))
+  TypeNames <- getTypesTable(typeQuery)
   neuronBag(TypeNames,fixed=FALSE,by.roi=by.roi,verbose=verbose,omitInputs=omitInputs,omitOutputs=omitOutputs,computeKnownRatio=computeKnownRatio,renaming=renaming,...)
 }
 
@@ -106,14 +105,15 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
   if (!omitOutputs){
     if (verbose) message("Calculate raw outputs")
     outputsR <- getConnectionTable(typeQuery,synapseType = "POST",by.roi=by.roi,verbose=verbose,...)
-    outputsR <- retype.na(outputsR)
     outputsTableRef <- getTypesTable(unique(outputsR$type.to))
-    unknowns <- neuprint_get_meta(unique(outputsR$to[!(outputsR$to %in% outputsTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
-    outputsTableRef <- rbind(outputsTableRef,retype.na(unknowns))
+    outputsR <- retype.na(outputsR)
+    unknowns <- getMeta(unique(outputsR$to[!(outputsR$to %in% outputsTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
+    outputsTableRef <- renaming(rbind(outputsTableRef,retype.na(unknowns)))
+    outputsR <- renaming(outputsR,postfix="to")
     if (computeKnownRatio){
       if (verbose) message("Calculate full raw inputs to outputs")
       
-      allInsToOuts <- getConnectionTable(outputsTableRef,synapseType="PRE",by.roi=by.roi,verbose=verbose,...) %>%
+      allInsToOuts <- renaming(getConnectionTable(outputsTableRef,synapseType="PRE",by.roi=by.roi,verbose=verbose,...),postfix="from") %>%
         group_by(to) %>% mutate(knownTotalWeight=sum(weight[match(from,from)])) %>%
         group_by(to,roi) %>% mutate(knownTotalROIweight=sum(ROIweight)) %>% ungroup() %>%
         mutate(knownWeightRelativeTotal = weight/knownTotalWeight,
@@ -133,18 +133,9 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
                          output_completedness = knownTotalPreROIweight/totalPreROIweight,
                          input_completedness = knownTotalROIweight/totalROIweight)
       
-      allInsToOuts <- left_join(allInsToOuts,outputsR)
-      outputsTableRefFull <- getTypesTable(unique(allInsToOuts$type.to))
-      unknownsFull <- neuprint_get_meta(unique(allInsToOuts$to[!(allInsToOuts$to %in% outputsTableRefFull$bodyid)])) %>% mutate(databaseType=NA_character_)
-      outputsTableRefFull <- rbind(outputsTableRefFull,retype.na(unknownsFull))
+      allInsToOuts <- right_join(outputsR,allInsToOuts)
       
-      outputsTableRefFull <- renaming(outputsTableRefFull,postfix="raw")
-      allInsToOuts <- renaming(allInsToOuts,postfix="from")
-      allInsToOuts <- renaming(allInsToOuts,postfix="to")
     }
-    outputsTableRef <- renaming(outputsTableRef,postfix="raw")
-    outputsR <- renaming(outputsR,postfix="from")
-    outputsR <- renaming(outputsR,postfix="to")
   }else{
     outputsR <- getConnectionTable(character(),"POST",by.roi=by.roi,verbose=verbose,...)
     outputsTableRef <- getTypesTable(character())
@@ -153,13 +144,15 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
   if (!omitInputs){
     if (verbose) message("Calculate raw inputs")
     inputsR <- getConnectionTable(typeQuery,synapseType = "PRE",by.roi=by.roi,verbose=verbose,...)
+    inputsTableRef <- getTypesTable(unique(inputsR$type.from))
     inputsR <- retype.na(inputsR)
+    unknownsIn <- getMeta(unique(inputsR$from[!(inputsR$from %in% inputsTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
+    inputsFullQuery <- rbind(inputsTableRef,unknownsIn)
+    inputsR <- renaming(inputsR,postfix="from")
     if (computeKnownRatio){
       if (verbose) message("Calculate full raw outputs of inputs")
-      inputsTableRef <- getTypesTable(unique(inputsR$type.from))
-      unknownsIn <- neuprint_get_meta(unique(inputsR$from[!(inputsR$from %in% inputsTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
-      inputsFullQuery <- rbind(inputsTableRef,unknownsIn)
-      allOutsFromIns <- getConnectionTable(inputsFullQuery,synapseType="POST",by.roi=by.roi,verbose=verbose,...) %>% 
+      
+      allOutsFromIns <- renaming(getConnectionTable(renaming(inputsFullQuery),synapseType="POST",by.roi=by.roi,verbose=verbose,...),postfix="to") %>% 
         group_by(from) %>% mutate(knownTotalPreWeight=sum(weight[match(to,to)])) %>%
         group_by(from,roi) %>% mutate(knownTotalPreROIweight=sum(ROIweight)) %>% ungroup() %>%
         mutate(knownOutputContribution = ROIweight/knownTotalPreROIweight,
@@ -180,22 +173,19 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
                         knownWeightRelative = ROIweight/knownTotalROIweight,
                         output_completedness = knownTotalPreROIweight/totalPreROIweight,
                         input_completedness = knownTotalROIweight/totalROIweight)
-      allOutsFromIns <- left_join(allOutsFromIns,inputsR)
-      #inputsTableRefFull <- getTypesTable(unique(allOutsFromIns$type.to))
-      #unknownsInFull <- neuprint_get_meta(unique(allOutsFromIns$to[!(allOutsFromIns$to %in% inputsTableRefFull$bodyid)])) %>% mutate(databaseType=NA_character_)
+      allOutsFromIns <- right_join(inputsR,allOutsFromIns)
       
-      allOutsFromIns <- renaming(allOutsFromIns,postfix="from")
-      allOutsFromIns <- renaming(allOutsFromIns,postfix="to")
+      inputsOutTableRef <- getTypesTable(unique(allOutsFromIns$databaseType.to))
+      unknownsInOut <- getMeta(unique(allOutsFromIns$to[!(allOutsFromIns$to %in% inputsOutTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
+      inputsOutTableRef <- renaming(rbind(inputsOutTableRef,unknownsInOut))
     }
-    inputsR <- renaming(inputsR,postfix="from")
-    inputsR <- renaming(inputsR,postfix="to")
   }else{
     inputsR <- getConnectionTable(character(),"PRE",by.roi=by.roi,verbose=verbose,...)}
   
 
   if (verbose) message("Calculate type to type outputs")
   if (computeKnownRatio & nrow(outputsR)>0){
-    OUTByTypesRef <- getTypeToTypeTable(allInsToOuts,typesTable = outputsTableRefFull) 
+    OUTByTypesRef <- getTypeToTypeTable(allInsToOuts,typesTable = outputsTableRef) 
     OUTByTypes <- processTypeToTypeFullOutputs(OUTByTypesRef,outputsR)
     
   }else{
@@ -205,7 +195,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
   
   if (verbose) message("Calculate type to type inputs")
   if (computeKnownRatio & nrow(inputsR)>0){
-      INByTypesRef <- getTypeToTypeTable(allOutsFromIns,typesTable = typeQuery)
+      INByTypesRef <- getTypeToTypeTable(allOutsFromIns,typesTable = inputsOutTableRef)
       INByTypes <- processTypeToTypeFullInputs(INByTypesRef,inputsR)
     }else{
       INByTypes <- getTypeToTypeTable(inputsR,typesTable = typeQuery)
@@ -224,12 +214,11 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
   if (computeKnownRatio & nrow(inputsR)>0){
                         nBag[["ref"]][["allOutsFromIns"]] <- allOutsFromIns
                         nBag[["ref"]][["inputs_ref"]] <- INByTypesRef
-                        #nBag[["ref"]][["inputsTableRefFull"]] <- rbind(inputsTableRefFull,retype.na_meta(unknownsInFull))
+                        nBag[["ref"]][["inputs_outputsTableRef"]] <- inputsOutTableRef 
   }
   
   if (computeKnownRatio & nrow(outputsR)>0){nBag[["ref"]][["allInsToOuts"]] <- allInsToOuts
                                             nBag[["ref"]][["outputs_ref"]] <- OUTByTypesRef
-                                            nBag[["ref"]][["outputTableRefFull"]] <- outputsTableRefFull   
   }
   
   validate_neuronBag(nBag)

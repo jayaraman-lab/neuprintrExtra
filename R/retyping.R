@@ -66,22 +66,21 @@ redefine_types.neuronBag <- function(connections,retype_func,postfix="raw",redef
     
     if("allOutsFromIns" %in% names(connections[["ref"]])){
         connections$ref$allOutsFromIns <- redefine_types(connections$ref$allOutsFromIns,retype_func,postfix="from",...)
-        connections$ref$inputsTableRefFull <- redefine_types(connections$ref$inputsTableRefFull,retype_func,postfix="raw",...)
+        connections$ref$inputs_outputsTableRef <- redefine_types(connections$ref$inputs_outputsTableRef,retype_func,postfix="raw",...)
       }
     if ("allInsToOuts" %in% names(connections[["ref"]])){
         connections$ref$allInsToOuts <- redefine_types(connections$ref$allInsToOuts,retype_func,postfix="to",...)
-        connections$ref$outputTableRefFull <- redefine_types(connections$ref$outputTableRefFull,retype_func,postfix="raw",...)
       }
   }
   if ("allOutsFromIns" %in% names(connections[["ref"]])){
-    connections$ref$inputs_ref <- getTypeToTypeTable(connections$ref$allOutsFromIns,typesTable=connections$ref$inputsTableRefFull,oldTable=connections$ref$inputs_ref)
+    connections$ref$inputs_ref <- getTypeToTypeTable(connections$ref$allOutsFromIns,typesTable=connections$ref$inputs_outputsTableRef,oldTable=connections$ref$inputs_ref)
     connections$inputs <- processTypeToTypeFullInputs(connections$ref$inputs_ref,connections$inputs_raw)
   }else{
     connections$inputs <- getTypeToTypeTable(connections$inputs_raw,typesTable = connections$names, oldTable=connections$inputs)
   }
   
   if ("allInsToOuts" %in% names(connections[["ref"]])){
-    connections$ref$outputs_ref <-getTypeToTypeTable(connections$ref$allInsToOuts,typesTable = connections$ref$outputTableRefFull,oldTable=connections$ref$outputs_ref)
+    connections$ref$outputs_ref <-getTypeToTypeTable(connections$ref$allInsToOuts,typesTable = connections$ref$outputsTableRef,oldTable=connections$ref$outputs_ref)
     connections$outputs <- processTypeToTypeFullOutputs(connections$ref$outputs_ref,connections$outputs_raw)
   }else{
     connections$outputs <- getTypeToTypeTable(connections$outputs_raw,typesTable = connections$outputsTableRef, oldTable=connections$outputs)

@@ -37,6 +37,10 @@ test_that("neuronBag construction, concatenation and retyping works",{
   expect_is(PFLComboRefd,"neuronBag")
   expect_true("ref" %in% names(PFLComboRefd))
   
+  PFLComboRefd <- combineRois(PFLRefdO,c("LAL(R)","FB"),"combo")
+  expect_is(PFLComboRefd,"neuronBag")
+  expect_true("ref" %in% names(PFLComboRefd))
+  
 })
 
 test_that("Empty neuronBags are consistent", {

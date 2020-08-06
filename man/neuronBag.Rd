@@ -18,7 +18,7 @@ neuronBag(
 )
 }
 \arguments{
-\item{typeQuery}{Either a vector of queries (similar to neuprint_search queries) or a
+\item{typeQuery}{Either a vector of queries (similar to a \code{getTypesTable} queries) or a
 metadata \code{data.frame} for a set of neurons. If a \code{data.frame} it needs to contain all the
 instances of the types.}
 

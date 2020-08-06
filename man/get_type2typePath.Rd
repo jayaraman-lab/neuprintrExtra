@@ -12,8 +12,8 @@ get_type2typePath(
   by.roi = TRUE,
   ROI = NULL,
   n_steps = 2,
-  renaming = cxRetyping,
-  stat = "weightRelative",
+  renaming = NULL,
+  stat = NULL,
   excludeLoops = TRUE,
   addContraPaths = FALSE,
   thresholdPerROI = NULL,
@@ -27,7 +27,7 @@ get_type2typePath_raw(
   by.roi = TRUE,
   ROI = NULL,
   n_steps = 2,
-  renaming = cxRetyping,
+  renaming = NULL,
   addContraPaths = FALSE,
   thresholdPerROI = NULL,
   computeKnownRatio = FALSE,
@@ -47,7 +47,8 @@ If a character vector, restrict to those ROIs. If a list, each element of the li
 
 \item{renaming}{a renaming function to use (by default \code{cxRetyping})}
 
-\item{stat}{the stat to consider (by default "weightRelative")}
+\item{stat}{which stat to use for pathway weights. Can be a vector. If NULL (the default), all the available meaningful stats are used: 
+(\code{"weightRelative","outputContribution","knownWeightRelative","knownOutputContribution","knownOutputContribution_perType","knownWROutputContribution_perType","knownWeightRelative_perType"})}
 
 \item{excludeLoops}{Logical, whether to exclude paths containing duplicates (TRUE by default)}
 

@@ -7,7 +7,7 @@
 tableChain2path(
   ...,
   n_steps = NULL,
-  stat = "weightRelative",
+  stat = NULL,
   excludeLoops = TRUE,
   type.to = NULL
 )
@@ -15,7 +15,8 @@ tableChain2path(
 \arguments{
 \item{...}{An arbitrary number of connection tables or a list of connection tables. In desired downstream order}
 
-\item{stat}{the stat to consider (by default "weightRelative")}
+\item{stat}{which stat to use for pathway weights. Can be a vector. If NULL (the default), all the available meaningful stats are used: 
+(\code{"weightRelative","outputContribution","knownWeightRelative","knownOutputContribution","knownOutputContribution_perType","knownWROutputContribution_perType","knownWeightRelative_perType"})}
 
 \item{excludeLoops}{Logical, whether to exclude paths containing duplicates (TRUE by default)}
 

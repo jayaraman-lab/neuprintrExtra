@@ -12,7 +12,7 @@
 getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,retyping=identity) {
   roi_Innervate <- neuprint_bodies_in_ROI(ROI) %>%
     mutate(originalInstance = TRUE)
-  metaRoi <- getMeta(roi_Innervate) %>% tidyr::drop_na(type)
+  metaRoi <- getMeta(roi_Innervate$bodyid) %>% tidyr::drop_na(type)
 
   ## Get all instances of the types touching the ROI
   all_neurons <- getTypesTable(unique(metaRoi$type))
@@ -50,8 +50,7 @@ getTypesInRoiTable <- function(ROI,
                                ...){
   neuronTable <- getNeuronsInRoiTable(ROI,minTypePercentage=minTypePercentage,retyping=retyping) ## Remove types if less than
   ## 25% of the instances touch (l/R)
-  roiConnections <- neuronBag(neuronTable,slctROI=bagROIs,selfRef=TRUE,...)
-  roiConnections <- retyping(roiConnections)
+  roiConnections <- neuronBag(neuronTable,slctROI=bagROIs,renaming=retyping,...)
   roiConnections
 }
 

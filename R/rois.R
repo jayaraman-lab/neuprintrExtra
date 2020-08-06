@@ -257,14 +257,14 @@ combineRois.neuronBag <- function(connections,rois,newRoi,...){
   new_inputsR <- combineRois(connections$inputs_raw,rois,newRoi)
   new_outputsR <- combineRois(connections$outputs_raw,rois,newRoi)
   
-  if("allInsToOuts" %in% names(connections[["ref"]])){
+  if("ref" %in% names(connections) && nrow(connections$ref$allInsToOuts)>0){
     connections$ref$allInsToOuts <- combineRois(connections$ref$allInsToOuts,rois,newRoi)
     connections$ref$outputs_ref <-getTypeToTypeTable(connections$ref$allInsToOuts,typesTable = connections$outputsTableRef,...)
     new_outputs <- processTypeToTypeFullOutputs(connections$ref$outputs_ref,new_outputsR)
   }else{
     new_outputs <- getTypeToTypeTable(new_outputsR,typesTable = connections$outputsTableRef,...)
   }
-  if("allOutsFromIns" %in% names(connections[["ref"]])){
+  if("ref" %in% names(connections) && nrow(connections$ref$allOutsFromIns)>0){
     connections$ref$allOutsFromIns <- combineRois(connections$ref$allOutsFromIns,rois,newRoi)
     connections$ref$inputs_ref <- getTypeToTypeTable(connections$ref$allOutsFromIns,typesTable=connections$ref$inputs_outputsTableRef,...)
     new_inputs <- processTypeToTypeFullInputs(connections$ref$inputs_ref,new_inputsR)

@@ -20,7 +20,7 @@ getConnectionTable <- function(bodyIDs,synapseType, slctROI=NULL,by.roi=FALSE, s
 
 #' @export
 getConnectionTable.default = function(bodyIDs, synapseType, slctROI=NULL,by.roi=FALSE, synThresh=3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,...){
-  refMeta <- neuprint_get_meta(bodyIDs,chunk=chunk_meta,...)
+  refMeta <- getMeta(bodyIDs,chunk=chunk_meta,...)
   return(getConnectionTable(refMeta,synapseType,slctROI,by.roi,synThresh,chunk_connections=chunk_connections,chunk_meta=chunk_meta,...))
 }
 
@@ -42,8 +42,8 @@ getConnectionTable.data.frame <- function(bodyIDs,synapseType, slctROI=NULL,by.r
   }
 
   if (verbose) message("Pull metadata")
-  partnerMeta <- neuprint_get_meta(myConnections$partner,chunk=chunk_meta,...)
-  refMetaOrig <- neuprint_get_meta(myConnections$bodyid,chunk=chunk_meta,...)  ## To get the database type name
+  partnerMeta <- getMeta(myConnections$partner,chunk=chunk_meta,...)
+  refMetaOrig <- getMeta(myConnections$bodyid,chunk=chunk_meta,...)  ## To get the database type name
 
   myConnections <- filter(myConnections,partnerMeta$status =="Traced")
   partnerMeta <- filter(partnerMeta,status == "Traced")

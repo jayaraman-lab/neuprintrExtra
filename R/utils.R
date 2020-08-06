@@ -1,3 +1,16 @@
+#'A cached version of \code{neuprint_get_meta}
+#'@export
+getMeta <- function(bodyids,...){
+  knownMeta <- get("storedMeta",envir=cacheEnv)
+  
+  newIDs <- bodyids[!(bodyids %in% knownMeta$bodyid)]
+  reusable <- filter(knownMeta,bodyid %in% bodyids)
+  
+  metad <- neuprint_get_meta(newIDs,...) %>% mutate(databaseType = type)
+  if(length(newIDs)>0){assign("storedMeta",rbind(knownMeta,metad),envir=cacheEnv)}
+  full <- rbind(metad,reusable)
+  full[match(bodyids,full$bodyid),]
+}
 
 
 #' Returns a table with all neurons belonging to types exactly specified
@@ -5,11 +18,27 @@
 #' @return A data frame of instances of those types, including a databaseType column (used internally by other functions)
 #' @export
 getTypesTable <- function(types){
-  typesTable <- neuprint_get_meta(1)
-  typesTable <- rbind(typesTable,do.call(rbind,lapply(types,function(t) neuprint_search(t,field="type",fixed=TRUE,exact=TRUE))))
+  if(length(types)==0) return(neuprint_get_meta(1) %>% mutate(databaseType=character()))
+  
+  knownTypes <- get("storedTypes",envir=cacheEnv)
+  
+  newTypes <- types[!(types %in% knownTypes$type)]
+  reusable <- filter(knownTypes,type %in% types)
+  
+  
+  typeQ <- gsub("([.|()\\^{}+$*?]|\\[|\\])", "\\\\\\\\\\\\\\\\\\1",newTypes)
+  typeQ <- paste0(typeQ,collapse="|")
+  typeQ <- paste0("/type:",typeQ)
+  typesTable <- neuprint_search(typeQ)
+    #typesTable <- rbind(typesTable,do.call(rbind,lapply(types,function(t) neuprint_search(t,field="type",fixed=TRUE,exact=TRUE))))
+  if(is.null(typesTable)){typesTable <- neuprint_get_meta(1)}
   typesTable <- typesTable %>%
-    mutate(databaseType = as.character(type))
-  return(typesTable)
+      mutate(databaseType = as.character(type))
+  
+  if(length(newTypes)>0){assign("storedTypes",rbind(knownTypes,typesTable),envir=cacheEnv)
+                         assign("storedMeta",distinct(rbind(get("storedMeta",envir=cacheEnv),typesTable)))}
+  
+  return(rbind(typesTable,reusable))
 }
 
 #' Formats the results of a roiInfo query in a nice table with roi/upstream/downstreams columns
@@ -18,10 +47,18 @@ getTypesTable <- function(types){
 #' @export
 getRoiInfo <- function(bodyids,...){
   if (length(bodyids)==0){return(data.frame(bodyid=double(),roi=character(),pre=integer(),post=integer(),downstream=integer(),stringsAsFactors = FALSE))}
-  roiInfo <- neuprint_get_roiInfo(bodyids,...)
-  roiInfo <-  tidyr::pivot_longer(roiInfo,cols=-bodyid,names_to=c("roi","field"),names_sep="\\.",values_to="count")
-  roiInfo <- tidyr::pivot_wider(roiInfo,names_from = "field",values_from="count")
-  roiInfo
+  knownInfo <- get("storedRoiInfo",envir=cacheEnv)
+  
+  newIDs <- bodyids[!(bodyids %in% knownInfo$bodyid)]
+  reusable <- filter(knownInfo,bodyid %in% bodyids)
+  
+  if (length(newIDs)==0){roiInfo <- data.frame(bodyid=double(),roi=character(),pre=integer(),post=integer(),downstream=integer(),stringsAsFactors = FALSE)}else{
+    roiInfo <- neuprint_get_roiInfo(newIDs,...)
+    roiInfo <-  tidyr::pivot_longer(roiInfo,cols=-bodyid,names_to=c("roi","field"),names_sep="\\.",values_to="count")
+    roiInfo <- tidyr::pivot_wider(roiInfo,names_from = "field",values_from="count")
+    assign("storedRoiInfo",rbind(knownInfo,roiInfo),envir=cacheEnv)
+  }
+  rbind(roiInfo,reusable)
 }
 
 empty_connTable <- function(has.roi = FALSE){

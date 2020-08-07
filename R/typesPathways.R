@@ -81,6 +81,7 @@ get_type2typePath_raw <- function(type.from=NULL,
   }
   
   knownConnections <- getTypeToTypeTable(getConnectionTable(character(0),"PRE"))
+  knownUnknowns <- getMeta(character(0)) %>% mutate(previous.type=type)
   type.from_toAdd <- getMeta(character(0))
   
   for (n in downHalf){
@@ -94,21 +95,19 @@ get_type2typePath_raw <- function(type.from=NULL,
     
     resLoc <- bag$outputs
     res[[n]] <- distinct(rbind(resLoc,filter(knownConnections,type.from %in% type.from_toAdd$type)))
-    if (addContraPaths){
-      res[[n]] <- addContraSide(res[[n]])
-      outRef <- renaming(getTypesTable(unique(resLoc$databaseType.to)) %>% mutate(databaseType = type)) %>% filter(type %in% res[[n]]$type.to)
-      unknowns <- retype.na_meta(getMeta(unique(bag$outputs_raw$to[!(bag$outputs_raw$to %in% outRef$bodyid)])) %>% mutate(databaseType=NA_character_,previous.type=type))
-      outRef <- rbind(outRef,unknowns) 
-    }else{
-      outRef <- bag$outputsTableRef
-    }
+    if (addContraPaths) res[[n]] <- addContraSide(res[[n]])
     
-    if(computeKnownRatio) knownConnections <- distinct(rbind(knownConnections,bag$ref$outputs_ref)) else knownConnections <- distinct(rbind(knownConnections,resLoc))
-    type.from_toAdd <- filter(outRef,(type %in% unique(knownConnections$type.from) & (type %in% res[[n]]$type.to)))
-    type.from <- filter(outRef,!(type %in% unique(knownConnections$type.from)) & (type %in% res[[n]]$type.to))
+    outRef <- renaming(getTypesTable(unique(res[[n]]$databaseType.to)) %>% mutate(databaseType = type)) %>% filter(type %in% res[[n]]$type.to)
+    unknowns <- retype.na_meta(getMeta(unique(bag$outputs_raw$to[!(bag$outputs_raw$to %in% outRef$bodyid)])) %>% mutate(previous.type=type))
+    knownUnknowns <- distinct(rbind(unknowns,knownUnknowns))
+    outRef <- distinct(filter(rbind(outRef,unknowns,knownUnknowns),type %in% res[[n]]$type.to))
+    
+    knownConnections <- distinct(rbind(knownConnections,resLoc))
+    type.from_toAdd <- filter(outRef,type %in% unique(knownConnections$type.from))
+    type.from <- filter(outRef,!(type %in% unique(knownConnections$type.from)))
   }
   
-  #knownConnections <- getTypeToTypeTable(getConnectionTable(NULL,"PRE"))
+  knownConnectionsIn <- getTypeToTypeTable(getConnectionTable(NULL,"PRE"))
   type.to_toAdd <- getMeta(character(0))
   for (n in rev(upHalf)){
     bag <- neuronBag(type.to,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,computeKnownRatio=computeKnownRatio,renaming=renaming,...)   
@@ -121,20 +120,18 @@ get_type2typePath_raw <- function(type.from=NULL,
     
     resLoc <- bag$inputs
     
-    res[[n]] <- rbind(resLoc,filter(knownConnections,type.to %in% type.to_toAdd$type))
+    res[[n]] <- rbind(resLoc,filter(knownConnectionsIn,type.to %in% type.to_toAdd$type))
     if (addContraPaths) res[[n]] <- addContraSide(res[[n]])
     
-    if(computeKnownRatio) knownConnections <- distinct(rbind(knownConnections,bag$ref$inputs_ref)) else knownConnections <- distinct(rbind(knownConnections,resLoc))
+    knownConnectionsIn <- distinct(rbind(knownConnectionsIn,resLoc))
     
-    type.to <- getTypesTable(unique(res[[n]]$databaseType.from)) %>% mutate(databaseType=type)
-    unknowns <- retype.na_meta(getMeta(unique(bag$inputs_raw$from[!(bag$inputs_raw$from %in% type.to$bodyid)]))) %>% mutate(databaseType=NA)
-    if (length(unknowns != 0)){type.to <- rbind(type.to,unknowns)}
+    type.to <- renaming(getTypesTable(unique(res[[n]]$databaseType.from)) %>% mutate(databaseType=type)) %>% filter(type %in% res[[n]]$type.from)
+    unknowns <- retype.na_meta(getMeta(unique(bag$inputs_raw$from[!(bag$inputs_raw$from %in% type.to$bodyid)])) %>% mutate(previous.type=type))
+    knownUnknowns <- distinct(rbind(unknowns,knownUnknowns))
+    type.to <- distinct(filter(rbind(type.to,unknowns,knownUnknowns),type %in% res[[n]]$type.from))
     
-    type.to <- renaming(type.to)
-    type.to <- filter(type.to,type %in% res[[n]]$type.from)
-    
-    type.to_toAdd <- filter(type.to,type %in% unique(knownConnections$type.to))
-    type.to <- filter(type.to,!(type %in% unique(knownConnections$type.to)))
+    type.to_toAdd <- filter(type.to,type %in% unique(knownConnectionsIn$type.to))
+    type.to <- filter(type.to,!(type %in% unique(knownConnectionsIn$type.to)))
     
   }
   

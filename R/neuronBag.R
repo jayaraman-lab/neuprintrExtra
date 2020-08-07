@@ -100,7 +100,7 @@ neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,
 neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,...){
  
   if(is.null(renaming)){renaming <- function(x,postfix){identity(x)}}
-  typeQuery <- renaming(typeQuery,postfix="raw")
+  #typeQuery <- renaming(typeQuery,postfix="raw")
   
   if(!("databaseType" %in% names(typeQuery))){
     warning("No 'databaseType' field. Assuming the 'type' column contains database types.")
@@ -112,19 +112,23 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
     outputsTableRef <- getTypesTable(unique(outputsR$type.to))
     outputsR <- retype.na(outputsR)
     unknowns <- getMeta(unique(outputsR$to[!(outputsR$to %in% outputsTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
-    outputsTableRef <- renaming(rbind(outputsTableRef,retype.na_meta(unknowns)))
+    outputsTableRef <- rbind(outputsTableRef,retype.na_meta(unknowns))
     outputsR <- renaming(outputsR,postfix="to")
+    outputsR <- renaming(outputsR,postfix="from")
     if (computeKnownRatio){
       if (verbose) message("Calculate full raw inputs to outputs")
       
-      allInsToOuts <- renaming(getConnectionTable(outputsTableRef,synapseType="PRE",by.roi=by.roi,verbose=verbose,...),postfix="from") %>%
+      allInsToOuts <- getConnectionTable(outputsTableRef,synapseType="PRE",by.roi=by.roi,verbose=verbose,...) %>%
+        retype.na() %>%
+        renaming(postfix="to") %>%
+        renaming(postfix="from") %>%
         group_by(to) %>% mutate(knownTotalWeight=sum(weight[match(from,from)])) %>%
         group_by(to,roi) %>% mutate(knownTotalROIweight=sum(ROIweight)) %>% ungroup() %>%
         mutate(knownWeightRelativeTotal = weight/knownTotalWeight,
                knownWeightRelative = ROIweight/knownTotalROIweight,
                input_completedness = knownTotalROIweight/totalROIweight
                )
-            
+      
       outputsR <- group_by(outputsR,from)  %>% mutate(knownTotalPreWeight=sum(weight[match(to,to)])) %>%
         group_by(from,roi) %>% mutate(knownTotalPreROIweight=sum(ROIweight),
                                       knownOutputContribution = ROIweight/knownTotalPreROIweight,
@@ -139,7 +143,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
                          input_completedness = knownTotalROIweight/totalROIweight)
       
       allInsToOuts <- right_join(outputsR,allInsToOuts)
-      
+      outputsTableRef <- renaming(outputsTableRef)
     }
   }else{
     outputsR <- getConnectionTable(character(),"POST",by.roi=by.roi,verbose=verbose,...)
@@ -155,10 +159,14 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
     unknownsIn <- getMeta(unique(inputsR$from[!(inputsR$from %in% inputsTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
     inputsFullQuery <- rbind(inputsTableRef,retype.na_meta(unknownsIn))
     inputsR <- renaming(inputsR,postfix="from")
+    inputsR <- renaming(inputsR,postfix="to")
     if (computeKnownRatio){
       if (verbose) message("Calculate full raw outputs of inputs")
       
-      allOutsFromIns <- renaming(getConnectionTable(renaming(inputsFullQuery),synapseType="POST",by.roi=by.roi,verbose=verbose,...),postfix="to") %>% 
+      allOutsFromIns <- getConnectionTable(inputsFullQuery,synapseType="POST",by.roi=by.roi,verbose=verbose,...) %>% 
+        retype.na() %>%
+        renaming(postfix = "from") %>%
+        renaming(postfix = "to") %>%
         group_by(from) %>% mutate(knownTotalPreWeight=sum(weight[match(to,to)])) %>%
         group_by(from,roi) %>% mutate(knownTotalPreROIweight=sum(ROIweight)) %>% ungroup() %>%
         mutate(knownOutputContribution = ROIweight/knownTotalPreROIweight,
@@ -199,7 +207,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
     
   }else{
     OUTByTypes <- getTypeToTypeTable(outputsR,typesTable = outputsTableRef)
-    if(computeKnownRatio) OUTByTypesRef <-getTypeToTypeTable(allInsToOuts)
+    if(computeKnownRatio) OUTByTypesRef <- getTypeToTypeTable(allInsToOuts)
   }
   
   
@@ -255,7 +263,7 @@ processTypeToTypeFullOutputs <- function(OUTByTypes,outputsR){
     filter(type.from %in% outputsR$type.from) %>%
     group_by(type.from,roi) %>% 
     mutate(knownOutputContribution_perType=knownOutputContribution/sum(knownOutputContribution),
-         knownWROutputContribution_perType=weightRelative/sum(weightRelative))
+           knownWROutputContribution_perType=weightRelative/sum(weightRelative))
   OUTByTypes
 }
 #### Methods -------------------------------------------------

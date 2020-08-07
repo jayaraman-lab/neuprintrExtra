@@ -112,18 +112,23 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
     outputsTableRef <- getTypesTable(unique(outputsR$type.to))
     outputsR <- retype.na(outputsR)
     unknowns <- getMeta(unique(outputsR$to[!(outputsR$to %in% outputsTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
-    outputsTableRef <- renaming(rbind(outputsTableRef,retype.na(unknowns)))
+    outputsTableRef <- renaming(rbind(outputsTableRef,retype.na_meta(unknowns)))
     outputsR <- renaming(outputsR,postfix="to")
     if (computeKnownRatio){
       if (verbose) message("Calculate full raw inputs to outputs")
       
       allInsToOuts <- renaming(getConnectionTable(outputsTableRef,synapseType="PRE",by.roi=by.roi,verbose=verbose,...),postfix="from") %>%
         group_by(to) %>% mutate(knownTotalWeight=sum(weight[match(from,from)])) %>%
-        group_by(to,roi) %>% mutate(knownTotalROIweight=sum(ROIweight)) %>% ungroup() %>%
+        group_by(to,roi) %>% mutate(knownTotalROIweight=sum(ROIweight)) %>% ungroup() %>% group_by(from)  %>% mutate(knownTotalPreWeight=sum(weight[match(to,to)])) %>%
+        group_by(from,roi) %>% mutate(knownTotalPreROIweight=sum(ROIweight),
+                                      knownOutputContribution = ROIweight/knownTotalPreROIweight,
+                                      knownOutputContributionTotal = weight/knownTotalPreWeight) %>% ungroup() %>%
         mutate(knownWeightRelativeTotal = weight/knownTotalWeight,
                knownWeightRelative = ROIweight/knownTotalROIweight,
-               input_completedness = knownTotalROIweight/totalROIweight)
-      
+               input_completedness = knownTotalROIweight/totalROIweight,
+               output_completedness = knownTotalPreROIweight/totalPreROIweight
+               )
+            
       outputsR <- group_by(outputsR,from)  %>% mutate(knownTotalPreWeight=sum(weight[match(to,to)])) %>%
         group_by(from,roi) %>% mutate(knownTotalPreROIweight=sum(ROIweight),
                                       knownOutputContribution = ROIweight/knownTotalPreROIweight,
@@ -137,7 +142,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
                          output_completedness = knownTotalPreROIweight/totalPreROIweight,
                          input_completedness = knownTotalROIweight/totalROIweight)
       
-      allInsToOuts <- right_join(outputsR,allInsToOuts)
+      #allInsToOuts <- right_join(outputsR,allInsToOuts)
       
     }
   }else{
@@ -152,7 +157,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
     inputsTableRef <- getTypesTable(unique(inputsR$type.from))
     inputsR <- retype.na(inputsR)
     unknownsIn <- getMeta(unique(inputsR$from[!(inputsR$from %in% inputsTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
-    inputsFullQuery <- rbind(inputsTableRef,unknownsIn)
+    inputsFullQuery <- rbind(inputsTableRef,retype.na_meta(unknownsIn))
     inputsR <- renaming(inputsR,postfix="from")
     if (computeKnownRatio){
       if (verbose) message("Calculate full raw outputs of inputs")
@@ -164,7 +169,13 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
                knownOutputContributionTotal = weight/knownTotalPreWeight,
                output_completedness = knownTotalPreROIweight/totalPreROIweight
                ) %>% group_by(to)  %>% mutate(knownTotalWeight=sum(weight)) %>%
-        group_by(to,roi) %>% mutate(knownTotalROIweight=sum(ROIweight)) %>% ungroup() 
+        group_by(to,roi) %>% mutate(knownTotalROIweight=sum(ROIweight)) %>% ungroup() %>%
+        mutate(knownOutputContribution = ROIweight/knownTotalPreROIweight,
+               knownOutputContributionTotal = weight/knownTotalPreWeight,
+               knownWeightRelativeTotal = weight/knownTotalWeight,
+               knownWeightRelative = ROIweight/knownTotalROIweight,
+               output_completedness = knownTotalPreROIweight/totalPreROIweight,
+               input_completedness = knownTotalROIweight/totalROIweight)
       
       inputsR <- group_by(inputsR,to) %>% mutate(knownTotalWeight=sum(weight[match(from,from)])) %>%
         group_by(to,roi) %>% mutate(knownTotalROIweight=sum(ROIweight)) %>% ungroup()
@@ -178,7 +189,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
                         knownWeightRelative = ROIweight/knownTotalROIweight,
                         output_completedness = knownTotalPreROIweight/totalPreROIweight,
                         input_completedness = knownTotalROIweight/totalROIweight)
-      allOutsFromIns <- right_join(inputsR,allOutsFromIns)
+      #allOutsFromIns <- right_join(inputsR,allOutsFromIns)
       
       inputsOutTableRef <- getTypesTable(unique(allOutsFromIns$databaseType.to))
       unknownsInOut <- getMeta(unique(allOutsFromIns$to[!(allOutsFromIns$to %in% inputsOutTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 

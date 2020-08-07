@@ -159,7 +159,7 @@ plotConnectivity.data.frame <- function(connObj,
   if (is.null(orderOut)){orderOut <- unique(connObj$Outputs)}
   
   if(is.connectivityCluster(orderIn)){orderIn <- orderIn$hc$labels[orderIn$hc$order]}
-  if(is.connectivityCluster(orderOut)){orderOut <- orderIn$hc$labels[orderOut$hc$order]}
+  if(is.connectivityCluster(orderOut)){orderOut <- orderOut$hc$labels[orderOut$hc$order]}
   
   connObj$Inputs <- factor(connObj$Inputs,levels=orderIn)
   connObj$Outputs <- factor(connObj$Outputs,levels=orderOut)

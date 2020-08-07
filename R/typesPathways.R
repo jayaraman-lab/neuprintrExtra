@@ -92,17 +92,16 @@ get_type2typePath_raw <- function(type.from=NULL,
     
     if(!is.null(thresholdPerROI)){bag$outputs <- filter(bag$outputs,knownTotalROIweight>thresholdPerROI & knownTotalPreROIweight>thresholdPerROI)}
     
+    resLoc <- bag$outputs
+    res[[n]] <- distinct(rbind(resLoc,filter(knownConnections,type.from %in% type.from_toAdd$type)))
     if (addContraPaths){
-      resLoc <- addContraSide(bag$outputs) 
+      res[[n]] <- addContraSide(res[[n]])
       outRef <- renaming(getTypesTable(unique(resLoc$databaseType.to)) %>% mutate(databaseType = type)) %>% filter(type %in% resLoc$type.to)
     }else{
-      resLoc <- bag$outputs
       outRef <- bag$outputsTableRef
     }
     
-    res[[n]] <- distinct(rbind(resLoc,filter(knownConnections,type.from %in% type.from_toAdd$type)))
-    
-    if(computeKnownRatio) knownConnections <- distinct(rbind(knownConnections,addContraSide(bag$ref$outputs_ref))) else knownConnections <- distinct(rbind(knownConnections,resLoc))
+    if(computeKnownRatio) knownConnections <- distinct(rbind(knownConnections,bag$ref$outputs_ref)) else knownConnections <- distinct(rbind(knownConnections,resLoc))
     type.from_toAdd <- filter(outRef,(type %in% unique(knownConnections$type.from) & (type %in% res[[n]]$type.to)))
     type.from <- filter(outRef,!(type %in% unique(knownConnections$type.from)) & (type %in% res[[n]]$type.to))
   }
@@ -118,15 +117,12 @@ get_type2typePath_raw <- function(type.from=NULL,
 
     if(!is.null(thresholdPerROI)){bag$inputs <- filter(bag$inputs,knownTotalROIweight>thresholdPerROI & knownTotalPreROIweight>thresholdPerROI)}
     
-    if (addContraPaths){
-      resLoc <- addContraSide(bag$inputs)
-    }else{
-      resLoc <- bag$inputs
-    }
+    resLoc <- bag$inputs
     
     res[[n]] <- rbind(resLoc,filter(knownConnections,type.to %in% type.to_toAdd$type))
+    if (addContraPaths) res[[n]] <- addContraSide(res[[n]])
     
-    if(computeKnownRatio) knownConnections <- distinct(rbind(knownConnections,addContraSide(bag$ref$inputs_ref))) else knownConnections <- distinct(rbind(knownConnections,resLoc))
+    if(computeKnownRatio) knownConnections <- distinct(rbind(knownConnections,bag$ref$inputs_ref)) else knownConnections <- distinct(rbind(knownConnections,resLoc))
     
     type.to <- getTypesTable(unique(res[[n]]$databaseType.from)) %>% mutate(databaseType=type)
     unknowns <- retype.na_meta(getMeta(unique(bag$inputs_raw$from[!(bag$inputs_raw$from %in% type.to$bodyid)]))) %>% mutate(databaseType=NA)

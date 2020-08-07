@@ -96,7 +96,9 @@ get_type2typePath_raw <- function(type.from=NULL,
     res[[n]] <- distinct(rbind(resLoc,filter(knownConnections,type.from %in% type.from_toAdd$type)))
     if (addContraPaths){
       res[[n]] <- addContraSide(res[[n]])
-      outRef <- renaming(getTypesTable(unique(resLoc$databaseType.to)) %>% mutate(databaseType = type)) %>% filter(type %in% resLoc$type.to)
+      outRef <- renaming(getTypesTable(unique(resLoc$databaseType.to)) %>% mutate(databaseType = type)) %>% filter(type %in% res[[n]]$type.to)
+      unknowns <- retype.na_meta(getMeta(unique(bag$outputs_raw$to[!(bag$outputs_raw$to %in% outRef$bodyid)])) %>% mutate(databaseType=NA_character_,previous.type=type))
+      outRef <- rbind(outRef,unknowns) 
     }else{
       outRef <- bag$outputsTableRef
     }

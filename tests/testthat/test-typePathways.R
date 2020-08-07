@@ -10,7 +10,7 @@ test_that("Pathway functions work",{
   expect_equal(pathDirect,pathFromBag)
   
   openBag <- get_type2typePath_raw(FB6Neurons[1,],by.roi=FALSE,n_steps=1:2,stat=c("weightRelative","outputContribution"),renaming=cxRetyping,ROI = list("combo"=c("FB","SNP(R)")))
-  expect_true(openBag[[2]]$type.from %in% openBag[[1]]$type.to)
+  expect_true(all(openBag[[2]]$type.from %in% openBag[[1]]$type.to))
   
   openBag2 <- get_type2typePath_raw(type.to=FB6Neurons[1,],by.roi=FALSE,n_steps=1:2,stat=c("weightRelative","outputContribution"),renaming=cxRetyping,ROI = list("combo"=c("FB","SNP(R)")))
   expect_true(all(openBag2[[1]]$type.to %in% openBag2[[2]]$type.from))

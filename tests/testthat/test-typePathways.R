@@ -9,6 +9,21 @@ test_that("Pathway functions work",{
   expect_is(pathFromBag <- tableChain2path(FB6Bag$outputs,FB6Bag$inputs,type.to=cxRetyping(FB6Neurons)),"data.frame")
   expect_equal(pathDirect,pathFromBag)
   
+  openBag <- get_type2typePath_raw(FB6Neurons[1,],by.roi=FALSE,n_steps=1:2,stat=c("weightRelative","outputContribution"),renaming=cxRetyping,ROI = list("combo"=c("FB","SNP(R)")))
+  expect_true(openBag[[2]]$type.from %in% openBag[[1]]$type.to)
+  
+  openBag2 <- get_type2typePath_raw(type.to=FB6Neurons[1,],by.roi=FALSE,n_steps=1:2,stat=c("weightRelative","outputContribution"),renaming=cxRetyping,ROI = list("combo"=c("FB","SNP(R)")))
+  expect_true(all(openBag2[[1]]$type.to %in% openBag2[[2]]$type.from))
+  
+  openBag3 <- get_type2typePath_raw(FB6Neurons[1,],by.roi=FALSE,n_steps=1:2,stat=c("weightRelative","outputContribution"),renaming=cxRetyping,ROI = list("combo"=c("FB","SNP(R)")),thresholdPerROI = 20)
+  expect_true(all(openBag3[[2]]$type.from %in% openBag3[[1]]$type.to))
+  
+  openBag4 <- get_type2typePath_raw(type.to=FB6Neurons[1,],by.roi=FALSE,n_steps=1:2,stat=c("weightRelative","outputContribution"),renaming=cxRetyping,ROI = list("combo"=c("FB","SNP(R)")),thresholdPerROI = 20)
+  expect_true(all(openBag3[[1]]$type.to %in% openBag3[[2]]$type.from))
+  
+  openBag5 <- get_type2typePath_raw(type.to=FB6Neurons[2,],by.roi=FALSE,n_steps=1:2,stat=c("weightRelative","outputContribution"),renaming=cxRetyping,ROI = list("combo(R)"=c("SMP(R)")),thresholdPerROI = 20,addContraPaths = T)
+  expect_true(all(openBag5[[1]]$type.to %in% openBag5[[2]]$type.from))
+  
 })
 
 test_that("Contralateral pathway completion works",{

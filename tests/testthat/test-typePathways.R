@@ -19,7 +19,7 @@ test_that("Pathway functions work",{
   expect_true(all(openBag3[[2]]$type.from %in% openBag3[[1]]$type.to))
   
   openBag4 <- get_type2typePath_raw(type.to=FB6Neurons[1,],by.roi=FALSE,n_steps=1:2,stat=c("weightRelative","outputContribution"),renaming=cxRetyping,ROI = list("combo"=c("FB","SNP(R)")),thresholdPerROI = 20)
-  expect_true(all(openBag3[[1]]$type.to %in% openBag3[[2]]$type.from))
+  expect_true(all(openBag4[[1]]$type.to %in% openBag4[[2]]$type.from))
   
   openBag5 <- get_type2typePath_raw(type.to=FB6Neurons[2,],by.roi=FALSE,n_steps=1:2,stat=c("weightRelative","outputContribution"),renaming=cxRetyping,ROI = list("combo(R)"=c("SMP(R)")),thresholdPerROI = 20,addContraPaths = T)
   expect_true(all(openBag5[[1]]$type.to %in% openBag5[[2]]$type.from))

@@ -106,6 +106,9 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
     warning("No 'databaseType' field. Assuming the 'type' column contains database types.")
     typeQuery <- mutate(typeQuery,databaseType=as.character(type))}
   
+  ## NEED TO ADD WARNING ABOUT THAT
+  typeQuery <- mutate(typeQuery,type=databaseType)
+  
   if (!omitOutputs){
     if (verbose) message("Calculate raw outputs")
     outputsR <- getConnectionTable(typeQuery,synapseType = "POST",by.roi=by.roi,verbose=verbose,...)

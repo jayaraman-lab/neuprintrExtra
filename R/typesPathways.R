@@ -335,7 +335,7 @@ pathDf2graphDf <- function(pathDf){
     if(length(rois)>0){
       tmp$roi <- pathDf[[rois[step]]]
     }
-    graphDataFrame = bind_rows(graphDataFrame,unique(tidyr::drop_na(tmp)))
+    graphDataFrame = bind_rows(graphDataFrame,unique(tidyr::drop_na(tmp,type.to)))
   }
   
   return(graphDataFrame)

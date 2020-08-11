@@ -146,8 +146,8 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
                          input_completedness = knownTotalROIweight/totalROIweight)
       
       allInsToOuts <- right_join(outputsR,allInsToOuts)
-      outputsTableRef <- renaming(outputsTableRef)
     }
+    outputsTableRef <- renaming(outputsTableRef)
   }else{
     outputsR <- getConnectionTable(character(),"POST",by.roi=by.roi,verbose=verbose,...)
     outputsTableRef <- getTypesTable(character())

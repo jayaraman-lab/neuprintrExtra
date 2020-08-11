@@ -288,6 +288,8 @@ pathDf2graphDf <- function(pathDf){
   weights <- lapply(weightBaseName,function(wB) sort(pathColNames[grep(paste0(wB,"_N"),pathColNames)]))
   rois <- sort(pathColNames[grep("roi_",pathColNames)])
   
+  databaseTypeFrom <- c("databaseType.from",sort(pathColNames[grep("databaseType_",pathColNames)]))
+  databaseTypeTo <- c(sort(pathColNames[grep("databaseType_",pathColNames)]),"databaseType.to")
   
   for (i in seq(3)){
     assign( paste0("fromSupertype",i), c(paste0("supertype",i,".from"),sort(pathColNames[grep(paste0("supertype",i,"_N"),pathColNames)])))
@@ -305,12 +307,14 @@ pathDf2graphDf <- function(pathDf){
     toST1 = pathDf[[toSupertype1[step]]]
     toST2 = pathDf[[toSupertype2[step]]]
     toST3 = pathDf[[toSupertype3[step]]]
+    toDB <- pathDf[[databaseTypeTo[step]]]
     
     nas = is.na(toNodes)
     toNodes[nas] = pathDf$type.to[nas]
     pathDf$type.to[nas] = NA
     
-    
+    toDB[nas] <- pathDf$databaseType.to[nas]
+    pathDf$databaseType.to[nas] <- NA
     
     toST1[nas] =pathDf$supertype1.to[nas]
     pathDf$supertype1.to[nas] = NA
@@ -323,6 +327,8 @@ pathDf2graphDf <- function(pathDf){
     
     tmp = data.frame(from = pathDf[[fromCols[step]]],
                      to = toNodes,
+                     databaseType.from = pathDf[[databaseTypeFrom[step]]],
+                     databaseType.to = toDB,
                      supertype1.from = pathDf[[fromSupertype1[step]]],
                      supertype1.to = toST1,
                      supertype2.from = pathDf[[fromSupertype2[step]]],

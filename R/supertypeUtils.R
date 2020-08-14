@@ -50,6 +50,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^ER[1-6].*",types)] <- "ER"
   supertype[grepl("^SA[1-9].*",types)] <- "SA"
   supertype[grepl("^MBON[0-5][0-9].*",types)] <- "MBON"
+  supertype[grepl("^ExR.*",types)] <- "ExR"
 
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   if (level == 2){return(supertype)}

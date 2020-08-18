@@ -3,6 +3,7 @@
 #' @param minTypePercentage The minimum proportion of the instances of a type that should be innervating the ROI for
 #' it to be considered
 #' @param renaming a renaming function to be applied to the types found (need to accept a \code{postfix} argument). No renaming by default.
+#' @param retyping Deprecated, identical to renaming
 #' @return  a data frame of metadata for all neurons in the ROI, as returned by \code{neuprint_get_meta}, with extra columns \code{ROI_pre}
 #'  and \code{ROI_post}, the counts in the queried ROI.
 #' @details  If a type is selected because at least \code{minTypePercentage} of its instances touch the ROI, all instances of the type are returned.

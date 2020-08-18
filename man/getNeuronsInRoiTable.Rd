@@ -4,7 +4,12 @@
 \alias{getNeuronsInRoiTable}
 \title{Get all instances of neurons of types with non zero pre/post counts in a ROI.}
 \usage{
-getNeuronsInRoiTable(ROI, minTypePercentage = 0.5, renaming = NULL)
+getNeuronsInRoiTable(
+  ROI,
+  minTypePercentage = 0.5,
+  renaming = NULL,
+  retyping = NULL
+)
 }
 \arguments{
 \item{ROI}{The ROI to look for}
@@ -13,6 +18,8 @@ getNeuronsInRoiTable(ROI, minTypePercentage = 0.5, renaming = NULL)
 it to be considered}
 
 \item{renaming}{a renaming function to be applied to the types found (need to accept a \code{postfix} argument). No renaming by default.}
+
+\item{retyping}{Deprecated, identical to renaming}
 }
 \value{
 a data frame of metadata for all neurons in the ROI, as returned by \code{neuprint_get_meta}, with extra columns \code{ROI_pre}

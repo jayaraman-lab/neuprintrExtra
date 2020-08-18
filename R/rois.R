@@ -9,7 +9,11 @@
 #' This is used internally by \code{getTypesInRoiTable}
 #' @seealso  \code{getTypesInRoiTable}
 #' @export
-getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,renaming=NULL) {
+getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,renaming=NULL,retyping=NULL) {
+  if(!missing(retyping)){
+    warning("Argument 'retyping' deprecated, use 'renaming' instead")
+    renaming <- retyping
+  }
   if(is.null(renaming)){renaming <- function(x,postfix){identity(x)}}
   roi_Innervate <- neuprint_bodies_in_ROI(ROI) %>%
     mutate(originalInstance = TRUE)

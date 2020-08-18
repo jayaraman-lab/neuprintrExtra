@@ -11,8 +11,8 @@ retype.na <- function(connectionTable){
   connectionTable$type.to[is.na(connectionTable$type.to)] <- gsub("_L$|_R$","",connectionTable$name.to[is.na(connectionTable$type.to)])
   
   ## Deal with parenthesis names
-  connectionTable$type.from[grepl("^\\(",connectionTable$type.from)] <- paste0(connectionTable$type.from[grepl("^\\(",connectionTable$type.from)],connectionTable$from[grepl("^\\(",connectionTable$type.from)])
-  connectionTable$type.to[grepl("^\\(",connectionTable$type.to)] <- paste0(connectionTable$type.to[grepl("^\\(",connectionTable$type.to)],connectionTable$to[grepl("^\\(",connectionTable$type.to)])
+  connectionTable$type.from[grepl("^\\(",connectionTable$type.from)] <- paste0(connectionTable$name.from[grepl("^\\(",connectionTable$type.from)],connectionTable$from[grepl("^\\(",connectionTable$type.from)])
+  connectionTable$type.to[grepl("^\\(",connectionTable$type.to)] <- paste0(connectionTable$name.to[grepl("^\\(",connectionTable$type.to)],connectionTable$to[grepl("^\\(",connectionTable$type.to)])
   
   return(connectionTable)
 }
@@ -21,7 +21,7 @@ retype.na_meta <- function(metaTable){
   metaTable$name[is.na(metaTable$name)] <- as.character(metaTable$bodyid[is.na(metaTable$name)])
   metaTable$type[is.na(metaTable$type)] <- gsub("_L$|_R$","",metaTable$name[is.na(metaTable$type)])
 
-  metaTable$type[grepl("^\\(",metaTable$type)] <- paste0(metaTable$type[grepl("^\\(",metaTable$type)],metaTable$bodyid[grepl("^\\(",metaTable$type)])
+  metaTable$type[grepl("^\\(",metaTable$type)] <- paste0(metaTable$name[grepl("^\\(",metaTable$type)],metaTable$bodyid[grepl("^\\(",metaTable$type)])
   return(metaTable)
 }
 

@@ -163,7 +163,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
     inputsFullQuery <- rbind(inputsTableRef,retype.na_meta(unknownsIn))
     inputsR <- renaming(inputsR,postfix="from")
     inputsR <- renaming(inputsR,postfix="to")
-    typeQuery <- renaming(retype.na_meta(typeQuery)) ## Revert typeQuery to the "original"
+   
     if (computeKnownRatio){
       if (verbose) message("Calculate full raw outputs of inputs")
       
@@ -202,7 +202,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
                           inputsOutTableRef <- getTypesTable(character())
         }
     }
-  
+  typeQuery <- renaming(retype.na_meta(typeQuery))   ## Revert typeQuery to the "original"
 
   if (verbose) message("Calculate type to type outputs")
   if (computeKnownRatio & nrow(outputsR)>0){

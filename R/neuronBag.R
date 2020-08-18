@@ -163,6 +163,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
     inputsFullQuery <- rbind(inputsTableRef,retype.na_meta(unknownsIn))
     inputsR <- renaming(inputsR,postfix="from")
     inputsR <- renaming(inputsR,postfix="to")
+    typeQuery <- renaming(retype.na_meta(typeQuery)) ## Revert typeQuery to the "original"
     if (computeKnownRatio){
       if (verbose) message("Calculate full raw outputs of inputs")
       
@@ -193,7 +194,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
       
       inputsOutTableRef <- getTypesTable(unique(allOutsFromIns$databaseType.to))
       unknownsInOut <- getMeta(unique(allOutsFromIns$to[!(allOutsFromIns$to %in% inputsOutTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
-      inputsOutTableRef <- renaming(rbind(inputsOutTableRef,unknownsInOut))
+      inputsOutTableRef <- renaming(rbind(inputsOutTableRef,retype.na_meta(unknownsInOut)))
     }
   }else{
     inputsR <- getConnectionTable(character(),"PRE",by.roi=by.roi,verbose=verbose,...)

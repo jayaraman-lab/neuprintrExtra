@@ -2,14 +2,15 @@
 #' @param ROI The ROI to look for
 #' @param minTypePercentage The minimum proportion of the instances of a type that should be innervating the ROI for
 #' it to be considered
-#' @param retyping a retyping function to be applied to the types found. \code{identity} by default (so it does nothing)
+#' @param renaming a renaming function to be applied to the types found (need to accept a \code{postfix} argument). No renaming by default.
 #' @return  a data frame of metadata for all neurons in the ROI, as returned by \code{neuprint_get_meta}, with extra columns \code{ROI_pre}
 #'  and \code{ROI_post}, the counts in the queried ROI.
 #' @details  If a type is selected because at least \code{minTypePercentage} of its instances touch the ROI, all instances of the type are returned.
 #' This is used internally by \code{getTypesInRoiTable}
 #' @seealso  \code{getTypesInRoiTable}
 #' @export
-getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,retyping=identity) {
+getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,renaming=NULL) {
+  if(is.null(renaming)){renaming <- function(x,postfix){identity(x)}}
   roi_Innervate <- neuprint_bodies_in_ROI(ROI) %>%
     mutate(originalInstance = TRUE)
   metaRoi <- getMeta(roi_Innervate$bodyid) %>% tidyr::drop_na(type)
@@ -24,7 +25,7 @@ getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,retyping=identity) {
     tidyr::replace_na(list(ROI_pre = 0,ROI_post = 0,originalInstance=FALSE)) %>%
     mutate(databaseType = as.character(type)) ## Convenience column for when types are changed
 
-  roi_Innervate <- retyping(roi_Innervate)
+  roi_Innervate <- renaming(roi_Innervate)
   roi_Innervate <-roi_Innervate %>% group_by(type) %>%
     mutate(typePercentage = sum(originalInstance)/n()) %>%
     ungroup() %>%
@@ -35,7 +36,7 @@ getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,retyping=identity) {
 
 #' Returns a neuronBag object of all the neurons forming significant connections in a ROI.
 #' @param ROI The ROI to consider
-#' @param retyping a retyping function to be applied to the types found. \code{cxRetyping} by default (for no retyping, set it to \code{identity})
+#' @param renaming a renaming function to be applied to the types found. \code{cxRetyping} by default (for no renaming, set it to \code{identity})
 #' @param bagROIs Which ROIs to include in the bag created (by default only the ROI one wants neurons in). If NULL returns all ROIs.
 #' @param minTypePercentage The minimum proportion of the instances of a type that should be innervating the ROI for
 #' it to be considered (0.5 by default)
@@ -44,13 +45,13 @@ getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,retyping=identity) {
 #' @seealso  \code{getNeuronsInRoiTable}
 #' @export
 getTypesInRoiTable <- function(ROI,
-                               retyping=cxRetyping,
+                               renaming=cxRetyping,
                                bagROIs=ROI,
                                minTypePercentage=0.5,
                                ...){
-  neuronTable <- getNeuronsInRoiTable(ROI,minTypePercentage=minTypePercentage,retyping=retyping) ## Remove types if less than
+  neuronTable <- getNeuronsInRoiTable(ROI,minTypePercentage=minTypePercentage,renaming=renaming) ## Remove types if less than
   ## 25% of the instances touch (l/R)
-  roiConnections <- neuronBag(neuronTable,slctROI=bagROIs,renaming=retyping,...)
+  roiConnections <- neuronBag(neuronTable,slctROI=bagROIs,renaming=renaming,...)
   roiConnections
 }
 

@@ -2,13 +2,17 @@
 #' @param connectionTable A table of connections in the to/from format
 #' @return A connection table with name and type fields filled in.
 #' @details If types are missing, fill them with a cleaned up (removing the L/R postfixes)
-#' version of the name. If the name is missing, use the bodyid for everything.
+#' version of the name. If the name is missing, use the bodyid for everything. If the name is in parenthesis, append with the bodyid.
 #' @export
 retype.na <- function(connectionTable){
   connectionTable$name.from[is.na(connectionTable$name.from)] <- as.character(connectionTable$from[is.na(connectionTable$name.from)])
   connectionTable$name.to[is.na(connectionTable$name.to)] <- as.character(connectionTable$to[is.na(connectionTable$name.to)])
   connectionTable$type.from[is.na(connectionTable$type.from)] <- gsub("_L$|_R$","",connectionTable$name.from[is.na(connectionTable$type.from)])
   connectionTable$type.to[is.na(connectionTable$type.to)] <- gsub("_L$|_R$","",connectionTable$name.to[is.na(connectionTable$type.to)])
+  
+  ## Deal with parenthesis names
+  connectionTable$type.from[grepl("^\\(",connectionTable$type.from)] <- paste0(connectionTable$type.from[grepl("^\\(",connectionTable$type.from)],connectionTable$from[grepl("^\\(",connectionTable$type.from)])
+  connectionTable$type.to[grepl("^\\(",connectionTable$type.to)] <- paste0(connectionTable$type.to[grepl("^\\(",connectionTable$type.to)],connectionTable$to[grepl("^\\(",connectionTable$type.to)])
   
   return(connectionTable)
 }
@@ -17,6 +21,7 @@ retype.na_meta <- function(metaTable){
   metaTable$name[is.na(metaTable$name)] <- as.character(metaTable$bodyid[is.na(metaTable$name)])
   metaTable$type[is.na(metaTable$type)] <- gsub("_L$|_R$","",metaTable$name[is.na(metaTable$type)])
 
+  metaTable$type[grepl("^\\(",metaTable$type)] <- paste0(metaTable$type[grepl("^\\(",metaTable$type)],metaTable$bodyid[grepl("^\\(",metaTable$type)])
   return(metaTable)
 }
 

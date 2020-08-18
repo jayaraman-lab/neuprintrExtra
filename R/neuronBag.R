@@ -222,7 +222,6 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
       INByTypes <- getTypeToTypeTable(inputsR,typesTable = typeQuery)
       if(computeKnownRatio) INByTypesRef <-getTypeToTypeTable(allOutsFromIns)
     }
-  inputsR <- retype.na(inputsR)
 
   nBag <- new_neuronBag(outputs = OUTByTypes,
                                    inputs = INByTypes,

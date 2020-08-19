@@ -144,10 +144,11 @@ get_type2typePath_raw <- function(type.from=NULL,
 #' @param stat which stat to use for pathway weights. Can be a vector. If NULL (the default), all the available meaningful stats are used: 
 #' (\code{"weightRelative","outputContribution","knownWeightRelative","knownOutputContribution","knownOutputContribution_perType","knownWROutputContribution_perType","knownWeightRelative_perType"})
 #' @param n a number to label the stage in processing 
+#' @param excludeIntermediate a character vectors of types that should NOT be intermediate links
 #' @return a table with a stat_pathway extra column, and type and roi columns labeled with n or n+1 depending if they are 
 #' at the first or second step of the pathway
 #' @export
-tables2path <- function(inputTable,outputTable,stat=NULL,n=1){
+tables2path <- function(inputTable,outputTable,stat=NULL,n=1,excludeIntermediate=NULL){
   if(is.null(stat)) stat <- c("weightRelative","outputContribution","knownWeightRelative","knownOutputContribution","knownOutputContribution_perType","knownWROutputContribution_perType","knownWeightRelative_perType")
   inputTable <-  select(inputTable,starts_with((c("type",
                                         "databaseType",
@@ -158,6 +159,10 @@ tables2path <- function(inputTable,outputTable,stat=NULL,n=1){
                                         "supertype",
                                         "roi",paste0(stat,"_")))) | any_of(stat))
  
+  if(!is.null(excludeIntermediate)){
+    inputTable <- filter(inputTable,!(type.to %in% excludeIntermediate))
+    outputTable <- filter(outputTable,!(type.from %in% excludeIntermediate))
+  }
  
   res <- inner_join(inputTable,outputTable,by=c("type.to"="type.from",
                                                 "databaseType.to"="databaseType.from",
@@ -195,7 +200,7 @@ tables2path <- function(inputTable,outputTable,stat=NULL,n=1){
 #' @param ... An arbitrary number of connection tables or a list of connection tables. In desired downstream order
 #' @inheritParams get_type2typePath
 #' @export
-tableChain2path <- function(...,n_steps=NULL,stat=NULL,excludeLoops=TRUE,type.to=NULL){
+tableChain2path <- function(...,n_steps=NULL,stat=NULL,excludeLoops=TRUE,type.to=NULL,excludeIntermediate=NULL){
   if(is.null(stat)) stat <- c("weightRelative","outputContribution","knownWeightRelative","knownOutputContribution","knownOutputContribution_perType","knownWROutputContribution_perType","knownWeightRelative_perType")
   res <- rlang::list2(...)
   if (length(res) == 1 && rlang::is_bare_list(res[[1]])) {
@@ -205,7 +210,7 @@ tableChain2path <- function(...,n_steps=NULL,stat=NULL,excludeLoops=TRUE,type.to
   res <- bind_rows(lapply(n_steps,function(nS){
     pathTable <- res[[1]]
     for (i in seq(2,nS,length.out = nS-1)){
-      pathTable <- tables2path(pathTable,res[[i]],stat=stat,n=i-1)
+      pathTable <- tables2path(pathTable,res[[i]],stat=stat,n=i-1,excludeIntermediate=excludeIntermediate)
     }
     if (!is.null(type.to)){
       pathTable <- pathTable[(pathTable$type.to %in% type.to$type),]

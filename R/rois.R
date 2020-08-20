@@ -313,18 +313,23 @@ getROISummary.data.frame <- function(neurons,threshold=0,rois = NULL){
       filter(roi %in% rois$roi)
   }
 
+  neurons <- rename(neurons,totalDownstream=downstream,totalUpstream=upstream)
   countInstances <- group_by(neurons,type) %>% summarize(n=n())
 
   roiSummary <-
     left_join(roiSummary,
-              select(neurons,bodyid,type,databaseType),
+              select(neurons,bodyid,type,databaseType,totalDownstream,totalUpstream),
               by=c("bodyid")) %>% tidyr::replace_na(list(downstream=0,upstream=0)) %>%
     group_by(roi,type,databaseType) %>%
     summarize(downstream=mean(downstream),
-              upstream=mean(upstream)) %>%
+              upstream=mean(upstream),
+              totalDownstream=mean(totalDownstream),
+              totalUpstream=mean(totalUpstream)
+              ) %>%
     ungroup() %>%
     mutate(fullWeight = downstream+upstream,
-           deltaWeight = (downstream - upstream)/fullWeight) %>%
+           deltaWeight = (downstream - upstream)/fullWeight,
+           polarity_Ratio = (downstream/totalDownstream)/(upstream/totalUpstream)) %>%
     filter(fullWeight>threshold)
 
   roiSummary <- left_join(roiSummary,countInstances,by="type")

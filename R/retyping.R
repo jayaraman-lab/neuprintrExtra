@@ -5,23 +5,33 @@
 #' version of the name. If the name is missing, use the bodyid for everything. If the name is in parenthesis, append with the bodyid.
 #' @export
 retype.na <- function(connectionTable){
+  ## All missing types become instance + bodyid if there's an instance
+  connectionTable$type.from[is.na(connectionTable$type.from) & !is.na(connectionTable$name.from)] <- 
+    paste0(connectionTable$name.from[is.na(connectionTable$type.from) & !is.na(connectionTable$name.from)],"_",
+           connectionTable$from[is.na(connectionTable$type.from) & !is.na(connectionTable$name.from)])
+  connectionTable$type.to[is.na(connectionTable$type.to) & !is.na(connectionTable$name.to)] <- 
+    paste0(connectionTable$name.to[is.na(connectionTable$type.to) & !is.na(connectionTable$name.to)],"_",
+           connectionTable$to[is.na(connectionTable$type.to) & !is.na(connectionTable$name.to)])
+  
+  ## Missing names get the bodyid
   connectionTable$name.from[is.na(connectionTable$name.from)] <- as.character(connectionTable$from[is.na(connectionTable$name.from)])
   connectionTable$name.to[is.na(connectionTable$name.to)] <- as.character(connectionTable$to[is.na(connectionTable$name.to)])
-  connectionTable$type.from[is.na(connectionTable$type.from)] <- gsub("_L$|_R$","",connectionTable$name.from[is.na(connectionTable$type.from)])
-  connectionTable$type.to[is.na(connectionTable$type.to)] <- gsub("_L$|_R$","",connectionTable$name.to[is.na(connectionTable$type.to)])
   
-  ## Deal with parenthesis names
-  connectionTable$type.from[grepl("^\\(",connectionTable$type.from)] <- paste0(connectionTable$name.from[grepl("^\\(",connectionTable$type.from)],connectionTable$from[grepl("^\\(",connectionTable$type.from)])
-  connectionTable$type.to[grepl("^\\(",connectionTable$type.to)] <- paste0(connectionTable$name.to[grepl("^\\(",connectionTable$type.to)],connectionTable$to[grepl("^\\(",connectionTable$type.to)])
+  ## Same for remaining types
+  connectionTable$type.from[is.na(connectionTable$type.from)] <- connectionTable$name.from[is.na(connectionTable$type.from)]
+  connectionTable$type.to[is.na(connectionTable$type.to)] <- connectionTable$name.to[is.na(connectionTable$type.to)]
   
   return(connectionTable)
 }
 
 retype.na_meta <- function(metaTable){
+  metaTable$type[is.na(metaTable$type) & !is.na(metaTable$name)] <- 
+    paste0(metaTable$name[is.na(metaTable$type) & !is.na(metaTable$name)],"_",
+           metaTable$bodyid[is.na(metaTable$type) & !is.na(metaTable$name)])
+  
   metaTable$name[is.na(metaTable$name)] <- as.character(metaTable$bodyid[is.na(metaTable$name)])
-  metaTable$type[is.na(metaTable$type)] <- gsub("_L$|_R$","",metaTable$name[is.na(metaTable$type)])
+  metaTable$type[is.na(metaTable$type)] <- metaTable$name[is.na(metaTable$type)]
 
-  metaTable$type[grepl("^\\(",metaTable$type)] <- paste0(metaTable$name[grepl("^\\(",metaTable$type)],metaTable$bodyid[grepl("^\\(",metaTable$type)])
   return(metaTable)
 }
 

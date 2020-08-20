@@ -18,6 +18,7 @@ get_type2typePath(
   addContraPaths = FALSE,
   thresholdPerROI = NULL,
   computeKnownRatio = FALSE,
+  chunkPath = FALSE,
   ...
 )
 
@@ -59,6 +60,9 @@ in their name will be considered}
 polarity in the ROI considered (forces to run the connection tables with \code{computeKnownRatio} set to TRUE)}
 
 \item{computeKnownRatio}{Compute total relative metrics at each step (this is slow)}
+
+\item{chunkPath}{Chunking argument to be passed to the function chaining the connection tables together. Useful for deep pathways. Can either be logical,
+or an integer specifying the number of connections in the starting table to process at once.}
 
 \item{...}{: to be passed to neuronBag when building the path}
 

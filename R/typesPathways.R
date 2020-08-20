@@ -16,6 +16,8 @@
 #' @param thresholdPerROI Optional filtering of the connection tables to limit to types containing at least \code{thresholdPerROI} synapses of the right 
 #' polarity in the ROI considered (forces to run the connection tables with \code{computeKnownRatio} set to TRUE)
 #' @param computeKnownRatio Compute total relative metrics at each step (this is slow)
+#' @param chunkPath Chunking argument to be passed to the function chaining the connection tables together. Useful for deep pathways. Can either be logical,
+#' or an integer specifying the number of connections in the starting table to process at once.
 #' @param ... : to be passed to neuronBag when building the path
 #' @details \itemize{
 #' \item If n_steps is 3, only paths of length 3 will be listed. To get all paths of length 1 to 3, you need to pass 1:3 to n_steps. 
@@ -35,12 +37,13 @@ get_type2typePath <- function(type.from=NULL,
                               addContraPaths=FALSE,
                               thresholdPerROI=NULL,
                               computeKnownRatio = FALSE,
+                              chunkPath=FALSE,
                               ...){
   if(is.null(renaming)){renaming <- function(x,postfix){identity(x)}}
   res <- get_type2typePath_raw(type.from,type.to,by.roi,ROI,n_steps,renaming,addContraPaths,thresholdPerROI,computeKnownRatio,...)
   
   if(!(is.null(type.to))) type.to <- renaming(type.to)
-  res <- tableChain2path(res,n_steps=n_steps,stat=stat,excludeLoops=excludeLoops,type.to=type.to)
+  res <- tableChain2path(res,n_steps=n_steps,stat=stat,excludeLoops=excludeLoops,type.to=type.to,chunkPath=chunkPath)
   res
 }
 
@@ -150,20 +153,25 @@ get_type2typePath_raw <- function(type.from=NULL,
 #' @export
 tables2path <- function(inputTable,outputTable,stat=NULL,n=1,excludeIntermediate=NULL){
   if(is.null(stat)) stat <- c("weightRelative","outputContribution","knownWeightRelative","knownOutputContribution","knownOutputContribution_perType","knownWROutputContribution_perType","knownWeightRelative_perType")
-  inputTable <-  select(inputTable,starts_with((c("type",
-                                        "databaseType",
-                                        "supertype",
-                                        "roi",paste0(stat,"_")))) | any_of(stat))
-  outputTable <-  select(outputTable,starts_with((c("type",
-                                        "databaseType",
-                                        "supertype",
-                                        "roi",paste0(stat,"_")))) | any_of(stat))
  
   if(!is.null(excludeIntermediate)){
     inputTable <- filter(inputTable,!(type.to %in% excludeIntermediate))
     outputTable <- filter(outputTable,!(type.from %in% excludeIntermediate))
   }
- 
+  
+  inputTable <- filter(inputTable,type.to %in% outputTable$type.from)
+  outputTable <- filter(outputTable,type.from %in% inputTable$type.to)
+  
+  inputTable <-  select(inputTable,starts_with((c("type",
+                                                  "databaseType",
+                                                  "supertype",
+                                                  "roi",paste0(stat,"_")))) | any_of(stat))
+  outputTable <-  select(outputTable,starts_with((c("type",
+                                                    "databaseType",
+                                                    "supertype",
+                                                    "roi",paste0(stat,"_")))) | any_of(stat))
+  
+  
   res <- inner_join(inputTable,outputTable,by=c("type.to"="type.from",
                                                 "databaseType.to"="databaseType.from",
                                                 "supertype1.to"="supertype1.from",
@@ -200,12 +208,46 @@ tables2path <- function(inputTable,outputTable,stat=NULL,n=1,excludeIntermediate
 #' @param ... An arbitrary number of connection tables or a list of connection tables. In desired downstream order
 #' @inheritParams get_type2typePath
 #' @export
-tableChain2path <- function(...,n_steps=NULL,stat=NULL,excludeLoops=TRUE,type.to=NULL,excludeIntermediate=NULL){
+tableChain2path <- function(...,n_steps=NULL,stat=NULL,excludeLoops=TRUE,type.to=NULL,excludeIntermediate=NULL,chunkPath=FALSE,progress=TRUE){
   if(is.null(stat)) stat <- c("weightRelative","outputContribution","knownWeightRelative","knownOutputContribution","knownOutputContribution_perType","knownWROutputContribution_perType","knownWeightRelative_perType")
   res <- rlang::list2(...)
+  
   if (length(res) == 1 && rlang::is_bare_list(res[[1]])) {
     res <- res[[1]]
   }
+  
+  nP <- nrow(res[[1]])
+  if(is.numeric(chunkPath)) {
+    chunkPathsize <- chunkPath
+  } else {
+    # make smaller chunks when progress=T and there aren't so many bodyids
+    if (chunkPath ==TRUE)
+        chunkPathsize=50L
+    else
+        chunkPathsize=Inf
+  }
+  
+  if(nP>chunkPathsize) {
+    nchunks=ceiling(nP/chunkPathsize)
+    chunks=rep(seq_len(nchunks), rep(chunkPathsize, nchunks))[seq_len(nP)]
+    res1 <- split(res[[1]], chunks)
+    # if we got here and progress is unset then set it
+    if(is.null(progress) || is.na(progress)) progress=TRUE
+    MYPLY <- if(isTRUE(progress)) pbapply::pblapply else lapply
+    d  = do.call(rbind,MYPLY(seq(length(res1)), function(rr) tryCatch(tableChain2path(
+      c(res1[rr],res[2:length(res)]),
+      n_steps=n_steps,
+      stat=stat,
+      excludeLoops = excludeLoops,
+      type.to=type.to,
+      excludeIntermediate=excludeIntermediate,
+      chunkPath=FALSE),
+      error = function(e) {warning(e); NULL})))
+    rownames(d) <- NULL
+    return(d)
+  }
+  
+  
   if (is.null(n_steps)){n_steps <- seq(length(res))}
   res <- bind_rows(lapply(n_steps,function(nS){
     pathTable <- res[[1]]
@@ -236,7 +278,7 @@ tableChain2path <- function(...,n_steps=NULL,stat=NULL,excludeLoops=TRUE,type.to
                                         any(duplicated(c_across(starts_with("type_") |
                                                                   starts_with("type.to")),
                                                        incomparables = c(NA,FALSE))
-                                        ))
+                                        )) %>% ungroup()
   if (excludeLoops) res  <- filter(res,loop==FALSE)
   res %>% select(type.from,
                  starts_with("type_"),

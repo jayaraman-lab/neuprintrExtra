@@ -59,10 +59,10 @@ getRoiInfo <- function(bodyids,...){
     ## Ensure all columns are here (even if values are missing)
     roiInfo <- data.frame(bodyid=roiInfo$bodyid,
                           roi=roiInfo$roi) %>% mutate(
-                                       pre=roiInfo$pre,
-                                       post=roiInfo$post,
-                                       downstream=roiInfo$downstream,
-                                       upstream=roiInfo$upstream)
+                                       pre=if ("pre" %in% names(roiInfo)) roiInfo$pre else NA,
+                                       post=if ("post" %in% names(roiInfo)) roiInfo$post else NA,
+                                       downstream=if ("downstream" %in% names(roiInfo)) roiInfo$downstream else NA,
+                                       upstream=if ("upstream" %in% names(roiInfo)) roiInfo$upstream else NA)
     assign("storedRoiInfo",rbind(knownInfo,roiInfo),envir=cacheEnv)
   }
   rbind(roiInfo,reusable)

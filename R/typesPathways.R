@@ -44,7 +44,9 @@ get_type2typePath <- function(type.from=NULL,
   }
   res <- get_type2typePath_raw(type.from,type.to,by.roi,ROI,n_steps,renaming,addContraPaths,thresholdPerROI,computeKnownRatio,...)
   
-  if(!(is.null(type.to))) type.to <- renaming(type.to)
+  if(!(is.null(type.to))) {if(!("databaseType" %in% names(type.to))){
+    type.to <- mutate(type.to,databaseType=as.character(type))}
+    type.to <- renaming(type.to)}
   res <- tableChain2path(res,n_steps=n_steps,stat=stat,excludeLoops=excludeLoops,type.to=type.to,chunkPath=chunkPath)
   res
 }

@@ -8,25 +8,22 @@
 #' (and named as the element name in the list) using combineRois
 #' @param n_step an integer or vector of integers. If a vector paths of all those lenghts will be listed.
 #' @param renaming a renaming function to use (by default \code{cxRetyping})
-#' @param stat the stat to consider (by default "weightRelative")
+#' @param stat which stat to use for pathway weights. Can be a vector. If NULL (the default), all the available meaningful stats are used: 
+#' (\code{"weightRelative","outputContribution","knownWeightRelative","knownOutputContribution","knownOutputContribution_perType","knownWROutputContribution_perType","knownWeightRelative_perType"})
 #' @param excludeLoops Logical, whether to exclude paths containing duplicates (TRUE by default)
 #' @param addContraPaths Experimental: simulate the opposite side of the brain assuming symetry. The new ROI will be called roi_contra. Only ROIs containing "(R)" 
 #' in their name will be considered
 #' @param thresholdPerROI Optional filtering of the connection tables to limit to types containing at least \code{thresholdPerROI} synapses of the right 
 #' polarity in the ROI considered (forces to run the connection tables with \code{computeKnownRatio} set to TRUE)
-#' @param startpoints Neurons that should only "start" a path if excludeStartPoints is TRUE (can be any table with a databaseType field, useful if type.from is NULL)
-#' @param excludeStartpoints Exclude starting points from other positions in the path?
-#' @param endpoints Neurons that should only "end" a path if excludeStartPoints is TRUE (can be any table with a databaseType field, useful if type.to is NULL)
-#' @param excludeEndpoints Exclude ending points from other positions in the path?
+#' @param computeKnownRatio Compute total relative metrics at each step (this is slow)
+#' @param chunkPath Chunking argument to be passed to the function chaining the connection tables together. Useful for deep pathways. Can either be logical,
+#' or an integer specifying the number of connections in the starting table to process at once.
 #' @param ... : to be passed to neuronBag when building the path
 #' @details \itemize{
 #' \item If n_steps is 3, only paths of length 3 will be listed. To get all paths of length 1 to 3, you need to pass 1:3 to n_steps. 
 #' All vectors of integers are possible for n_steps.
 #' \item If \code{type.from} or \code{type.to} are left unspecified, all pathways of the specified length to (resp. from) the specified type are listed.
 #' Use at your own risk, as this can potentially result in very large objects.
-#' \item \code{excludeStartpoints} and \code{excludeEndpoints} should be set accordingly to the type of analysis that is planned. The setting \code{excludeEndpoints} to TRUE assumes 
-#' an "input" perspective and cuts the leaves where the "desired" children have been found. To ensure maximum flexibility they both default to FALSE (as the pruning can 
-#' be done post-hoc), but the option can be useful for very big path queries.
 #' }
 #' @export
 get_type2typePath <- function(type.from=NULL,
@@ -34,20 +31,23 @@ get_type2typePath <- function(type.from=NULL,
                               by.roi=TRUE,
                               ROI=NULL,
                               n_steps=2,
-                              renaming=cxRetyping,
-                              stat="weightRelative",
+                              renaming=NULL,
+                              stat=NULL,
                               excludeLoops=TRUE,
                               addContraPaths=FALSE,
                               thresholdPerROI=NULL,
-                              startpoints=type.from,
-                              excludeStartpoints=FALSE,
-                              endpoints=type.to,
-                              excludeEndpoints=FALSE,
+                              computeKnownRatio = FALSE,
+                              chunkPath=FALSE,
                               ...){
+  if(is.null(renaming)){renaming <- function(x,postfix="raw",...){
+    redefine_types(x,idemtyper,postfix=postfix,...)}
+  }
+  res <- get_type2typePath_raw(type.from,type.to,by.roi,ROI,n_steps,renaming,addContraPaths,thresholdPerROI,computeKnownRatio,...)
   
-  res <- get_type2typePath_raw(type.from,type.to,by.roi,ROI,n_steps,renaming,addContraPaths,thresholdPerROI,...)
-  
-  res <- tableChain2path(res,n_steps=n_steps,stat=stat,excludeLoops=excludeLoops,type.to=type.to)
+  if(!(is.null(type.to))) {if(!("databaseType" %in% names(type.to))){
+    type.to <- mutate(type.to,databaseType=as.character(type))}
+    type.to <- renaming(type.to)}
+  res <- tableChain2path(res,n_steps=n_steps,stat=stat,excludeLoops=excludeLoops,type.to=type.to,chunkPath=chunkPath)
   res
 }
 
@@ -59,33 +59,20 @@ get_type2typePath_raw <- function(type.from=NULL,
                               by.roi=TRUE,
                               ROI=NULL,
                               n_steps=2,
-                              renaming=cxRetyping,
+                              renaming=NULL,
                               addContraPaths=FALSE,
                               thresholdPerROI=NULL,
-                              startpoints=type.from,
-                              excludeStartpoints=FALSE,
-                              endpoints=type.to,
-                              excludeEndpoints=FALSE,
+                              computeKnownRatio = FALSE,
                               ...){
   stopifnot("At least one of type.from or type.to must be specified"=!is.null(type.from) | !is.null(type.to))
   if (addContraPaths & is.null(ROI)){stop("You should specify a set of (preferably right side) ROIs for `addContraPaths` to make sense.")}
+  if(is.null(renaming)){renaming <- function(x,postfix="raw",...){
+    redefine_types(x,idemtyper,postfix=postfix,...)}
+  }
   
-  computeKnownRatio <- FALSE
   if(!is.null(thresholdPerROI)){computeKnownRatio <- TRUE}
   
   res <- vector("list",max(n_steps))
-  
-  if(!is.null(type.from)){
-    if (!("databaseType" %in% names(type.from))){type.from <- mutate(type.from,databaseType=type)}
-    type.from <- renaming(type.from)
-    type.from_loc <- type.from
-  }
-  
-  if(!is.null(type.to)){
-    if (!("databaseType" %in% names(type.to))){type.to <- mutate(type.to,databaseType=type)}
-    type.to <- renaming(type.to)
-    type.to_loc <- type.to
-  }
   
   if (is.list(ROI)){ROIraw <- unlist(ROI,use.names = FALSE)}else{ROIraw <- ROI}
   
@@ -102,88 +89,59 @@ get_type2typePath_raw <- function(type.from=NULL,
     upHalf <- 1:max(n_steps)
   }
   
-  knownConnections <- getTypeToTypeTable(getConnectionTable(NULL,"PRE"))
-  known_sources <- unique(type.from_loc$type)
-  type.from_toAdd <- character(0)
+  knownConnections <- getTypeToTypeTable(getConnectionTable(character(0),"PRE"))
+  knownUnknowns <- getMeta(character(0)) %>% mutate(previous.type=type)
+  type.from_toAdd <- getMeta(character(0))
   
   for (n in downHalf){
-    bag <- neuronBag(type.from_loc,slctROI=ROIraw,by.roi=by.roi,omitInputs=TRUE,selfRef=TRUE,computeKnownRatio=computeKnownRatio,...)  
+    bag <- neuronBag(type.from,slctROI=ROIraw,by.roi=by.roi,omitInputs=TRUE,computeKnownRatio=computeKnownRatio,renaming=renaming,...)  
     if (is.list(ROI)){
       bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r)})
       bag <- do.call(c,bag_list)
     }
-    bag <- renaming(bag)
+    
     if(!is.null(thresholdPerROI)){bag$outputs <- filter(bag$outputs,knownTotalROIweight>thresholdPerROI & knownTotalPreROIweight>thresholdPerROI)}
     
-    if (addContraPaths){
-      resLoc <- addContraSide(bag$outputs)
-      outRef <- renaming(getTypesTable(unique(resLoc$databaseType.to)) %>% mutate(databaseType = type)) %>% filter(type %in% resLoc$type.to)
-    }else{
-      resLoc <- bag$outputs
-      outRef <- bag$outputsTableRef
-    }
-    type.from_loc <- filter(outRef,!(type %in% known_sources))
+    resLoc <- bag$outputs
+    res[[n]] <- distinct(rbind(resLoc,filter(knownConnections,type.from %in% type.from_toAdd$type)))
+    if (addContraPaths) res[[n]] <- addContraSide(res[[n]])
     
-    res[[n]] <- distinct(rbind(resLoc,filter(knownConnections,type.from %in% type.from_toAdd)))
+    outRef <- renaming(getTypesTable(unique(res[[n]]$databaseType.to)) %>% mutate(databaseType = type)) %>% filter(type %in% res[[n]]$type.to)
+    unknowns <- retype.na_meta(getMeta(unique(bag$outputs_raw$to[!(bag$outputs_raw$to %in% outRef$bodyid)])) %>% mutate(previous.type=type))
+    knownUnknowns <- distinct(rbind(unknowns,knownUnknowns))
+    outRef <- distinct(filter(rbind(outRef,unknowns,knownUnknowns),type %in% res[[n]]$type.to))
     
-    type.from_toAdd <- filter(outRef,(type %in% known_sources))
-    
-    if (excludeStartpoints & !is.null(startpoints)){
-      type.from_loc <- filter(type.from_loc,!(databaseType %in% startpoints$databaseType))
-      type.from_toAdd <- filter(type.from_toAdd,!(databaseType %in% startpoints$databaseType))
-    }
-    
-    if (excludeEndpoints & !is.null(endpoints)){
-      type.from_loc <- filter(type.from_loc,!(databaseType %in% endpoints$databaseType))
-      type.from_toAdd <- filter(type.from_toAdd,!(databaseType %in% endpoints$databaseType))
-    }
-    knownConnections <- distinct(rbind(knownConnections,bag$outputs))
-    known_sources <- unique(knownConnections$type.from)
-    
+    knownConnections <- distinct(rbind(knownConnections,resLoc))
+    type.from_toAdd <- filter(outRef,type %in% unique(knownConnections$type.from))
+    type.from <- filter(outRef,!(type %in% unique(knownConnections$type.from)))
   }
   
-  knownConnections <- getTypeToTypeTable(getConnectionTable(NULL,"PRE"))
-  known_targets <- unique(type.from_loc$type)
-  type.to_toAdd <- character(0)
+  knownConnectionsIn <- getTypeToTypeTable(getConnectionTable(NULL,"PRE"))
+  type.to_toAdd <- getMeta(character(0))
   for (n in rev(upHalf)){
-    bag <- neuronBag(type.to_loc,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,selfRef=TRUE,computeKnownRatio=computeKnownRatio,...)   
+    bag <- neuronBag(type.to,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,computeKnownRatio=computeKnownRatio,renaming=renaming,...)   
     if (is.list(ROI)){
       bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r)})
       bag <- do.call(c,bag_list)
     }
-    bag <- renaming(bag)
+
     if(!is.null(thresholdPerROI)){bag$inputs <- filter(bag$inputs,knownTotalROIweight>thresholdPerROI & knownTotalPreROIweight>thresholdPerROI)}
     
-    if (addContraPaths){
-      resLoc <- addContraSide(bag$inputs)
-    }else{
-      resLoc <- bag$inputs
-    }
-    type.to_loc <- getTypesTable(unique(resLoc$databaseType.from)) %>% mutate(databaseType=type)
-    unknowns <- retype.na_meta(neuprint_get_meta(unique(bag$inputs_raw$from[!(bag$inputs_raw$from %in% type.to_loc$bodyid)]))) %>% mutate(databaseType=NA)
-    if (length(unknowns != 0)){type.to_loc <- rbind(type.to_loc,unknowns)}
+    resLoc <- bag$inputs
     
-    type.to_loc <- renaming(type.to_loc)
-    type.to_loc <- filter(type.to_loc,type %in% resLoc$type.from)
+    res[[n]] <- rbind(resLoc,filter(knownConnectionsIn,type.to %in% type.to_toAdd$type))
+    if (addContraPaths) res[[n]] <- addContraSide(res[[n]])
     
-    type.to_loc_old <- type.to_loc
-    type.to_loc <- filter(type.to_loc,!(type %in% known_targets))
-    res[[n]] <- rbind(resLoc,filter(knownConnections,type.to %in% type.to_toAdd))
+    knownConnectionsIn <- distinct(rbind(knownConnectionsIn,resLoc))
     
-    type.to_toAdd <- filter(type.to_loc_old,type %in% known_targets)
+    type.to <- renaming(getTypesTable(unique(res[[n]]$databaseType.from)) %>% mutate(databaseType=type)) %>% filter(type %in% res[[n]]$type.from)
+    unknowns <- retype.na_meta(getMeta(unique(bag$inputs_raw$from[!(bag$inputs_raw$from %in% type.to$bodyid)])) %>% mutate(previous.type=type))
+    knownUnknowns <- distinct(rbind(unknowns,knownUnknowns))
+    type.to <- distinct(filter(rbind(type.to,unknowns,knownUnknowns),type %in% res[[n]]$type.from))
     
-    if (excludeStartpoints & !is.null(startpoints)){
-      type.to_loc <- filter(type.to_loc,!(databaseType %in% startpoints$databaseType))
-      type.to_toAdd <- filter(type.to_toAdd,!(databaseType %in% startpoints$databaseType))
-    }
+    type.to_toAdd <- filter(type.to,type %in% unique(knownConnectionsIn$type.to))
+    type.to <- filter(type.to,!(type %in% unique(knownConnectionsIn$type.to)))
     
-    if (excludeEndpoints & !is.null(endpoints)){
-      type.to_loc <- filter(type.to_loc,!(databaseType %in% endpoints$databaseType))
-      type.to_toAdd <- filter(type.to_toAdd,!(databaseType %in% endpoints$databaseType))
-    }
-    
-    knownConnections <- distinct(rbind(knownConnections,resLoc))
-    known_targets <- unique(knownConnections$type.to)
   }
   
   res
@@ -192,22 +150,34 @@ get_type2typePath_raw <- function(type.from=NULL,
 #' Multiply 2 connection tables or a pathway table and a connection table and return a type to type pathway table
 #' @param inputTable  a type to type connection table, or a pathway table as returned by this function
 #' @param outputTable a type to type connection table
-#' @param stat which stat to use for pathway weights
+#' @param stat which stat to use for pathway weights. Can be a vector. If NULL (the default), all the available meaningful stats are used: 
+#' (\code{"weightRelative","outputContribution","knownWeightRelative","knownOutputContribution","knownOutputContribution_perType","knownWROutputContribution_perType","knownWeightRelative_perType"})
 #' @param n a number to label the stage in processing 
+#' @param excludeIntermediate a character vectors of types that should NOT be intermediate links
 #' @return a table with a stat_pathway extra column, and type and roi columns labeled with n or n+1 depending if they are 
 #' at the first or second step of the pathway
 #' @export
-tables2path <- function(inputTable,outputTable,stat="weightRelative",n=1){
+tables2path <- function(inputTable,outputTable,stat=NULL,n=1,excludeIntermediate=NULL){
+  if(is.null(stat)) stat <- c("weightRelative","outputContribution","knownWeightRelative","knownOutputContribution","knownOutputContribution_perType","knownWROutputContribution_perType","knownWeightRelative_perType")
+ 
+  if(!is.null(excludeIntermediate)){
+    inputTable <- filter(inputTable,!(type.to %in% excludeIntermediate))
+    outputTable <- filter(outputTable,!(type.from %in% excludeIntermediate))
+  }
+  
+  inputTable <- filter(inputTable,type.to %in% outputTable$type.from)
+  outputTable <- filter(outputTable,type.from %in% inputTable$type.to)
+  
   inputTable <-  select(inputTable,starts_with((c("type",
-                                        "databaseType",
-                                        "supertype",
-                                        "roi",paste0(stat,"_")))) | any_of(stat))
+                                                  "databaseType",
+                                                  "supertype",
+                                                  "roi",paste0(stat,"_")))) | any_of(stat))
   outputTable <-  select(outputTable,starts_with((c("type",
-                                        "databaseType",
-                                        "supertype",
-                                        "roi",paste0(stat,"_")))) | any_of(stat))
- 
- 
+                                                    "databaseType",
+                                                    "supertype",
+                                                    "roi",paste0(stat,"_")))) | any_of(stat))
+  
+  
   res <- inner_join(inputTable,outputTable,by=c("type.to"="type.from",
                                                 "databaseType.to"="databaseType.from",
                                                 "supertype1.to"="supertype1.from",
@@ -227,11 +197,13 @@ tables2path <- function(inputTable,outputTable,stat="weightRelative",n=1){
     rename_with(paste0,"_N",n+1,.cols = any_of(stat)) %>%
     rename_with(paste0,"_N",n+1,.cols = any_of("roi"))
   
-  if (!(paste0(stat,"_path") %in% names(res))){
-    res[[paste0(stat,"_path")]] <- res[[paste0(stat,"_N",n)]]
+  for (st in stat[paste0(stat,"_N",n) %in% names(res)]){
+    if (!(paste0(st,"_path") %in% names(res))){
+      res[[paste0(st,"_path")]] <- res[[paste0(st,"_N",n)]]
+    }
+    
+    res[[paste0(st,"_path")]] <- res[[paste0(st,"_path")]] * res[[paste0(st,"_N",n+1)]]
   }
-  
-  res[[paste0(stat,"_path")]] <- res[[paste0(stat,"_path")]] * res[[paste0(stat,"_N",n+1)]]
   res
 }
 
@@ -242,16 +214,51 @@ tables2path <- function(inputTable,outputTable,stat="weightRelative",n=1){
 #' @param ... An arbitrary number of connection tables or a list of connection tables. In desired downstream order
 #' @inheritParams get_type2typePath
 #' @export
-tableChain2path <- function(...,n_steps=NULL,stat="weightRelative",excludeLoops=TRUE,type.to=NULL){
+tableChain2path <- function(...,n_steps=NULL,stat=NULL,excludeLoops=TRUE,type.to=NULL,excludeIntermediate=NULL,chunkPath=FALSE,progress=TRUE){
+  if(is.null(stat)) stat <- c("weightRelative","outputContribution","knownWeightRelative","knownOutputContribution","knownOutputContribution_perType","knownWROutputContribution_perType","knownWeightRelative_perType")
   res <- rlang::list2(...)
+  
   if (length(res) == 1 && rlang::is_bare_list(res[[1]])) {
     res <- res[[1]]
   }
+  
+  nP <- nrow(res[[1]])
+  if(is.numeric(chunkPath)) {
+    chunkPathsize <- chunkPath
+  } else {
+    # make smaller chunks when progress=T and there aren't so many bodyids
+    if (chunkPath ==TRUE)
+        chunkPathsize=50L
+    else
+        chunkPathsize=Inf
+  }
+  
+  if(nP>chunkPathsize) {
+    nchunks=ceiling(nP/chunkPathsize)
+    chunks=rep(seq_len(nchunks), rep(chunkPathsize, nchunks))[seq_len(nP)]
+    res1 <- split(res[[1]], chunks)
+    # if we got here and progress is unset then set it
+    if(is.null(progress) || is.na(progress)) progress=TRUE
+    MYPLY <- if(isTRUE(progress)) pbapply::pblapply else lapply
+    d  = do.call(rbind,MYPLY(seq(length(res1)), function(rr) tryCatch(tableChain2path(
+      c(res1[rr],res[2:length(res)]),
+      n_steps=n_steps,
+      stat=stat,
+      excludeLoops = excludeLoops,
+      type.to=type.to,
+      excludeIntermediate=excludeIntermediate,
+      chunkPath=FALSE),
+      error = function(e) {warning(e); NULL})))
+    rownames(d) <- NULL
+    return(d)
+  }
+  
+  
   if (is.null(n_steps)){n_steps <- seq(length(res))}
   res <- bind_rows(lapply(n_steps,function(nS){
     pathTable <- res[[1]]
     for (i in seq(2,nS,length.out = nS-1)){
-      pathTable <- tables2path(pathTable,res[[i]],stat=stat,n=i-1)
+      pathTable <- tables2path(pathTable,res[[i]],stat=stat,n=i-1,excludeIntermediate=excludeIntermediate)
     }
     if (!is.null(type.to)){
       pathTable <- pathTable[(pathTable$type.to %in% type.to$type),]
@@ -264,7 +271,9 @@ tableChain2path <- function(...,n_steps=NULL,stat="weightRelative",excludeLoops=
                               "databaseType",
                               "supertype",
                               "roi",paste0(stat,"_N1"),"n_steps"))))
-      pathTable[[paste0(stat,"_path")]] <- pathTable[[paste0(stat,"_N1")]]
+      for (st in stat[paste0(stat,"_N1") %in% names(pathTable)]){
+        pathTable[[paste0(st,"_path")]] <- pathTable[[paste0(st,"_N1")]]
+      }
     }
     pathTable 
   }))
@@ -275,7 +284,7 @@ tableChain2path <- function(...,n_steps=NULL,stat="weightRelative",excludeLoops=
                                         any(duplicated(c_across(starts_with("type_") |
                                                                   starts_with("type.to")),
                                                        incomparables = c(NA,FALSE))
-                                        ))
+                                        )) %>% ungroup()
   if (excludeLoops) res  <- filter(res,loop==FALSE)
   res %>% select(type.from,
                  starts_with("type_"),
@@ -329,9 +338,11 @@ pathDf2graphDf <- function(pathDf){
   fromCols <- c("type.from",sort(pathColNames[grep("type_",pathColNames)]))
   toCols <- c(sort(pathColNames[grep("type_",pathColNames)]), "type.to")
   weightBaseName <- sub("_path","",pathColNames[grep("_path",pathColNames)])
-  weights <- sort(pathColNames[grep(paste0(weightBaseName,"_N"),pathColNames)])
+  weights <- lapply(weightBaseName,function(wB) sort(pathColNames[grep(paste0(wB,"_N"),pathColNames)]))
   rois <- sort(pathColNames[grep("roi_",pathColNames)])
   
+  databaseTypeFrom <- c("databaseType.from",sort(pathColNames[grep("databaseType_",pathColNames)]))
+  databaseTypeTo <- c(sort(pathColNames[grep("databaseType_",pathColNames)]),"databaseType.to")
   
   for (i in seq(3)){
     assign( paste0("fromSupertype",i), c(paste0("supertype",i,".from"),sort(pathColNames[grep(paste0("supertype",i,"_N"),pathColNames)])))
@@ -341,19 +352,22 @@ pathDf2graphDf <- function(pathDf){
   graphDataFrame = data.frame(from = character(),
                               to = character())
   
-  graphDataFrame[[weightBaseName]] <-  numeric()
-  
+  for(sN in seq(length(weightBaseName))){
+    graphDataFrame[[weightBaseName[sN]]] <-  numeric()
+  }
   for (step in seq(length(fromCols)) ){
     toNodes = pathDf[[toCols[step]]]
     toST1 = pathDf[[toSupertype1[step]]]
     toST2 = pathDf[[toSupertype2[step]]]
     toST3 = pathDf[[toSupertype3[step]]]
+    toDB <- pathDf[[databaseTypeTo[step]]]
     
     nas = is.na(toNodes)
     toNodes[nas] = pathDf$type.to[nas]
     pathDf$type.to[nas] = NA
     
-    
+    toDB[nas] <- pathDf$databaseType.to[nas]
+    pathDf$databaseType.to[nas] <- NA
     
     toST1[nas] =pathDf$supertype1.to[nas]
     pathDf$supertype1.to[nas] = NA
@@ -366,17 +380,21 @@ pathDf2graphDf <- function(pathDf){
     
     tmp = data.frame(from = pathDf[[fromCols[step]]],
                      to = toNodes,
+                     databaseType.from = pathDf[[databaseTypeFrom[step]]],
+                     databaseType.to = toDB,
                      supertype1.from = pathDf[[fromSupertype1[step]]],
                      supertype1.to = toST1,
                      supertype2.from = pathDf[[fromSupertype2[step]]],
                      supertype2.to = toST2,
                      supertype3.from = pathDf[[fromSupertype3[step]]],
                      supertype3.to = toST3)
-    tmp[[weightBaseName]] <- pathDf[[weights[step]]]
+    for(sN in seq(length(weightBaseName))){
+      tmp[[weightBaseName[sN]]] <- pathDf[[weights[[sN]][step]]]
+    }
     if(length(rois)>0){
       tmp$roi <- pathDf[[rois[step]]]
     }
-    graphDataFrame = bind_rows(graphDataFrame,unique(tidyr::drop_na(tmp)))
+    graphDataFrame = bind_rows(graphDataFrame,unique(tidyr::drop_na(tmp,to)))
   }
   
   return(graphDataFrame)

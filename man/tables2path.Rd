@@ -4,16 +4,25 @@
 \alias{tables2path}
 \title{Multiply 2 connection tables or a pathway table and a connection table and return a type to type pathway table}
 \usage{
-tables2path(inputTable, outputTable, stat = "weightRelative", n = 1)
+tables2path(
+  inputTable,
+  outputTable,
+  stat = NULL,
+  n = 1,
+  excludeIntermediate = NULL
+)
 }
 \arguments{
 \item{inputTable}{a type to type connection table, or a pathway table as returned by this function}
 
 \item{outputTable}{a type to type connection table}
 
-\item{stat}{which stat to use for pathway weights}
+\item{stat}{which stat to use for pathway weights. Can be a vector. If NULL (the default), all the available meaningful stats are used: 
+(\code{"weightRelative","outputContribution","knownWeightRelative","knownOutputContribution","knownOutputContribution_perType","knownWROutputContribution_perType","knownWeightRelative_perType"})}
 
 \item{n}{a number to label the stage in processing}
+
+\item{excludeIntermediate}{a character vectors of types that should NOT be intermediate links}
 }
 \value{
 a table with a stat_pathway extra column, and type and roi columns labeled with n or n+1 depending if they are 

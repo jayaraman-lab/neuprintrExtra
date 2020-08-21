@@ -18,6 +18,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[is.na(types)] <- "Other"
   
   supertype <- stringr::str_extract(types,"[A-Z]+")
+  supertype[is.na(supertype)] <- "Other"
   supertype[grepl("^FB[1-9].*",types)] <- stringr::str_extract(types,"FB[1-9]")[grepl("^FB[1-9].*",types)]
   supertype[grepl("^vDelta.*",types)] <- stringr::str_extract(types,"vDelta[A-O]")[grepl("^vDelta.*",types)]
   supertype[grepl("^hDelta.*",types)] <- stringr::str_extract(types,"hDelta[A-M]")[grepl("^hDelta.*",types)]
@@ -28,8 +29,8 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^ER[1-6].*",types)] <- stringr::str_extract(types,"ER[1-6]")[grepl("^ER[1-6].*",types)]
   supertype[grepl("^PFN[a|d|m|p|v].*",types)] <- stringr::str_extract(types,"PFN[a|d|m|p|v]")[grepl("^PFN[a|d|m|p|v].*",types)]
   supertype[grepl("^MBON[0-5][0-9].*",types)] <- stringr::str_extract(types,"MBON[0-5][0-9]")[grepl("^MBON[0-5][0-9].*",types)]
-  supertype[grepl("^ExR.*",types)] <- "ExR"
-  supertype[grepl("^SpsP.*",types)] <- "SPS-PB"
+  supertype[grepl("^ExR.*",types)] <-  stringr::str_extract(types,"ExR[1-9]")[grepl("^ExR.*",types)]
+  supertype[grepl("SpsP.*",types)] <- "SPS-PB"
   supertype[grepl("^OA_V.*",types)] <- "OA"
   supertype[grepl("^TuBu.*",types)] <- "TuBu"
   supertype[grepl("^Delta7",types)] <- "Delta7"
@@ -49,6 +50,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^ER[1-6].*",types)] <- "ER"
   supertype[grepl("^SA[1-9].*",types)] <- "SA"
   supertype[grepl("^MBON[0-5][0-9].*",types)] <- "MBON"
+  supertype[grepl("^ExR.*",types)] <- "ExR"
 
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   if (level == 2){return(supertype)}

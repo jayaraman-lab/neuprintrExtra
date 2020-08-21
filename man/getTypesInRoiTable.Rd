@@ -6,7 +6,7 @@
 \usage{
 getTypesInRoiTable(
   ROI,
-  retyping = cxRetyping,
+  renaming = cxRetyping,
   bagROIs = ROI,
   minTypePercentage = 0.5,
   ...
@@ -15,7 +15,7 @@ getTypesInRoiTable(
 \arguments{
 \item{ROI}{The ROI to consider}
 
-\item{retyping}{a retyping function to be applied to the types found. \code{cxRetyping} by default (for no retyping, set it to \code{identity})}
+\item{renaming}{a renaming function to be applied to the types found. \code{cxRetyping} by default (for no renaming, set it to \code{identity})}
 
 \item{bagROIs}{Which ROIs to include in the bag created (by default only the ROI one wants neurons in). If NULL returns all ROIs.}
 

@@ -17,5 +17,5 @@ Fill in the type and name field in case they are NAs
 }
 \details{
 If types are missing, fill them with a cleaned up (removing the L/R postfixes)
-version of the name. If the name is missing, use the bodyid for everything.
+version of the name. If the name is missing, use the bodyid for everything. If the name is in parenthesis, append with the bodyid.
 }

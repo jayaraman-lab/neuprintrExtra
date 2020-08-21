@@ -2,25 +2,35 @@
 #' @param connectionTable A table of connections in the to/from format
 #' @return A connection table with name and type fields filled in.
 #' @details If types are missing, fill them with a cleaned up (removing the L/R postfixes)
-#' version of the name. If the name is missing, use the bodyid for everything.
+#' version of the name. If the name is missing, use the bodyid for everything. If the name is in parenthesis, append with the bodyid.
 #' @export
 retype.na <- function(connectionTable){
-  connectionTable <- connectionTable %>%
-    mutate(name.from = ifelse(is.na(name.from),as.character(from),name.from),
-           name.to = ifelse(is.na(name.to),as.character(to),name.to),
-           type.from = ifelse(is.na(type.from),gsub("_L$|_R$","",name.from),type.from),
-           type.to = ifelse(is.na(type.to),gsub("_L$|_R$","",name.to),type.to)
-    )
-
+  ## All missing types become instance + bodyid if there's an instance
+  connectionTable$type.from[is.na(connectionTable$type.from) & !is.na(connectionTable$name.from)] <- 
+    paste0(connectionTable$name.from[is.na(connectionTable$type.from) & !is.na(connectionTable$name.from)],"_",
+           connectionTable$from[is.na(connectionTable$type.from) & !is.na(connectionTable$name.from)])
+  connectionTable$type.to[is.na(connectionTable$type.to) & !is.na(connectionTable$name.to)] <- 
+    paste0(connectionTable$name.to[is.na(connectionTable$type.to) & !is.na(connectionTable$name.to)],"_",
+           connectionTable$to[is.na(connectionTable$type.to) & !is.na(connectionTable$name.to)])
+  
+  ## Missing names get the bodyid
+  connectionTable$name.from[is.na(connectionTable$name.from)] <- as.character(connectionTable$from[is.na(connectionTable$name.from)])
+  connectionTable$name.to[is.na(connectionTable$name.to)] <- as.character(connectionTable$to[is.na(connectionTable$name.to)])
+  
+  ## Same for remaining types
+  connectionTable$type.from[is.na(connectionTable$type.from)] <- connectionTable$name.from[is.na(connectionTable$type.from)]
+  connectionTable$type.to[is.na(connectionTable$type.to)] <- connectionTable$name.to[is.na(connectionTable$type.to)]
+  
   return(connectionTable)
 }
 
 retype.na_meta <- function(metaTable){
-  metaTable <- metaTable %>%
-    mutate(
-      name = ifelse(is.na(name),as.character(bodyid),name),
-      type = ifelse(is.na(type),gsub("_L$|_R$","",name),type)
-    )
+  metaTable$type[is.na(metaTable$type) & !is.na(metaTable$name)] <- 
+    paste0(metaTable$name[is.na(metaTable$type) & !is.na(metaTable$name)],"_",
+           metaTable$bodyid[is.na(metaTable$type) & !is.na(metaTable$name)])
+  
+  metaTable$name[is.na(metaTable$name)] <- as.character(metaTable$bodyid[is.na(metaTable$name)])
+  metaTable$type[is.na(metaTable$type)] <- metaTable$name[is.na(metaTable$type)]
 
   return(metaTable)
 }
@@ -57,22 +67,49 @@ redefine_types.neuronBag <- function(connections,retype_func,postfix="raw",redef
   connections$outputs_raw <- redefine_types(connections$outputs_raw,retype_func,postfix="from",...)
   connections$names <- redefine_types(connections$names,retype_func,postfix="raw",...)
 
+  if ("allOutsFromIns" %in% names(connections[["ref"]])){
+    connections$ref$allOutsFromIns <- redefine_types(connections$ref$allOutsFromIns,retype_func,postfix="to",...)
+  }
+  if ("allInsToOuts" %in% names(connections[["ref"]])){
+    connections$ref$allInsToOuts <- redefine_types(connections$ref$allInsToOuts,retype_func,postfix="from",...)
+  }
+  
   if (redefinePartners){
     connections$inputs_raw <- redefine_types(connections$inputs_raw,retype_func,postfix="from",...)
     connections$outputs_raw <- redefine_types(connections$outputs_raw,retype_func,postfix="to",...)
     connections$outputsTableRef <- redefine_types(connections$outputsTableRef,retype_func,postfix="raw",...)
+    
+    if("allOutsFromIns" %in% names(connections[["ref"]])){
+        connections$ref$allOutsFromIns <- redefine_types(connections$ref$allOutsFromIns,retype_func,postfix="from",...)
+        connections$ref$inputs_outputsTableRef <- redefine_types(connections$ref$inputs_outputsTableRef,retype_func,postfix="raw",...)
+      }
+    if ("allInsToOuts" %in% names(connections[["ref"]])){
+        connections$ref$allInsToOuts <- redefine_types(connections$ref$allInsToOuts,retype_func,postfix="to",...)
+      }
   }
-
-  connections$inputs <- getTypeToTypeTable(connections$inputs_raw,typesTable = connections$names, oldTable=connections$inputs)
-  connections$outputs <- getTypeToTypeTable(connections$outputs_raw,typesTable = connections$outputsTableRef, oldTable=connections$outputs)
+  if ("allOutsFromIns" %in% names(connections[["ref"]])){
+    connections$ref$inputs_ref <- getTypeToTypeTable(connections$ref$allOutsFromIns,typesTable=connections$ref$inputs_outputsTableRef,oldTable=connections$ref$inputs_ref)
+    connections$inputs <- processTypeToTypeFullInputs(connections$ref$inputs_ref,connections$inputs_raw)
+  }else{
+    connections$inputs <- getTypeToTypeTable(connections$inputs_raw,typesTable = connections$names, oldTable=connections$inputs)
+  }
+  
+  if ("allInsToOuts" %in% names(connections[["ref"]])){
+    connections$ref$outputs_ref <-getTypeToTypeTable(connections$ref$allInsToOuts,typesTable = connections$outputsTableRef,oldTable=connections$ref$outputs_ref)
+    connections$outputs <- processTypeToTypeFullOutputs(connections$ref$outputs_ref,connections$outputs_raw)
+  }else{
+    connections$outputs <- getTypeToTypeTable(connections$outputs_raw,typesTable = connections$outputsTableRef, oldTable=connections$outputs)
+  }
   return(connections)
 }
 
 #' Small utility to generate "type.from" kind of names
 #' @export
-get_col_name <- function(col="type",post=c("raw","from","to")){
+get_col_name <- function(col=c("bodyid","name","type","databaseType","supertype",paste0("supertype",1:3)),post=c("raw","from","to")){
+  col <- match.arg(col)
   post <- match.arg(post)
-  return(ifelse(post=="raw",col,paste0(col,".",post)))
+  if (post=="raw") return(col) else{
+    if (col=="bodyid") return(post) else return(paste0(col,".",post))}
 }
 
 #' Retype neurons in a table according to L/R
@@ -101,6 +138,11 @@ lateralize_types <- function(connections,
   redefine_types(connections,retype_func = lateralizer,postfix = postfix,redefinePartners=redefinePartners,typeList=typeList)
 }
 
+idemtyper <- function(connections,postfix){
+  typeCol <- get_col_name(col="type",postfix)
+  types <- connections[[typeCol]]
+  return(types)
+}
 
 lateralizer <- function(connections,postfix,typeList){
     databaseCol <- get_col_name(col="databaseType",postfix)
@@ -184,8 +226,9 @@ conditional_renamer <- function(connections,postfix,type,condition,newNames){
 sets_retyper <- function(conn,postfix,sets,nameModifiers,kind=c("bodyid","name")){
   kind <- match.arg(kind)
   typeCol <- get_col_name(col="type",postfix)
-  nameCol <- ifelse(kind=="name",get_col_name(col="name",postfix),
-                                 ifelse(postfix=="raw",kind,postfix))
+  nameCol <- get_col_name(col=kind,postfix)
+  #nameCol <- ifelse(kind=="name",get_col_name(col="name",postfix),
+  #                               ifelse(postfix=="raw",kind,postfix))
   types <- conn[[typeCol]]
   for (i in 1:length(sets)){
     types[conn[[nameCol]] %in% sets[[i]]] <- paste0(types[conn[[nameCol]] %in% sets[[i]]],nameModifiers[i])

@@ -194,7 +194,7 @@ plotConnectivity.data.frame <- function(connObj,
   
   p +
     scale_fill_gradient2(name=legendName,low="thistle", mid="blueviolet", high="black", 
-                         midpoint =0.5*cmax, limits=c(0,cmax))  +theme+ theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))
+                         midpoint =0.5*cmax, limits=c(0,cmax),na.value=NA)  +theme+ theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))
  
 }
 

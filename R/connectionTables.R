@@ -8,8 +8,6 @@
 #' @param chunk_meta : to be passed to metadata and roiInfo queries (default TRUE)
 #' @param chunk_connection : to be passed to neuprint_connection_table (default TRUE)
 #' @param verbose : should the function report on its progress?
-#' @param computeKnownRatio : should the function also compute ratios (weightRelative and outputContribution) relative to known synaptic partners rather
-#' than relative to the total number of synapses
 #' @param ... Other arguments to be passed to neuprint queries (neuprint_connection_table, getRoiInfo and neuprint_get_meta)
 #' @return Returns a connection table as data frame. Added columns are \code{weightRelativeTotal} which is
 #' the relative weight considering all the synapses (irrespective of the ROI), and if ROI are used (either if
@@ -17,17 +15,17 @@
 #' ROI and \code{totalROIweight} is the absolute number of inputs this neuron receives in that region and
 #' \code{weightROIRelativeTotal} is the weight in the ROI normalized by the total number of inputs (in all ROIs)
 #' @export
-getConnectionTable <- function(bodyIDs,synapseType, slctROI=NULL,by.roi=FALSE, synThresh = 3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,computeKnownRatio=FALSE,...){
+getConnectionTable <- function(bodyIDs,synapseType, slctROI=NULL,by.roi=FALSE, synThresh = 3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,...){
   UseMethod("getConnectionTable")}
 
 #' @export
-getConnectionTable.default = function(bodyIDs, synapseType, slctROI=NULL,by.roi=FALSE, synThresh=3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,computeKnownRatio=FALSE,...){
-  refMeta <- neuprint_get_meta(bodyIDs,chunk=chunk_meta,...)
-  return(getConnectionTable(refMeta,synapseType,slctROI,by.roi,synThresh,chunk_connections=chunk_connections,chunk_meta=chunk_meta,computeKnownRatio=computeKnownRatio,...))
+getConnectionTable.default = function(bodyIDs, synapseType, slctROI=NULL,by.roi=FALSE, synThresh=3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,...){
+  refMeta <- getMeta(bodyIDs,chunk=chunk_meta,...)
+  return(getConnectionTable(refMeta,synapseType,slctROI,by.roi,synThresh,chunk_connections=chunk_connections,chunk_meta=chunk_meta,...))
 }
 
 #' @export
-getConnectionTable.data.frame <- function(bodyIDs,synapseType, slctROI=NULL,by.roi=FALSE,synThresh=3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,computeKnownRatio=FALSE,...){
+getConnectionTable.data.frame <- function(bodyIDs,synapseType, slctROI=NULL,by.roi=FALSE,synThresh=3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,...){
   refMeta <- bodyIDs
   bodyIDs <- neuprint_ids(bodyIDs$bodyid,mustWork = FALSE)
 
@@ -44,18 +42,18 @@ getConnectionTable.data.frame <- function(bodyIDs,synapseType, slctROI=NULL,by.r
   }
 
   if (verbose) message("Pull metadata")
-  partnerMeta <- neuprint_get_meta(myConnections$partner,chunk=chunk_meta,...)
-  refMetaOrig <- neuprint_get_meta(myConnections$bodyid,chunk=chunk_meta,...)  ## To get the database type name
+  partnerMeta <- getMeta(myConnections$partner,chunk=chunk_meta,...)
+  refMetaOrig <- getMeta(myConnections$bodyid,chunk=chunk_meta,...)  ## To get the database type name
 
   myConnections <- filter(myConnections,partnerMeta$status =="Traced")
   partnerMeta <- filter(partnerMeta,status == "Traced")
   
-  processConnectionTable(myConnections,synThresh,refMeta,partnerMeta,refMetaOrig,synapseType,by.roi,slctROI,verbose,chunk_meta,chunk_connections,computeKnownRatio,...)
+  processConnectionTable(myConnections,synThresh,refMeta,partnerMeta,refMetaOrig,synapseType,by.roi,slctROI,verbose,chunk_meta,chunk_connections,...)
 }
 
 #' Internal function, exposed only for fringe cases like comparing different versions of the dataset.
 #' @export
-processConnectionTable <- function(myConnections,synThresh,refMeta,partnerMeta,refMetaOrig,synapseType,by.roi,slctROI,verbose,chunk_meta,chunk_connections,computeKnownRatio,...){
+processConnectionTable <- function(myConnections,synThresh,refMeta,partnerMeta,refMetaOrig,synapseType,by.roi,slctROI,verbose,chunk_meta,chunk_connections,...){
 
 
   refMeta <- slice(refMeta,match(myConnections$bodyid,bodyid))
@@ -70,55 +68,20 @@ processConnectionTable <- function(myConnections,synThresh,refMeta,partnerMeta,r
   myConnections <- simplifyConnectionTable(myConnections)
   ## Normalization is always from the perspective of the output (fraction of inputs to the output neuron)
   if (synapseType == "PRE"){
-    if (computeKnownRatio){
-      knownTablePost <- myConnections
-      if (length(myConnections$from)==0){knownTablePre <- empty_connTable(by.roi | !(is.null(slctROI)))}else{
-        knownTablePre <- neuprint_connection_table(unique(myConnections$from),"POST",slctROI,by.roi=by.roi,chunk=chunk_connections,...)}
-        knownTablePre <- knownTablePre %>% mutate(from = bodyid,to = partner) %>% select(-bodyid,-partner,-prepost)
-
-      if (by.roi | !is.null(slctROI)){
-        knownTablePre <- tidyr::drop_na(knownTablePre,ROIweight)
-        knownTablePre <- filter(knownTablePre,ROIweight>synThresh)
-      }else{
-        knownTablePre <- filter(knownTablePre,weight>synThresh)
-      }
-        
-      knownPreMeta <- neuprint_get_meta(knownTablePre$to,chunk=chunk_meta,...)
-      knownTablePre <- filter(knownTablePre,knownPreMeta$status=="Traced")
-    }
+    
     outMeta <- refMeta
     inMeta <- partnerMeta
-    myConnections <- mutate(myConnections,databaseType.to = refMetaOrig$type,
+    myConnections <- mutate(myConnections,databaseType.to = as.character(refMetaOrig$type),
                             databaseType.from = type.from)
   } else {
-    if (computeKnownRatio){
-      knownTablePre <- myConnections
-      if (length(myConnections$to)==0){knownTablePost <- empty_connTable(by.roi | !(is.null(slctROI)))}else{
-        knownTablePost <- neuprint_connection_table(unique(myConnections$to),"PRE",slctROI,by.roi=by.roi,chunk=chunk_connections,...)}
-        knownTablePost <- knownTablePost %>% mutate(from = partner,to = bodyid) %>% select(-bodyid,-partner,-prepost)
-      if (by.roi | !is.null(slctROI)){
-        knownTablePost <- tidyr::drop_na(knownTablePost,ROIweight)
-        knownTablePost <- filter(knownTablePost,ROIweight>synThresh)
-      }else{
-        knownTablePost <- filter(knownTablePost,weight>synThresh)
-      }
-      knownPostMeta <- neuprint_get_meta(knownTablePost$from,chunk=chunk_meta,...)
-      knownTablePost <- filter(knownTablePost,knownPostMeta$status=="Traced")
-      }
+    
     inMeta <- refMeta
     outMeta <- partnerMeta
     myConnections <- mutate(myConnections,databaseType.to = type.to,
-                            databaseType.from = refMetaOrig$type)
+                            databaseType.from = as.character(refMetaOrig$type))
   }
 
-  if (computeKnownRatio){
-    if (by.roi | !(is.null(slctROI))){
-      knownTablePre <- tidyr::drop_na(knownTablePre,ROIweight)
-    }
-    knownTablePostTotal <- knownTablePost %>% group_by(to) %>% distinct(from,weight) %>% mutate(knownPostWeight = sum(weight)) %>% ungroup()
-    knownTablePreTotal <- knownTablePre %>% group_by(from) %>% distinct(to,weight) %>% mutate(knownPreWeight = sum(weight)) %>% ungroup()
-  }
-
+ 
   myConnections <-mutate(totalWeight = outMeta[["post"]],
                          myConnections,weightRelativeTotal = weight/outMeta[["post"]],
                          totalPreWeight = inMeta[["downstream"]][match(myConnections$from,inMeta$bodyid)],
@@ -126,17 +89,8 @@ processConnectionTable <- function(myConnections,synThresh,refMeta,partnerMeta,r
                          previous.type.to = databaseType.to,
                          previous.type.from = databaseType.from
   )
-  if  (computeKnownRatio){
-    myConnections <-mutate(myConnections,
-                           knownTotalWeight = knownTablePostTotal$knownPostWeight[match(myConnections$to,knownTablePostTotal$to)],
-                           knownWeightRelativeTotal = weight/knownTotalWeight,
-                           knownTotalPreWeight = knownTablePreTotal$knownPreWeight[match(myConnections$from,knownTablePreTotal$from)],
-                           knownOutputContributionTotal = weight/knownTotalPreWeight,
-                           output_completednessTotal = knownTotalPreWeight/totalPreWeight,
-                           input_completednessTotal =  knownTotalWeight/totalWeight
-    )
-
-  }
+  
+  
 
   if (by.roi | !is.null(slctROI)){
     if (verbose) message("Pull roiInfo")
@@ -151,30 +105,16 @@ processConnectionTable <- function(myConnections,synThresh,refMeta,partnerMeta,r
       mutate(weightRelative=ROIweight/totalROIweight,
              outputContribution=ROIweight/totalPreROIweight)
 
-    if (computeKnownRatio){
-      knownTablePostROI <- knownTablePost %>% group_by(to,roi)  %>% summarize(knownPostWeight = sum(ROIweight)) %>% ungroup()
-      knownTablePreROI <- knownTablePre %>% group_by(from,roi)  %>% summarize(knownPreWeight = sum(ROIweight)) %>% ungroup()
-      ## This is how much this connection accounts for the outputs of the input neuron (not the standard measure)
-      myConnections <- myConnections %>% mutate(knownTotalROIweight = knownTablePostROI$knownPostWeight[match(paste0(myConnections$to,myConnections$roi),paste0(knownTablePostROI$to,knownTablePostROI$roi))],
-                                                knownWeightRelative = ROIweight/knownTotalROIweight,
-                                                knownTotalPreROIweight = knownTablePreROI$knownPreWeight[match(paste0(myConnections$from,myConnections$roi),paste0(knownTablePreROI$from,knownTablePreROI$roi))],
-                                                knownOutputContribution = ROIweight/knownTotalPreROIweight,
-                                                output_completedness = knownTotalPreROIweight/totalPreROIweight,
-                                                input_completedness = knownTotalROIweight/totalROIweight
-                                                ) %>% tidyr::drop_na(weightRelative)  ## NA values can occur in rare cases where
-    }
+   
     ## synapse (pre/post) is split between ROIs
   }else{
     myConnections <- mutate(myConnections,roi = "All brain",
                             outputContribution = outputContributionTotal,
                             weightRelative = weightRelativeTotal,
-                            ROIweight = weight)
-    if (computeKnownRatio){
-      myConnections <- mutate(myConnections,
-                              knownOutputContribution = knownOutputContributionTotal,
-                              knownWeightRelative = knownWeightRelativeTotal)
-
-    }
+                            ROIweight = weight,
+                            totalPreROIweight = totalPreWeight,
+                            totalROIweight = totalWeight
+                            ) 
   }
   return(supertype(myConnections))
 }

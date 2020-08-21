@@ -12,25 +12,30 @@ neuronBag(
   verbose = FALSE,
   omitInputs = FALSE,
   omitOutputs = FALSE,
+  computeKnownRatio = FALSE,
+  renaming = NULL,
   ...
 )
 }
 \arguments{
-\item{typeQuery}{Either a vector of queries (similar to neuprint_search queries) or a
-metadata \code{data.frame} for a set of neurons}
+\item{typeQuery}{Either a vector of queries (similar to a \code{getTypesTable} queries) or a
+metadata \code{data.frame} for a set of neurons. If a \code{data.frame} it needs to contain all the
+instances of the types.}
 
 \item{fixed}{If typeQuery is a query string, is it fixed?}
 
 \item{by.roi}{Return results by ROI or just global weights?}
 
-\item{selfRef}{Should the input data.frame be used as the type reference (use if you already renamed
-neurons/types in that data frame)}
+\item{selfRef}{Deprecated argument}
 
 \item{verbose}{Inform about progress if TRUE}
 
 \item{omitInputs}{Skip calculation of inputs if TRUE}
 
 \item{omitOutputs}{Skip calculation of outputs if TRUE}
+
+\item{computeKnownRatio}{Computes relative weights and output contributions that sum to 1 (for types and for neurons).
+This requires keeping track of all the outputs of the inputs, and all the inputs of the outputs, in a field called \code{ref}}
 
 \item{...}{To be passed to getConnectionTable}
 }

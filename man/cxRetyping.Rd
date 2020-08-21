@@ -8,7 +8,7 @@ cxRetyping(
   connections,
   redefinePartners = TRUE,
   postfix = c("raw", "to", "from"),
-  verbose = TRUE
+  verbose = FALSE
 )
 }
 \arguments{

@@ -2,17 +2,25 @@
 #' @param ROI The ROI to look for
 #' @param minTypePercentage The minimum proportion of the instances of a type that should be innervating the ROI for
 #' it to be considered
-#' @param retyping a retyping function to be applied to the types found. \code{identity} by default (so it does nothing)
+#' @param renaming a renaming function to be applied to the types found (need to accept a \code{postfix} argument). No renaming by default.
+#' @param retyping Deprecated, identical to renaming
 #' @return  a data frame of metadata for all neurons in the ROI, as returned by \code{neuprint_get_meta}, with extra columns \code{ROI_pre}
 #'  and \code{ROI_post}, the counts in the queried ROI.
 #' @details  If a type is selected because at least \code{minTypePercentage} of its instances touch the ROI, all instances of the type are returned.
 #' This is used internally by \code{getTypesInRoiTable}
 #' @seealso  \code{getTypesInRoiTable}
 #' @export
-getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,retyping=identity) {
+getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,renaming=NULL,retyping=NULL) {
+  if(!missing(retyping)){
+    warning("Argument 'retyping' deprecated, use 'renaming' instead")
+    renaming <- retyping
+  }
+  if(is.null(renaming)){renaming <- function(x,postfix="raw",...){
+    redefine_types(x,idemtyper,postfix=postfix,...)}
+  }
   roi_Innervate <- neuprint_bodies_in_ROI(ROI) %>%
     mutate(originalInstance = TRUE)
-  metaRoi <- neuprint_get_meta(roi_Innervate) %>% tidyr::drop_na(type)
+  metaRoi <- getMeta(roi_Innervate$bodyid) %>% tidyr::drop_na(type)
 
   ## Get all instances of the types touching the ROI
   all_neurons <- getTypesTable(unique(metaRoi$type))
@@ -22,9 +30,9 @@ getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,retyping=identity) {
   roi_Innervate <- left_join(all_neurons,roi_Innervate,by=c("bodyid","pre","post","voxels"))
   roi_Innervate <- roi_Innervate %>% select(-c(voxels,cellBodyFiber)) %>%
     tidyr::replace_na(list(ROI_pre = 0,ROI_post = 0,originalInstance=FALSE)) %>%
-    mutate(databaseType = type) ## Convenience column for when types are changed
+    mutate(databaseType = as.character(type)) ## Convenience column for when types are changed
 
-  roi_Innervate <- retyping(roi_Innervate)
+  roi_Innervate <- renaming(roi_Innervate)
   roi_Innervate <-roi_Innervate %>% group_by(type) %>%
     mutate(typePercentage = sum(originalInstance)/n()) %>%
     ungroup() %>%
@@ -35,7 +43,7 @@ getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,retyping=identity) {
 
 #' Returns a neuronBag object of all the neurons forming significant connections in a ROI.
 #' @param ROI The ROI to consider
-#' @param retyping a retyping function to be applied to the types found. \code{cxRetyping} by default (for no retyping, set it to \code{identity})
+#' @param renaming a renaming function to be applied to the types found. \code{cxRetyping} by default (for no renaming, set it to \code{identity})
 #' @param bagROIs Which ROIs to include in the bag created (by default only the ROI one wants neurons in). If NULL returns all ROIs.
 #' @param minTypePercentage The minimum proportion of the instances of a type that should be innervating the ROI for
 #' it to be considered (0.5 by default)
@@ -44,14 +52,13 @@ getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,retyping=identity) {
 #' @seealso  \code{getNeuronsInRoiTable}
 #' @export
 getTypesInRoiTable <- function(ROI,
-                               retyping=cxRetyping,
+                               renaming=cxRetyping,
                                bagROIs=ROI,
                                minTypePercentage=0.5,
                                ...){
-  neuronTable <- getNeuronsInRoiTable(ROI,minTypePercentage=minTypePercentage,retyping=retyping) ## Remove types if less than
+  neuronTable <- getNeuronsInRoiTable(ROI,minTypePercentage=minTypePercentage,renaming=renaming) ## Remove types if less than
   ## 25% of the instances touch (l/R)
-  roiConnections <- neuronBag(neuronTable,slctROI=bagROIs,selfRef=TRUE,...)
-  roiConnections <- retyping(roiConnections)
+  roiConnections <- neuronBag(neuronTable,slctROI=bagROIs,renaming=renaming,...)
   roiConnections
 }
 
@@ -257,15 +264,29 @@ combineRois.data.frame <- function(connections,rois,newRoi){
 combineRois.neuronBag <- function(connections,rois,newRoi,...){
   new_inputsR <- combineRois(connections$inputs_raw,rois,newRoi)
   new_outputsR <- combineRois(connections$outputs_raw,rois,newRoi)
-  new_inputs <- getTypeToTypeTable(new_inputsR,typesTable = connections$names,...)
-  new_outputs <- getTypeToTypeTable(new_outputsR,typesTable = connections$outputsTableRef,...)
-  new_neuronBag(outputs = new_outputs,
+  
+  if("ref" %in% names(connections) && nrow(connections$ref$allInsToOuts)>0){
+    connections$ref$allInsToOuts <- combineRois(connections$ref$allInsToOuts,rois,newRoi)
+    connections$ref$outputs_ref <-getTypeToTypeTable(connections$ref$allInsToOuts,typesTable = connections$outputsTableRef,...)
+    new_outputs <- processTypeToTypeFullOutputs(connections$ref$outputs_ref,new_outputsR)
+  }else{
+    new_outputs <- getTypeToTypeTable(new_outputsR,typesTable = connections$outputsTableRef,...)
+  }
+  if("ref" %in% names(connections) && nrow(connections$ref$allOutsFromIns)>0){
+    connections$ref$allOutsFromIns <- combineRois(connections$ref$allOutsFromIns,rois,newRoi)
+    connections$ref$inputs_ref <- getTypeToTypeTable(connections$ref$allOutsFromIns,typesTable=connections$ref$inputs_outputsTableRef,...)
+    new_inputs <- processTypeToTypeFullInputs(connections$ref$inputs_ref,new_inputsR)
+  }else{
+    new_inputs <- getTypeToTypeTable(new_inputsR,typesTable = connections$names,...)
+  }
+  nBag <- new_neuronBag(outputs = new_outputs,
                 inputs = new_inputs,
                 names = connections$names,
                 inputs_raw = new_inputsR,
                 outputs_raw = new_outputsR,
                 outputsTableRef = connections$outputsTableRef)
-
+  if("ref" %in% names(connections)){nBag$ref <- connections$ref}
+  nBag
 }
 
 #' Build a per roi summary of innervation for neurons in a neuronBag
@@ -294,18 +315,23 @@ getROISummary.data.frame <- function(neurons,threshold=0,rois = NULL){
       filter(roi %in% rois$roi)
   }
 
+  neurons <- rename(neurons,totalDownstream=downstream,totalUpstream=upstream)
   countInstances <- group_by(neurons,type) %>% summarize(n=n())
 
   roiSummary <-
     left_join(roiSummary,
-              select(neurons,bodyid,type,databaseType),
+              select(neurons,bodyid,type,databaseType,totalDownstream,totalUpstream),
               by=c("bodyid")) %>% tidyr::replace_na(list(downstream=0,upstream=0)) %>%
     group_by(roi,type,databaseType) %>%
     summarize(downstream=mean(downstream),
-              upstream=mean(upstream)) %>%
+              upstream=mean(upstream),
+              totalDownstream=mean(totalDownstream),
+              totalUpstream=mean(totalUpstream)
+              ) %>%
     ungroup() %>%
     mutate(fullWeight = downstream+upstream,
-           deltaWeight = (downstream - upstream)/fullWeight) %>%
+           deltaWeight = (downstream - upstream)/fullWeight,
+           polarity_Ratio = (downstream/totalDownstream)/(upstream/totalUpstream)) %>%
     filter(fullWeight>threshold)
 
   roiSummary <- left_join(roiSummary,countInstances,by="type")

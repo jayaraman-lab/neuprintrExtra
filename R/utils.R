@@ -51,9 +51,9 @@ getRoiInfo <- function(bodyids,...){
   
   newIDs <- bodyids[!(bodyids %in% knownInfo$bodyid)]
   reusable <- filter(knownInfo,bodyid %in% bodyids)
+  roiInfo <- neuprint_get_roiInfo(newIDs,...)
   
-  if (length(newIDs)==0){roiInfo <- data.frame(bodyid=double(),roi=character(),pre=integer(),post=integer(),downstream=integer(),stringsAsFactors = FALSE)}else{
-    roiInfo <- neuprint_get_roiInfo(newIDs,...)
+  if (nrow(roiInfo)==0 | ncol(roiInfo)<5){roiInfo <- data.frame(bodyid=double(),roi=character(),pre=integer(),post=integer(),downstream=integer(),stringsAsFactors = FALSE)}else{
     roiInfo <-  tidyr::pivot_longer(roiInfo,cols=-bodyid,names_to=c("roi","field"),names_sep="\\.",values_to="count")
     roiInfo <- tidyr::pivot_wider(roiInfo,names_from = "field",values_from="count")
     assign("storedRoiInfo",rbind(knownInfo,roiInfo),envir=cacheEnv)

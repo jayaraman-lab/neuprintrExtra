@@ -15,7 +15,9 @@ getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,renaming=NULL,retypin
     warning("Argument 'retyping' deprecated, use 'renaming' instead")
     renaming <- retyping
   }
-  if(is.null(renaming)){renaming <- function(x,postfix){identity(x)}}
+  if(is.null(renaming)){renaming <- function(x,postfix="raw",...){
+    redefine_types(x,idemtyper,postfix=postfix,...)}
+  }
   roi_Innervate <- neuprint_bodies_in_ROI(ROI) %>%
     mutate(originalInstance = TRUE)
   metaRoi <- getMeta(roi_Innervate$bodyid) %>% tidyr::drop_na(type)

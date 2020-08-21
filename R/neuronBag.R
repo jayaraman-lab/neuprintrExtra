@@ -99,7 +99,9 @@ neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,
 #' @export
 neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,...){
  
-  if(is.null(renaming)){renaming <- function(x,postfix){identity(x)}}
+  if(is.null(renaming)){renaming <- function(x,postfix="raw",...){
+    redefine_types(x,idemtyper,postfix=postfix,...)}
+  }
   #typeQuery <- renaming(typeQuery,postfix="raw")
   
   if(!("databaseType" %in% names(typeQuery))){

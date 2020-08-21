@@ -39,7 +39,9 @@ get_type2typePath <- function(type.from=NULL,
                               computeKnownRatio = FALSE,
                               chunkPath=FALSE,
                               ...){
-  if(is.null(renaming)){renaming <- function(x,postfix){identity(x)}}
+  if(is.null(renaming)){renaming <- function(x,postfix="raw",...){
+    redefine_types(x,idemtyper,postfix=postfix,...)}
+  }
   res <- get_type2typePath_raw(type.from,type.to,by.roi,ROI,n_steps,renaming,addContraPaths,thresholdPerROI,computeKnownRatio,...)
   
   if(!(is.null(type.to))) type.to <- renaming(type.to)
@@ -62,7 +64,9 @@ get_type2typePath_raw <- function(type.from=NULL,
                               ...){
   stopifnot("At least one of type.from or type.to must be specified"=!is.null(type.from) | !is.null(type.to))
   if (addContraPaths & is.null(ROI)){stop("You should specify a set of (preferably right side) ROIs for `addContraPaths` to make sense.")}
-  if(is.null(renaming)){renaming <- function(x,postfix){identity(x)}}
+  if(is.null(renaming)){renaming <- function(x,postfix="raw",...){
+    redefine_types(x,idemtyper,postfix=postfix,...)}
+  }
   
   if(!is.null(thresholdPerROI)){computeKnownRatio <- TRUE}
   

@@ -138,6 +138,11 @@ lateralize_types <- function(connections,
   redefine_types(connections,retype_func = lateralizer,postfix = postfix,redefinePartners=redefinePartners,typeList=typeList)
 }
 
+idemtyper <- function(connections,postfix){
+  typeCol <- get_col_name(col="type",postfix)
+  types <- connections[[typeCol]]
+  return(types)
+}
 
 lateralizer <- function(connections,postfix,typeList){
     databaseCol <- get_col_name(col="databaseType",postfix)

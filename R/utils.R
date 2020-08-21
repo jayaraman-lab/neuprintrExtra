@@ -46,16 +46,23 @@ getTypesTable <- function(types){
 #' @param ... To be passed to \code{neuprint_get_roiInfo}
 #' @export
 getRoiInfo <- function(bodyids,...){
-  if (length(bodyids)==0){return(data.frame(bodyid=double(),roi=character(),pre=integer(),post=integer(),downstream=integer(),stringsAsFactors = FALSE))}
+  if (length(bodyids)==0){return(data.frame(bodyid=double(),roi=character(),pre=integer(),post=integer(),downstream=integer(),upstream=integer(),stringsAsFactors = FALSE))}
   knownInfo <- get("storedRoiInfo",envir=cacheEnv)
   
   newIDs <- bodyids[!(bodyids %in% knownInfo$bodyid)]
   reusable <- filter(knownInfo,bodyid %in% bodyids)
   roiInfo <- neuprint_get_roiInfo(newIDs,...)
   
-  if (nrow(roiInfo)==0 | ncol(roiInfo)<5){roiInfo <- data.frame(bodyid=double(),roi=character(),pre=integer(),post=integer(),downstream=integer(),stringsAsFactors = FALSE)}else{
+  if (nrow(roiInfo)==0 | ncol(roiInfo) == 1){roiInfo <- data.frame(bodyid=double(),roi=character(),pre=integer(),post=integer(),downstream=integer(),upstream=integer(),stringsAsFactors = FALSE)}else{
     roiInfo <-  tidyr::pivot_longer(roiInfo,cols=-bodyid,names_to=c("roi","field"),names_sep="\\.",values_to="count")
     roiInfo <- tidyr::pivot_wider(roiInfo,names_from = "field",values_from="count")
+    ## Ensure all columns are here (even if values are missing)
+    roiInfo <- data.frame(bodyid=roiInfo$bodyid,
+                          roi=roiInfo$roi) %>% mutate(
+                                       pre=roiInfo$pre,
+                                       post=roiInfo$post,
+                                       downstream=roiInfo$downstream,
+                                       upstream=roiInfo$upstream)
     assign("storedRoiInfo",rbind(knownInfo,roiInfo),envir=cacheEnv)
   }
   rbind(roiInfo,reusable)

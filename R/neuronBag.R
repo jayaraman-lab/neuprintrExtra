@@ -109,14 +109,14 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
     typeQuery <- mutate(typeQuery,databaseType=as.character(type))}
   
   ## NEED TO ADD WARNING ABOUT THAT
-  typeQuery <- mutate(typeQuery,type=databaseType)
+  typeQuery <- mutate(typeQuery,ifelse(type!=databaseType |!is.na(databaseType),databaseType,type))
   
   if (!omitOutputs){
     if (verbose) message("Calculate raw outputs")
     outputsR <- getConnectionTable(typeQuery,synapseType = "POST",by.roi=by.roi,verbose=verbose,...)
     outputsTableRef <- getTypesTable(unique(outputsR$type.to))
     outputsR <- retype.na(outputsR)
-    unknowns <- getMeta(unique(outputsR$to[!(outputsR$to %in% outputsTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
+    unknowns <- getMeta(unique(outputsR$to[!(outputsR$to %in% outputsTableRef$bodyid)]))
     outputsTableRef <- rbind(outputsTableRef,retype.na_meta(unknowns))
     outputsR <- renaming(outputsR,postfix="to")
     outputsR <- renaming(outputsR,postfix="from")
@@ -161,7 +161,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
     inputsR <- getConnectionTable(typeQuery,synapseType = "PRE",by.roi=by.roi,verbose=verbose,...)
     inputsTableRef <- getTypesTable(unique(inputsR$type.from))
     inputsR <- retype.na(inputsR)
-    unknownsIn <- getMeta(unique(inputsR$from[!(inputsR$from %in% inputsTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
+    unknownsIn <- getMeta(unique(inputsR$from[!(inputsR$from %in% inputsTableRef$bodyid)]))
     inputsFullQuery <- rbind(inputsTableRef,retype.na_meta(unknownsIn))
     inputsR <- renaming(inputsR,postfix="from")
     inputsR <- renaming(inputsR,postfix="to")
@@ -195,7 +195,7 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
       allOutsFromIns <- right_join(inputsR,allOutsFromIns)
       
       inputsOutTableRef <- getTypesTable(unique(allOutsFromIns$databaseType.to))
-      unknownsInOut <- getMeta(unique(allOutsFromIns$to[!(allOutsFromIns$to %in% inputsOutTableRef$bodyid)])) %>% mutate(databaseType=NA_character_) 
+      unknownsInOut <- getMeta(unique(allOutsFromIns$to[!(allOutsFromIns$to %in% inputsOutTableRef$bodyid)]))
       inputsOutTableRef <- renaming(rbind(inputsOutTableRef,retype.na_meta(unknownsInOut)))
     }
   }else{

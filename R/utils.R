@@ -30,7 +30,7 @@ getTypesTable <- function(types){
   typeQ <- paste0(typeQ,collapse="|")
   typeQ <- paste0("/type:",typeQ)
   typesTable <- neuprint_search(typeQ)
-    #typesTable <- rbind(typesTable,do.call(rbind,lapply(types,function(t) neuprint_search(t,field="type",fixed=TRUE,exact=TRUE))))
+    
   if(is.null(typesTable)){typesTable <- neuprint_get_meta(1)}
   typesTable <- typesTable %>%
       mutate(databaseType = as.character(type))

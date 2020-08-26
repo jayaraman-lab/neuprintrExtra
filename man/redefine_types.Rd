@@ -26,8 +26,7 @@ to and from or nothing}
 \item{...}{Extra parameters to be passed to retype_func}
 }
 \value{
-A data frame or neuronBag with the columns \code{type_col} updated, and previous
-types stored in \code{previous.} columns
+A data frame or neuronBag with the columns \code{type_col} updated.
 }
 \description{
 Redefine types in a table/neuronBag

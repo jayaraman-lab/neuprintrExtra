@@ -43,8 +43,7 @@ retype.na_meta <- function(metaTable){
 #' to and from or nothing
 #' @param redefinePartners If table is a neuronBag, should the partners also be retyped?
 #' @param ... Extra parameters to be passed to retype_func
-#' @return A data frame or neuronBag with the columns \code{type_col} updated, and previous
-#' types stored in \code{previous.} columns
+#' @return A data frame or neuronBag with the columns \code{type_col} updated.
 #' @details This is a low level functions. In most use cases, you can use \code{lateralize_types} or \code{redefineTypeByName} instead
 #' @seealso \code{\link{lateralize_types}}, \code{\link{redefineTypeByName}}
 #' @export
@@ -55,7 +54,6 @@ redefine_types.data.frame <- function(connections,retype_func,postfix=c("raw","f
   if (length(connections)==0){return(connections)}
   postfix <- match.arg(postfix)
   type_col <- get_col_name("type",postfix)
-  connections[[paste0("previous.",type_col)]] <- connections[[type_col]] ## keeping track of the last named types
   newTypes <- retype_func(connections,postfix,...)
   connections[[type_col]] <-  newTypes
   return(connections)

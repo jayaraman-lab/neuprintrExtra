@@ -107,7 +107,7 @@ get_type2typePath_raw <- function(type.from=NULL,
     if (addContraPaths) res[[n]] <- addContraSide(res[[n]])
     
     outRef <- renaming(getTypesTable(unique(res[[n]]$databaseType.to)) %>% mutate(databaseType = type)) %>% filter(type %in% res[[n]]$type.to)
-    unknowns <- retype.na_meta(getMeta(unique(bag$outputs_raw$to[!(bag$outputs_raw$to %in% outRef$bodyid)]))) %>% mutate(databaseType=NA_character_) 
+    unknowns <- retype.na_meta(getMeta(unique(bag$outputs_raw$to[!(bag$outputs_raw$to %in% outRef$bodyid)])))
     knownUnknowns <- distinct(rbind(unknowns,knownUnknowns))
     outRef <- distinct(filter(rbind(outRef,unknowns,knownUnknowns),type %in% res[[n]]$type.to))
     

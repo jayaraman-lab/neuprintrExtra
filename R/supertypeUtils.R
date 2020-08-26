@@ -35,6 +35,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^TuBu.*",types)] <- "TuBu"
   supertype[grepl("^Delta7",types)] <- "Delta7"
   supertype[grepl("^LPsP.*",types)] <- "LPsPB"
+  supertype[grepl("^KC.*",types)] <- "KC"
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   
   if (level == 1){return(supertype)}
@@ -51,6 +52,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^SA[1-9].*",types)] <- "SA"
   supertype[grepl("^MBON[0-5][0-9].*",types)] <- "MBON"
   supertype[grepl("^ExR.*",types)] <- "ExR"
+  supertype[grepl("^Giant.*|^MDN.*|^DN[a-z].*|^DN\\\\\\\\?.*",types)] <- "DN"
 
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   if (level == 2){return(supertype)}
@@ -61,8 +63,20 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^FC[1-9].*|^FR[1-9].*|^FS[1-9].*",types)] <- "FB Output"
   supertype[grepl("^FB[1-9].*",types)] <- "FB Tangential"
   supertype[grepl("^[h|v]Delta.*",types)] <- "FB Interneuron"
-
-  supertype[is.na(supertype)] <- "Other"
+  supertype[grepl("^PPL.*|^PAM.*|^PPM.*",types)] <- "DAN"
+  supertype[grepl(".*5-HT.*|.*5HT.*",types)] <- "5HT"
+  supertype[grepl("^OA-.*",types)] <- "OA"
+  supertype[grepl("^AstA.*|^CRZ.*|^DSKMP.*|^NPFL.*|^PI1.*|^SIF.*",types)] <- "Peptidergic"            
+  supertype[grepl("^DN1.*|l-LNv.*|LNd.*|^LPN.*|s-LNv.*",types)] <- "Clock"
+  supertype[grepl("^ovi.*|^aSP.*|^aDT.*|^aIP.*|^pC1.*|^vpo.*",types)] <- "Fru"
+  supertype[grepl("^HRN.*|^JO.*|^OGC.*|^ORN.*|^TRN.*",types)] <- "Sensory"
+  supertype[grepl("^LH.*",types)] <- "LH"
+  supertype[grepl("^aMe.*|^CTX.*|^DCH.*|^H[1-3].*|^HBeyelet.*|^HS.*|^LC[1-9].*|^Li[1-9].*|^LLPC.*|^LPC.*|^LT[1-9].*|^MC[1-9].*|^VCH.*|^VS.*",types)] <- "Visual"
+  supertype[grepl("^AL-.*|^AL[B|I]N.*|^D_ad.*|^D[A|C|L|M|P][1-9].*|^il3.*|^l2LN.*|^lLN[1-9].*|^M_.*|^mAL.*|^MZ_.*|^v2LN[1-9].*|^V[A|C|L][1-9].*|^vLN.*|^V[M|P][1-9].*|^Z_v.*|^Z_lv.*",types)] <- "Antennal lobe"
+  
+  supertype[is.na(supertype)] <- "Unassigned"
+  supertype[! supertype %in% c("PB Interneurons","FB Columnar","EB Columnar","FB Output","FB Tangential","FB Interneuron","DAN","5HT","OA","Peptidergic","Clock","Fru","Other Sensory","LH","Visual PNs","Antennal lobe","Unassigned")] <- "Terra incognita"
+  
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   supertype
 }

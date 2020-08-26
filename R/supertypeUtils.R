@@ -122,26 +122,27 @@ supertype.logical <- function(types,level=NULL,unicodeDelta=FALSE){
 #' @details this is to supertypes what \code{selectRoiSet} is to ROIs
 #' @seealso \code{supertype}, \code{selectRoiSet}
 #' @export
+
 selectSupertypeSet <- function(supertypeTable,default_level=2,exceptions=NULL,exceptionLevelMatch = default_level){
   supertypeTable$supertype0 <- supertypeTable$databaseType
   if (!is.null(exceptions)){
     levelEx <- paste0("supertype",exceptionLevelMatch)
     normalTypes <- supertypeTable %>% filter(!((!!as.name(levelEx)) %in% names(exceptions))) %>%
-      mutate(type = (!!as.name(paste0("supertype",default_level))))
+      mutate(supertype = (!!as.name(paste0("supertype",default_level))))
 
     exceptionsTypes <- supertypeTable %>% filter(((!!as.name(levelEx)) %in% names(exceptions)))
 
     typesEx <- as.character(exceptionsTypes[[levelEx]])
     customLev <- sapply(typesEx,function(r) paste0("supertype",exceptions[[r]]))
-    exceptionsTypes$type <- sapply(1:length(customLev),function(i) as.character(exceptionsTypes[[customLev[i]]][i]))
+    exceptionsTypes$supertype <- sapply(1:length(customLev),function(i) as.character(exceptionsTypes[[customLev[i]]][i]))
 
     types <- bind_rows(normalTypes,exceptionsTypes)
   }else{
-    types <- supertypeTable %>% mutate(type = (!!(as.name(paste0("supertype",default_level)))))
+    types <- supertypeTable %>% mutate(supertype = (!!(as.name(paste0("supertype",default_level)))))
   }
 
   types <- types %>% arrange(supertype3) %>%
-    mutate(type = factor(type,levels=c("Other",unique(type))))
+    mutate(supertype = factor(supertype,levels=c("Unassigned",unique(supertype))))
 
   return(distinct(types))
 }

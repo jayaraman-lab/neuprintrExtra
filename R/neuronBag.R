@@ -27,9 +27,9 @@ new_neuronBag <- function(outputs,
 validate_neuronBag <- function(nBag){
   ## Check essential column names
   nameNames <- c("bodyid","upstream","downstream","name","type","databaseType")
-  typeTableNames <- c( "type.from","type.to","databaseType.to","databaseType.from","outputContributionTotal","previous.type.to","previous.type.from","outputContribution","supertype1.to","supertype1.from","supertype2.to",
+  typeTableNames <- c( "type.from","type.to","databaseType.to","databaseType.from","outputContributionTotal","outputContribution","supertype1.to","supertype1.from","supertype2.to",
                        "supertype2.from","supertype3.to","supertype3.from","n_targets","n_type","absoluteWeight","weight","weightRelative","weightRelativeTotal","sdWeight")   
-  connTableNames <- c("weight","from","to","name.from","type.from","type.to","databaseType.to","databaseType.from","outputContributionTotal","previous.type.to","previous.type.from","outputContribution","supertype1.to","supertype1.from","supertype2.to",
+  connTableNames <- c("weight","from","to","name.from","type.from","type.to","databaseType.to","databaseType.from","outputContributionTotal","outputContribution","supertype1.to","supertype1.from","supertype2.to",
                       "supertype2.from","supertype3.to","supertype3.from","weightRelative","weightRelativeTotal")
   stopifnot(all(nameNames %in% names(nBag$names)))
   stopifnot(all(nameNames %in% names(nBag$outputsTableRef)))

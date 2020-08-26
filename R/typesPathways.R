@@ -90,7 +90,7 @@ get_type2typePath_raw <- function(type.from=NULL,
   }
   
   knownConnections <- getTypeToTypeTable(getConnectionTable(character(0),"PRE"))
-  knownUnknowns <- getMeta(character(0)) %>% mutate(previous.type=type)
+  knownUnknowns <- getMeta(character(0)) %>% mutate(databaseType=NA_character_) 
   type.from_toAdd <- getMeta(character(0))
   
   for (n in downHalf){
@@ -107,7 +107,7 @@ get_type2typePath_raw <- function(type.from=NULL,
     if (addContraPaths) res[[n]] <- addContraSide(res[[n]])
     
     outRef <- renaming(getTypesTable(unique(res[[n]]$databaseType.to)) %>% mutate(databaseType = type)) %>% filter(type %in% res[[n]]$type.to)
-    unknowns <- retype.na_meta(getMeta(unique(bag$outputs_raw$to[!(bag$outputs_raw$to %in% outRef$bodyid)])) %>% mutate(previous.type=type))
+    unknowns <- retype.na_meta(getMeta(unique(bag$outputs_raw$to[!(bag$outputs_raw$to %in% outRef$bodyid)]))) %>% mutate(databaseType=NA_character_) 
     knownUnknowns <- distinct(rbind(unknowns,knownUnknowns))
     outRef <- distinct(filter(rbind(outRef,unknowns,knownUnknowns),type %in% res[[n]]$type.to))
     
@@ -117,7 +117,7 @@ get_type2typePath_raw <- function(type.from=NULL,
   }
   
   knownConnectionsIn <- getTypeToTypeTable(getConnectionTable(NULL,"PRE"))
-  type.to_toAdd <- getMeta(character(0))
+  type.to_toAdd <- getMeta(character(0)) %>% mutate(databaseType=NA_character_) 
   for (n in rev(upHalf)){
     bag <- neuronBag(type.to,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,computeKnownRatio=computeKnownRatio,renaming=renaming,...)   
     if (is.list(ROI)){
@@ -135,7 +135,7 @@ get_type2typePath_raw <- function(type.from=NULL,
     knownConnectionsIn <- distinct(rbind(knownConnectionsIn,resLoc))
     
     type.to <- renaming(getTypesTable(unique(res[[n]]$databaseType.from)) %>% mutate(databaseType=type)) %>% filter(type %in% res[[n]]$type.from)
-    unknowns <- retype.na_meta(getMeta(unique(bag$inputs_raw$from[!(bag$inputs_raw$from %in% type.to$bodyid)])) %>% mutate(previous.type=type))
+    unknowns <- retype.na_meta(getMeta(unique(bag$inputs_raw$from[!(bag$inputs_raw$from %in% type.to$bodyid)]))) %>% mutate(databaseType=NA_character_) 
     knownUnknowns <- distinct(rbind(unknowns,knownUnknowns))
     type.to <- distinct(filter(rbind(type.to,unknowns,knownUnknowns),type %in% res[[n]]$type.from))
     

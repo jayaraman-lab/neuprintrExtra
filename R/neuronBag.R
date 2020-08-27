@@ -256,7 +256,7 @@ processTypeToTypeFullInputs <- function(INByTypes,
     ungroup() %>% 
     filter(type.to %in% inputsR$type.to) %>%
     group_by(type.to,roi) %>% 
-    mutate(knownWeightRelative_perType=knownWeightRelative/sum(knownWeightRelative))
+    mutate(knownWeightRelative_perType=knownWeightRelative/sum(knownWeightRelative)) %>% ungroup()
   INByTypes
 }
 
@@ -268,7 +268,7 @@ processTypeToTypeFullOutputs <- function(OUTByTypes,outputsR){
     filter(type.from %in% outputsR$type.from) %>%
     group_by(type.from,roi) %>% 
     mutate(knownOutputContribution_perType=knownOutputContribution/sum(knownOutputContribution),
-           knownWROutputContribution_perType=weightRelative/sum(weightRelative))
+           knownWROutputContribution_perType=weightRelative/sum(weightRelative)) %>% ungroup()
   OUTByTypes
 }
 #### Methods -------------------------------------------------

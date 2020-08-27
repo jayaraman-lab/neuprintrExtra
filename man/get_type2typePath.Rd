@@ -19,6 +19,7 @@ get_type2typePath(
   thresholdPerROI = NULL,
   computeKnownRatio = FALSE,
   chunkPath = FALSE,
+  addRecursive = FALSE,
   ...
 )
 
@@ -63,6 +64,8 @@ polarity in the ROI considered (forces to run the connection tables with \code{c
 
 \item{chunkPath}{Chunking argument to be passed to the function chaining the connection tables together. Useful for deep pathways. Can either be logical,
 or an integer specifying the number of connections in the starting table to process at once.}
+
+\item{addRecursive}{Whether or not to add the recursive paths (of length greater than \code{n_steps}) present in the connection tables generated.}
 
 \item{...}{: to be passed to neuronBag when building the path}
 

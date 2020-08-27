@@ -18,6 +18,7 @@
 #' @param computeKnownRatio Compute total relative metrics at each step (this is slow)
 #' @param chunkPath Chunking argument to be passed to the function chaining the connection tables together. Useful for deep pathways. Can either be logical,
 #' or an integer specifying the number of connections in the starting table to process at once.
+#' @param addRecursive Whether or not to add the recursive paths (of length greater than \code{n_steps}) present in the connection tables generated.
 #' @param ... : to be passed to neuronBag when building the path
 #' @details \itemize{
 #' \item If n_steps is 3, only paths of length 3 will be listed. To get all paths of length 1 to 3, you need to pass 1:3 to n_steps. 
@@ -38,6 +39,7 @@ get_type2typePath <- function(type.from=NULL,
                               thresholdPerROI=NULL,
                               computeKnownRatio = FALSE,
                               chunkPath=FALSE,
+                              addRecursive=FALSE,
                               ...){
   if(is.null(renaming)){renaming <- function(x,postfix="raw",...){
     redefine_types(x,idemtyper,postfix=postfix,...)}
@@ -47,7 +49,7 @@ get_type2typePath <- function(type.from=NULL,
   if(!(is.null(type.to))) {if(!("databaseType" %in% names(type.to))){
     type.to <- mutate(type.to,databaseType=as.character(type))}
     type.to <- renaming(type.to)}
-  res <- tableChain2path(res,n_steps=n_steps,stat=stat,excludeLoops=excludeLoops,type.to=type.to,chunkPath=chunkPath)
+  res <- tableChain2path(res,n_steps=n_steps,stat=stat,excludeLoops=excludeLoops,type.to=type.to,chunkPath=chunkPath,addRecursive = addRecursive)
   res
 }
 
@@ -214,7 +216,7 @@ tables2path <- function(inputTable,outputTable,stat=NULL,n=1,excludeIntermediate
 #' @param ... An arbitrary number of connection tables or a list of connection tables. In desired downstream order
 #' @inheritParams get_type2typePath
 #' @export
-tableChain2path <- function(...,n_steps=NULL,stat=NULL,excludeLoops=TRUE,type.to=NULL,excludeIntermediate=NULL,chunkPath=FALSE,progress=TRUE){
+tableChain2path <- function(...,n_steps=NULL,stat=NULL,excludeLoops=TRUE,type.to=NULL,excludeIntermediate=NULL,addRecursive=FALSE,chunkPath=FALSE,progress=TRUE){
   if(is.null(stat)) stat <- c("weightRelative","outputContribution","knownWeightRelative","knownOutputContribution","knownOutputContribution_perType","knownWROutputContribution_perType","knownWeightRelative_perType")
   res <- rlang::list2(...)
   
@@ -255,7 +257,7 @@ tableChain2path <- function(...,n_steps=NULL,stat=NULL,excludeLoops=TRUE,type.to
   
   
   if (is.null(n_steps)){n_steps <- seq(length(res))}
-  res <- bind_rows(lapply(n_steps,function(nS){
+  pathway <- bind_rows(lapply(n_steps,function(nS){
     pathTable <- res[[1]]
     for (i in seq(2,nS,length.out = nS-1)){
       pathTable <- tables2path(pathTable,res[[i]],stat=stat,n=i-1,excludeIntermediate=excludeIntermediate)
@@ -278,15 +280,38 @@ tableChain2path <- function(...,n_steps=NULL,stat=NULL,excludeLoops=TRUE,type.to
     pathTable 
   }))
   
-  res <- res %>% rowwise() %>% mutate(loop=any(duplicated(c_across(starts_with("type_") |
+  pathway <- mutate(pathway,pathType="simple")
+  if (addRecursive){
+    nM <- max(n_steps)
+    ## Loop over types found at previous stages
+    for(stepN in rev(seq(2,nM,length.out = max(n_steps-1)))){
+      toType <- if (stepN==nM) "type.to" else paste0("type_N",stepN)
+      ## Loop over which stage those are found
+      for(nS in rev(seq(1,stepN-1,length.out = stepN-1))){ 
+        toExtend <- filter(pathway,!!sym(toType) %in% !!sym(paste0("type_N",nS)) & n_steps==nM) %>% select(!where(~all(is.na(.x))))
+          
+        ##Loop forward to build the extented pathways
+        for (i in seq(nS+1,nM,length.out = max(n_steps-nS))){
+          toExtend <- tables2path(toExtend,res[[i]],stat=stat,n=nM+i-nS-1,excludeIntermediate=excludeIntermediate)
+        }
+        toExtend <- mutate(toExtend,n_steps=2*nM-nS)
+        if (!is.null(type.to)){
+          toExtend <- toExtend[(toExtend$type.to %in% type.to$type),]
+        }
+        pathway <- bind_rows(pathway,toExtend %>% mutate(pathType="recursive"))
+      }
+    }
+  }
+  
+  pathway <- pathway %>% rowwise() %>% mutate(loop=any(duplicated(c_across(starts_with("type_") |
                                                                      starts_with("type.from")),
                                                           incomparables = c(NA,FALSE))) |
                                         any(duplicated(c_across(starts_with("type_") |
                                                                   starts_with("type.to")),
                                                        incomparables = c(NA,FALSE))
                                         )) %>% ungroup()
-  if (excludeLoops) res  <- filter(res,loop==FALSE)
-  res %>% select(type.from,
+  if (excludeLoops) pathway  <- filter(pathway,loop==FALSE)
+  pathway %>% select(type.from,
                  starts_with("type_"),
                  type.to,
                  starts_with("roi"),
@@ -294,6 +319,7 @@ tableChain2path <- function(...,n_steps=NULL,stat=NULL,excludeLoops=TRUE,type.to
                  starts_with(paste0(stat,"_path")),
                  n_steps,
                  loop,
+                 pathType,
                  starts_with("supertype"),
                  starts_with("databaseType"))
 }

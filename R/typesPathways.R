@@ -342,6 +342,7 @@ simulatedContraSide <- function(connTable){
   
 }
 
+#' @export
 lrInvert <- function(typeNames){
   toReplaceLeft <- grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$",
                          typeNames)

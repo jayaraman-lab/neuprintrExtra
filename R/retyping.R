@@ -1,6 +1,6 @@
 #' Fill in the type and name field in case they are NAs
 #' @param connectionTable A table of connections in the to/from format
-#' @return A connection table with name and type fields filled in.
+#' @return A table with name and type fields filled in.
 #' @details If types are missing, fill them with a cleaned up (removing the L/R postfixes)
 #' version of the name. If the name is missing, use the bodyid for everything. If the name is in parenthesis, append with the bodyid.
 #' @export
@@ -24,6 +24,12 @@ retype.na <- function(connectionTable){
   return(connectionTable)
 }
 
+#' Fill in the type and name field in case they are NAs
+#' @describeIn retype.na Retype tables with missing values
+#' @param metaTable A table of metadata
+#' @details If types are missing, fill them with a cleaned up (removing the L/R postfixes)
+#' version of the name. If the name is missing, use the bodyid for everything. If the name is in parenthesis, append with the bodyid.
+#' @export
 retype.na_meta <- function(metaTable){
   metaTable$type[is.na(metaTable$type) & !is.na(metaTable$name)] <- 
     paste0(metaTable$name[is.na(metaTable$type) & !is.na(metaTable$name)],"_",

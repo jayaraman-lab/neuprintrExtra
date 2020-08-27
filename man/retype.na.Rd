@@ -2,20 +2,35 @@
 % Please edit documentation in R/retyping.R
 \name{retype.na}
 \alias{retype.na}
+\alias{retype.na_meta}
 \title{Fill in the type and name field in case they are NAs}
 \usage{
 retype.na(connectionTable)
+
+retype.na_meta(metaTable)
 }
 \arguments{
 \item{connectionTable}{A table of connections in the to/from format}
+
+\item{metaTable}{A table of metadata}
 }
 \value{
-A connection table with name and type fields filled in.
+A table with name and type fields filled in.
 }
 \description{
+Fill in the type and name field in case they are NAs
+
 Fill in the type and name field in case they are NAs
 }
 \details{
 If types are missing, fill them with a cleaned up (removing the L/R postfixes)
 version of the name. If the name is missing, use the bodyid for everything. If the name is in parenthesis, append with the bodyid.
+
+If types are missing, fill them with a cleaned up (removing the L/R postfixes)
+version of the name. If the name is missing, use the bodyid for everything. If the name is in parenthesis, append with the bodyid.
 }
+\section{Functions}{
+\itemize{
+\item \code{retype.na_meta}: Retype tables with missing values
+}}
+

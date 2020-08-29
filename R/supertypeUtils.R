@@ -15,10 +15,10 @@ supertype <- function(types,level=2,unicodeDelta=TRUE){UseMethod("supertype")}
 #' @export
 supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype <- types
-  supertype[is.na(types)] <- "Other"
+  supertype[is.na(types)] <- "Unassigned"
   
   supertype <- stringr::str_extract(types,"[A-Z]+")
-  supertype[is.na(supertype)] <- "Other"
+  supertype[is.na(supertype)] <- "Unassigned"
   supertype[grepl("^FB[1-9].*",types)] <- stringr::str_extract(types,"FB[1-9]")[grepl("^FB[1-9].*",types)]
   supertype[grepl("^vDelta.*",types)] <- stringr::str_extract(types,"vDelta[A-O]")[grepl("^vDelta.*",types)]
   supertype[grepl("^hDelta.*",types)] <- stringr::str_extract(types,"hDelta[A-M]")[grepl("^hDelta.*",types)]

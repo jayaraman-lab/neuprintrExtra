@@ -66,16 +66,17 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^PPL.*|^PAM.*|^PPM.*",types)] <- "DAN"
   supertype[grepl(".*5-HT.*|.*5HT.*",types)] <- "5HT"
   supertype[grepl("^OA-.*",types)] <- "OA"
+  supertype[grepl("SpsP.*|^LPsP.*",types)] <- "PB Input"
   supertype[grepl("^AstA.*|^CRZ.*|^DSKMP.*|^NPFL.*|^PI1.*|^SIF.*",types)] <- "Peptidergic"            
   supertype[grepl("^DN1.*|l-LNv.*|LNd.*|^LPN.*|s-LNv.*",types)] <- "Clock"
   supertype[grepl("^ovi.*|^aSP.*|^aDT.*|^aIP.*|^pC1.*|^vpo.*",types)] <- "Fru"
-  supertype[grepl("^HRN.*|^JO.*|^OGC.*|^ORN.*|^TRN.*",types)] <- "Sensory"
+  supertype[grepl("^HRN.*|^JO.*|^OGC.*|^ORN.*|^TRN.*",types)] <- "Other Sensory"
   supertype[grepl("^LH.*",types)] <- "LH"
-  supertype[grepl("^aMe.*|^CTX.*|^DCH.*|^H[1-3].*|^HBeyelet.*|^HS.*|^LC[1-9].*|^Li[1-9].*|^LLPC.*|^LPC.*|^LT[1-9].*|^MC[1-9].*|^VCH.*|^VS.*",types)] <- "Visual"
+  supertype[grepl("^aMe.*|^CTX.*|^DCH.*|^H[1-3].*|^HBeyelet.*|^HS.*|^LC[1-9].*|^Li[1-9].*|^LLPC.*|^LPC.*|^LT[1-9].*|^MC[1-9].*|^VCH.*|^VS.*",types)] <- "Visual PNs"
   supertype[grepl("^AL-.*|^AL[B|I]N.*|^D_ad.*|^D[A|C|L|M|P][1-9].*|^il3.*|^l2LN.*|^lLN[1-9].*|^M_.*|^mAL.*|^MZ_.*|^v2LN[1-9].*|^V[A|C|L][1-9].*|^vLN.*|^V[M|P][1-9].*|^Z_v.*|^Z_lv.*",types)] <- "Antennal lobe"
   
   supertype[is.na(supertype)] <- "Unassigned"
-  supertype[! supertype %in% c("PB Interneurons","FB Columnar","EB Columnar","ER","ExR","FB Output","FB Tangential","FB Interneuron","DN","KC","MBON","DAN","5HT","OA","Peptidergic","Clock","Fru","Other Sensory","LH","Visual PNs","Antennal lobe","Unassigned")] <- "Terra incognita"
+  supertype[! supertype %in% c("PB Interneurons","PB Input","FB Columnar","EB Columnar","ER","ExR","FB Output","FB Tangential","FB Interneuron","DN","KC","MBON","DAN","5HT","OA","Peptidergic","Clock","Fru","Other Sensory","LH","Visual PNs","Antennal lobe","Unassigned")] <- "Terra incognita"
   
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   supertype

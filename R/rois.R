@@ -212,12 +212,17 @@ combineRois <- function(connections,rois,newRoi,...){UseMethod("combineRois")}
 #' @export
 combineRois.data.frame <- function(connections,rois,newRoi){
   ## CHECK IT'S A RAW CONNECTION TABLE
+  inInfo <- getRoiInfo(unique(connections$from)) %>% filter(roi %in% rois) %>% group_by(bodyid) %>% summarize(down=sum(downstream,na.rm=T))
+  outInfo <- getRoiInfo(unique(connections$to)) %>% filter(roi %in% rois) %>% group_by(bodyid) %>% summarize(up=sum(upstream,na.rm = T))
+  
   newRegionTable <- connections %>%
     filter(roi %in% rois) %>%
     group_by(to) %>%
-    mutate_at(vars(any_of(c("totalROIweight","knownTotalROIweight"))),~sum(.[match(rois,roi)],na.rm=TRUE)) %>%
+    mutate(totalROIweight=outInfo$up[match(to,outInfo$bodyid)]) %>%
+    mutate_at(vars(any_of(c("knownTotalROIweight"))),~sum(.[match(rois,roi)],na.rm=TRUE)) %>%  ## This is incorrect
     group_by(from) %>%
-    mutate_at(vars(any_of(c("totalPreROIweight","knownTotalPreROIweight"))),~sum(.[match(rois,roi)],na.rm=TRUE)) %>%
+    mutate(totalPreROIweight=inInfo$down[match(from,inInfo$bodyid)]) %>%
+    mutate_at(vars(any_of(c("knownTotalPreROIweight"))),~sum(.[match(rois,roi)],na.rm=TRUE)) %>%
     group_by_if(names(.) %in% c(paste0(c("","name.","type.","databaseType."),"to"),
                                 paste0(c("","name.","type.","databaseType."),"from"),
                                 paste0("supertype",1:3,".to"),paste0("supertype",1:3,".from")))

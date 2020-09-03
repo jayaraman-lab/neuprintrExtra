@@ -225,11 +225,13 @@ getTypeToTypeTable <- function(connectionTable,
 
   ## Gather the completedness measures average per type
   connectionTable <- group_by(connectionTable,type.to,roi) %>%
-            mutate_at(vars(any_of(c("input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight","totalROIweight","totalWeight"))),~mean(.[match(unique(to),to)])) %>% ungroup()
+            mutate_at(vars(any_of(c("input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight","totalROIweight","totalWeight"))),
+                      ~mean(.[match(unique(to),to)])) %>% ungroup()
 
   connectionTable <- group_by(connectionTable,type.from,roi) %>%
     mutate_at(vars(any_of(c("output_completedness","output_completednessTotal","totalPreWeight","totalPreROIweight",
-                            "knownTotalPreROIweight","knownTotalPreWeight"))),~mean(.[match(unique(from),from)])) %>% ungroup()
+                            "knownTotalPreROIweight","knownTotalPreWeight"))),
+              ~mean(.[match(unique(from),from)])) %>% ungroup()
 
 
   ## Gather the outputContributions

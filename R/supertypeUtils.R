@@ -143,7 +143,7 @@ selectSupertypeSet <- function(supertypeTable,default_level=2,exceptions=NULL,ex
   }
 
   types <- types %>% arrange(supertype3) %>%
-    mutate(supertype = factor(supertype,levels=c("Unassigned",unique(supertype))))
+    mutate(supertype = factor(supertype,levels=unique(supertype)))
 
   return(distinct(types))
 }

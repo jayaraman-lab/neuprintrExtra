@@ -14,7 +14,7 @@
 #' @param addContraPaths Experimental: simulate the opposite side of the brain assuming symetry. The new ROI will be called roi_contra. Only ROIs containing "(R)" 
 #' in their name will be considered
 #' @param thresholdPerROI Optional filtering of the connection tables to limit to types containing at least \code{thresholdPerROI} synapses of the right 
-#' polarity in the ROI considered (forces to run the connection tables with \code{computeKnownRatio} set to TRUE)
+#' polarity in the ROI considered
 #' @param computeKnownRatio Compute total relative metrics at each step (this is slow)
 #' @param chunkPath Chunking argument to be passed to the function chaining the connection tables together. Useful for deep pathways. Can either be logical,
 #' or an integer specifying the number of connections in the starting table to process at once.
@@ -72,8 +72,6 @@ get_type2typePath_raw <- function(type.from=NULL,
     redefine_types(x,idemtyper,postfix=postfix,...)}
   }
   
-  if(!is.null(thresholdPerROI)){computeKnownRatio <- TRUE}
-  
   res <- vector("list",max(n_steps))
   
   if (is.list(ROI)){ROIraw <- unlist(ROI,use.names = FALSE)}else{ROIraw <- ROI}
@@ -102,7 +100,7 @@ get_type2typePath_raw <- function(type.from=NULL,
       bag <- do.call(c,bag_list)
     }
     
-    if(!is.null(thresholdPerROI)){bag$outputs <- filter(bag$outputs,knownTotalROIweight>thresholdPerROI & knownTotalPreROIweight>thresholdPerROI)}
+    if(!is.null(thresholdPerROI)){bag$outputs <- filter(bag$outputs,totalROIweight>thresholdPerROI & totalPreROIweight>thresholdPerROI)}
     
     resLoc <- bag$outputs
     res[[n]] <- distinct(rbind(resLoc,filter(knownConnections,type.from %in% type.from_toAdd$type)))
@@ -127,7 +125,7 @@ get_type2typePath_raw <- function(type.from=NULL,
       bag <- do.call(c,bag_list)
     }
 
-    if(!is.null(thresholdPerROI)){bag$inputs <- filter(bag$inputs,knownTotalROIweight>thresholdPerROI & knownTotalPreROIweight>thresholdPerROI)}
+    if(!is.null(thresholdPerROI)){bag$inputs <- filter(bag$inputs,totalROIweight>thresholdPerROI & totalPreROIweight>thresholdPerROI)}
     
     resLoc <- bag$inputs
     

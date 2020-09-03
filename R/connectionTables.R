@@ -225,10 +225,11 @@ getTypeToTypeTable <- function(connectionTable,
 
   ## Gather the completedness measures average per type
   connectionTable <- group_by(connectionTable,type.to,roi) %>%
-            mutate_at(vars(any_of(c("input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight"))),~mean(.[match(unique(to),to)])) %>% ungroup()
+            mutate_at(vars(any_of(c("input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight","totalROIweight","totalWeight"))),~mean(.[match(unique(to),to)])) %>% ungroup()
 
   connectionTable <- group_by(connectionTable,type.from,roi) %>%
-    mutate_at(vars(any_of(c("output_completedness","output_completednessTotal","knownTotalPreROIweight","knownTotalPreWeight"))),~mean(.[match(unique(from),from)])) %>% ungroup()
+    mutate_at(vars(any_of(c("output_completedness","output_completednessTotal","totalPreWeight","totalPreROIweight",
+                            "knownTotalPreROIweight","knownTotalPreWeight"))),~mean(.[match(unique(from),from)])) %>% ungroup()
 
 
   ## Gather the outputContributions
@@ -241,7 +242,8 @@ getTypeToTypeTable <- function(connectionTable,
   ## This contains the neurons unique in their type that reach our hard threshold
   loners <- connectionTable %>% filter(n==1) %>%
     group_by_if(names(.) %in% c("type.from","type.to","roi","outputContribution","outputContributionTotal","knownOutputContribution",
-                                "knownOutputContributionTotal", "output_completedness","output_completednessTotal", "input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight","knownTotalPreROIweight","knownTotalPreWeight",
+                                "knownOutputContributionTotal", "output_completedness","output_completednessTotal", "input_completedness","input_completednessTotal",
+                                "knownTotalROIweight","knownTotalWeight","knownTotalPreROIweight","knownTotalPreWeight","totalPreWeight","totalPreROIweight","totalROIweight","totalWeight",
                                 "databaseType.to","databaseType.from",paste0("supertype",1:3,".to"),paste0("supertype",1:3,".from"))) %>%
     mutate_at(vars(any_of(c("weightRelative","weightRelativeTotal","knownWeightRelative","knownWeightRelativeTotal"))),sum) %>%
     mutate(weight = sum(ROIweight),
@@ -251,11 +253,13 @@ getTypeToTypeTable <- function(connectionTable,
     summarize_at(vars(any_of(c("weightRelative","weightRelativeTotal","knownWeightRelative","knownWeightRelativeTotal","weight","absoluteWeight","n_type","n_from","n_targets"))),first) %>% ungroup()
 
   group_In <- names(connectionTable)[names(connectionTable) %in% c("type.from","to","type.to","roi","n","n_from","outputContribution","outputContributionTotal","knownOutputContribution","knownOutputContributionTotal",
-                                                                   "output_completedness","output_completednessTotal","input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight","knownTotalPreROIweight","knownTotalPreWeight",
+                                                                   "output_completedness","output_completednessTotal","input_completedness","input_completednessTotal","totalROIweight","totalWeight",
+                                                                   "knownTotalROIweight","knownTotalWeight","knownTotalPreROIweight","knownTotalPreWeight","totalPreWeight","totalPreROIweight",
                                                                    "databaseType.to","databaseType.from",paste0("supertype",1:3,".to"),paste0("supertype",1:3,".from"))]
 
   group_Out <- names(connectionTable)[names(connectionTable) %in% c("type.from","type.to","roi","n_from","outputContribution","outputContributionTotal","knownOutputContribution","knownOutputContributionTotal",
-                                                                    "output_completedness","output_completednessTotal","input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight","knownTotalPreROIweight","knownTotalPreWeight",
+                                                                    "output_completedness","output_completednessTotal","input_completedness","input_completednessTotal","knownTotalROIweight","knownTotalWeight",
+                                                                    "knownTotalPreROIweight","knownTotalPreWeight","totalPreWeight","totalPreROIweight","totalROIweight","totalWeight",
                                                                     "databaseType.to","databaseType.from",paste0("supertype",1:3,".to"),paste0("supertype",1:3,".from"))]
 
   ## Main filter. Could potentially be rewritten in more optimal ways.

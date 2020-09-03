@@ -334,7 +334,9 @@ simulatedContraSide <- function(connTable){
                                     type.to=lrInvert(type.to),
                                     roi = paste0(roi,"_contra"))
   
-  simulated <- filter(simulated,grepl("(R)",roi) | roi=="SAD_contra" | roi=="PRW_contra") ## Non lateralized neuropiles shouldn't be simulated
+  simulated <- filter(simulated,grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$",type.from) & 
+                        grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$",type.to) &
+                        (grepl("(R)",roi) | roi=="SAD_contra" | roi=="PRW_contra")) ## Non lateralized neuropiles shouldn't be simulated and neither should types with no L/R info
   
   simulated
   

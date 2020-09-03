@@ -160,9 +160,11 @@ lateralizer <- function(connections,postfix,typeList){
     typeList <- filter(connections,((!!as.name(typeCol)) %in% typeList) & (!!as.name(typeCol)) == (!!as.name(databaseCol)))
 
     typeList <- distinct(typeList,(!!as.name(nameCol)),(!!as.name(typeCol)),(!!as.name(databaseCol)))
-    typeListFilt <- filter(typeList,grepl("_R$|_L$|_R[1-9]$|_L[1-9]$|_R[1-9]/[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_R[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_R[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_R_C[1-9]_irreg$|_L_small$|_R_small$",
-                                      (!!as.name(nameCol)))) %>% na.omit()
-    typeList <- filter(typeList,(!!as.name(databaseCol)) %in% typeListFilt[[databaseCol]])
+    
+    allTypes <- getTypesTable(unique(typeList[[databaseCol]]))
+    typeListFilt <- filter(allTypes,grepl("_R$|_L$|_R[1-9]$|_L[1-9]$|_R[1-9]/[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_R[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_R[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_R_C[1-9]_irreg$|_L_small$|_R_small$",
+                                      name)) 
+    typeList <- filter(typeList,(!!as.name(databaseCol)) %in% typeListFilt[["databaseType"]])
     typeList <- typeList[[typeCol]]
     condition <- grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$",connections[[nameCol]])
 

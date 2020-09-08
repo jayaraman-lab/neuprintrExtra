@@ -49,7 +49,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^FR[1-9].*",types)] <- "FR"
   supertype[grepl("^FS[1-9].*",types)] <- "FS"
   supertype[grepl("^ER[1-6].*",types)] <- "ER"
-  supertype[grepl("^SA[1-9].*",types)] <- "SA"
+  supertype[grepl("^SA[1-9].*|^SAF.*",types)] <- "SA"
   supertype[grepl("^MBON[0-5][0-9].*",types)] <- "MBON"
   supertype[grepl("^ExR.*",types)] <- "ExR"
   supertype[grepl("^Giant.*|^MDN.*|^DN[a-z].*|^DN\\\\\\\\?.*",types)] <- "DN"
@@ -76,7 +76,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^AL-.*|^AL[B|I]N.*|^D_ad.*|^D[A|C|L|M|P][1-9].*|^il3.*|^l2LN.*|^lLN[1-9].*|^M_.*|^mAL.*|^MZ_.*|^v2LN[1-9].*|^V[A|C|L][1-9].*|^vLN.*|^V[M|P][1-9].*|^Z_v.*|^Z_lv.*",types)] <- "Antennal lobe"
   
   supertype[is.na(supertype)] <- "Unassigned"
-  supertype[! supertype %in% c("PB Interneurons","PB Input","FB Columnar","EB Columnar","ER","ExR","FB Output","FB Tangential","FB Interneuron","LNO","DN","KC","MBON","DAN","5HT","OA","Peptidergic","Clock","Fru","Other Sensory","LH","Visual PNs","Antennal lobe","Unassigned")] <- "Terra incognita"
+  supertype[! supertype %in% c("PB Interneurons","PB Input","FB Columnar","EB Columnar","ER","ExR","FB Output","FB Tangential","FB Interneuron","LNO","SA","DN","KC","MBON","DAN","5HT","OA","Peptidergic","Clock","Fru","Other Sensory","LH","Visual PNs","Antennal lobe","Unassigned")] <- "Terra incognita"
   
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   supertype

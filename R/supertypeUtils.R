@@ -64,7 +64,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^FB[1-9].*",types)] <- "FB Tangential"
   supertype[grepl("^[h|v]Delta.*",types)] <- "FB Interneuron"
   supertype[grepl("^PPL.*|^PAM.*|^PPM.*",types)] <- "DAN"
-  supertype[grepl(".*5-HT.*|.*5HT.*",types)] <- "5HT"
+  supertype[grepl(".*5-HT.*|.*5HT.*|^CSD.*",types)] <- "5HT"
   supertype[grepl("^OA-.*",types)] <- "OA"
   supertype[grepl("SpsP.*|^LPsP.*",types)] <- "PB Input"
   supertype[grepl("^AstA.*|^CRZ.*|^DSKMP.*|^NPFL.*|^PI1.*|^SIF.*",types)] <- "Peptidergic"            

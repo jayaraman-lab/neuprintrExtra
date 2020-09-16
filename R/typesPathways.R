@@ -344,9 +344,9 @@ simulatedContraSide <- function(connTable){
 
 #' @export
 lrInvert <- function(typeNames){
-  toReplaceLeft <- grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$",
+  toReplaceLeft <- grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$|_L\\*$",
                          typeNames)
-  toReplaceRight <- grepl("_R$|_R[1-9]$|_R[1-9]/[1-9]$|_R[1-9]_C[1-9]$|_R[1-9]_C[1-9]_irreg$|_R_C[1-9]_irreg$|_R_small$",
+  toReplaceRight <- grepl("_R$|_R[1-9]$|_R[1-9]/[1-9]$|_R[1-9]_C[1-9]$|_R[1-9]_C[1-9]_irreg$|_R_C[1-9]_irreg$|_R_small$|_R\\*$",
                           typeNames)
   typeNames[toReplaceLeft] <- gsub("_L","_R",typeNames[toReplaceLeft])
   typeNames[toReplaceRight] <- gsub("_R","_L",typeNames[toReplaceRight])

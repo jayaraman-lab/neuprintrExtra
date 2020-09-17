@@ -213,9 +213,9 @@ combineRois <- function(connections,rois,newRoi,...){UseMethod("combineRois")}
 combineRois.data.frame <- function(connections,rois,newRoi){
   ## CHECK IT'S A RAW CONNECTION TABLE
 
-  #roisF <- gsub("_contra","",rois) ## Dangerous, check the user doesn't take bad initiatives here...
-  inInfo <- getRoiInfo(unique(connections$from)) %>% filter(roi %in% rois) %>% group_by(bodyid) %>% summarize(down=sum(downstream,na.rm=T))
-  outInfo <- getRoiInfo(unique(connections$to)) %>% filter(roi %in% rois) %>% group_by(bodyid) %>% summarize(up=sum(upstream,na.rm = T))
+  roisF <- gsub("_contra","",rois) ## Dangerous, check the user doesn't take bad initiatives here...
+  inInfo <- getRoiInfo(unique(connections$from)) %>% filter(roi %in% roisF) %>% group_by(bodyid) %>% summarize(down=sum(downstream,na.rm=T))
+  outInfo <- getRoiInfo(unique(connections$to)) %>% filter(roi %in% roisF) %>% group_by(bodyid) %>% summarize(up=sum(upstream,na.rm = T))
   
   newRegionTable <- connections %>%
     filter(roi %in% rois) %>%

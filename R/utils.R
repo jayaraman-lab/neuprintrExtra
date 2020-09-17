@@ -51,12 +51,7 @@ getRoiInfo <- function(bodyids,...){
   
   newIDs <- bodyids[!(bodyids %in% knownInfo$bodyid)]
   reusable <- filter(knownInfo,bodyid %in% bodyids)
-  
-  newIDsContra <- newIDs[grepl("_contra",newIDs)]
-  newIDsContraRaw <- gsub("_contra","",newIDsContra)
-  newIDs <- newIDs[!grepl("_contra",newIDs)]
   roiInfo <- neuprint_get_roiInfo(newIDs,...)
-  roiInfoContra <- neuprint_get_roiInfo(newIDsContraRaw,...)
   
   if (nrow(roiInfo)==0 | ncol(roiInfo) == 1){roiInfo <- data.frame(bodyid=double(),roi=character(),pre=integer(),post=integer(),downstream=integer(),upstream=integer(),stringsAsFactors = FALSE)}else{
     roiInfo <-  tidyr::pivot_longer(roiInfo,cols=-bodyid,names_to=c("roi","field"),names_sep="\\.",values_to="count")
@@ -69,20 +64,6 @@ getRoiInfo <- function(bodyids,...){
                                        downstream=if ("downstream" %in% names(roiInfo)) roiInfo$downstream else NA,
                                        upstream=if ("upstream" %in% names(roiInfo)) roiInfo$upstream else NA)
     assign("storedRoiInfo",rbind(knownInfo,roiInfo),envir=cacheEnv)
-  }
-  if (nrow(roiInfoContra)==0 | ncol(roiInfoContra) == 1){roiInfoContra <- data.frame(bodyid=double(),roi=character(),pre=integer(),post=integer(),downstream=integer(),upstream=integer(),stringsAsFactors = FALSE)}else{
-    roiInfoContra <-  tidyr::pivot_longer(roiInfoContra,cols=-bodyid,names_to=c("roi","field"),names_sep="\\.",values_to="count")
-    roiInfoContra <- tidyr::pivot_wider(roiInfoContra,names_from = "field",values_from="count")
-    ## Ensure all columns are here (even if values are missing)
-    roiInfoContra <- data.frame(bodyid=paste0(roiInfo$bodyid,"_contra"),
-                          roi=paste0(roiInfo$roi,"_contra")) %>% 
-                    filter(grepl("(R)",roi) | roi=="SAD_contra" | roi=="PRW_contra") %>% 
-      mutate(
-                            pre=if ("pre" %in% names(roiInfoContra)) roiInfo$pre else NA,
-                            post=if ("post" %in% names(roiInfoContra)) roiInfo$post else NA,
-                            downstream=if ("downstream" %in% names(roiInfoContra)) roiInfo$downstream else NA,
-                            upstream=if ("upstream" %in% names(roiInfoContra)) roiInfo$upstream else NA)
-    assign("storedRoiInfo",rbind(knownInfo,roiInfo,roiInfoContra),envir=cacheEnv)
   }
   rbind(roiInfo,reusable)
 }

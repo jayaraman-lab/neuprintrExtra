@@ -119,10 +119,8 @@ get_type2typePath_raw <- function(type.from=NULL,
     resLoc <- bag$outputs
     res[[n]] <- distinct(rbind(resLoc,filter(knownConnections,type.from %in% type.from_toAdd$type)))
     
-    outRef <- renaming(getTypesTable(unique(res[[n]]$databaseType.to)) %>% 
-                         mutate(databaseType = type)) %>% 
-      filter(type %in% res[[n]]$type.to)
-    unknowns <- retype.na_meta(getMeta(unique(gsub("_contra","",bag$outputs_raw$to)[!(gsub("_contra","",bag$outputs_raw$to) %in% outRef$bodyid)])))
+    outRef <- renaming(getTypesTable(unique(res[[n]]$databaseType.to)) %>% mutate(databaseType = type)) %>% filter(type %in% res[[n]]$type.to)
+    unknowns <- retype.na_meta(getMeta(unique(bag$outputs_raw$to[!(bag$outputs_raw$to %in% outRef$bodyid)])))
     knownUnknowns <- distinct(rbind(unknowns,knownUnknowns))
     outRef <- distinct(filter(rbind(outRef,unknowns,knownUnknowns),type %in% res[[n]]$type.to))
     
@@ -149,7 +147,7 @@ get_type2typePath_raw <- function(type.from=NULL,
     knownConnectionsIn <- distinct(rbind(knownConnectionsIn,resLoc))
     
     type.to <- renaming(getTypesTable(unique(res[[n]]$databaseType.from)) %>% mutate(databaseType=type)) %>% filter(type %in% res[[n]]$type.from)
-    unknowns <- retype.na_meta(getMeta(unique(gsub("_contra","",bag$inputs_raw$from)[!(gsub("_contra","",bag$inputs_raw$from) %in% type.to$bodyid)]))) %>% mutate(databaseType=NA_character_) 
+    unknowns <- retype.na_meta(getMeta(unique(bag$inputs_raw$from[!(bag$inputs_raw$from %in% type.to$bodyid)]))) %>% mutate(databaseType=NA_character_) 
     knownUnknowns <- distinct(rbind(unknowns,knownUnknowns))
     type.to <- distinct(filter(rbind(type.to,unknowns,knownUnknowns),type %in% res[[n]]$type.from))
     
@@ -350,9 +348,7 @@ simulatedContraSide <- function(connTable){
   ##CHECK IT'S A RAW TABLE
   simulated <- connTable %>% mutate(type.from=lrInvert(type.from),
                                     type.to=lrInvert(type.to),
-                                    roi = paste0(roi,"_contra"),
-                                    to=paste0(to,"_contra"),
-                                    from=paste0(from,"_contra"))
+                                    roi = paste0(roi,"_contra"))
   
   simulated <- filter(simulated,grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$|_R$|_R[1-9]$|_R[1-9]/[1-9]$|_R[1-9]_C[1-9]$|_R[1-9]_C[1-9]_irreg$|_R_C[1-9]_irreg$|_R_small$",type.from) & 
                                 grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$|_R$|_R[1-9]$|_R[1-9]/[1-9]$|_R[1-9]_C[1-9]$|_R[1-9]_C[1-9]_irreg$|_R_C[1-9]_irreg$|_R_small$",type.to) &
@@ -364,8 +360,7 @@ simulatedContraSide <- function(connTable){
 
 simulatedContraSide_meta <- function(metaTable){
   ##CHECK IT'S A RAW TABLE
-  simulated <- metaTable %>% mutate(type=lrInvert(type),
-                                    bodyid=paste0(bodyid,"_contra"))
+  simulated <- metaTable %>% mutate(type=lrInvert(type))
   
   simulated <- filter(simulated,grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$|_R$|_R[1-9]$|_R[1-9]/[1-9]$|_R[1-9]_C[1-9]$|_R[1-9]_C[1-9]_irreg$|_R_C[1-9]_irreg$|_R_small$|
                                       _L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$|_R$|_R[1-9]$|_R[1-9]/[1-9]$|_R[1-9]_C[1-9]$|_R[1-9]_C[1-9]_irreg$|_R_C[1-9]_irreg$|_R_small$",type)) ## Non lateralized neuropiles shouldn't be simulated and neither should types with no L/R info

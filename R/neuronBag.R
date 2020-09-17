@@ -52,7 +52,7 @@ is.neuronBag <- function(x) inherits(x,"neuronBag")
 
 #### Helper -------------------------------------------------------
 
-create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,...){
+create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,addContra=FALSE,...){
   .Deprecated("neuronBag")
   UseMethod("neuronBag")
 }
@@ -87,17 +87,17 @@ create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,ver
 #'  with retyping functions. Methods exist for filtering (\code{filter}), concatenating (\code{c}) and all retyping utilities.
 #' @seealso \code{\link{lateralize_types}}, \code{\link{cxRetyping}}, \code{\link{redefine_types}} for retyping a bag.  
 #' @export
-neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,...){
+neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,addContra=FALSE,...){
   UseMethod("neuronBag")}
 
 #' @export
-neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,...){
+neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,addContra=FALSE,...){
   TypeNames <- getTypesTable(typeQuery)
-  neuronBag(TypeNames,fixed=FALSE,by.roi=by.roi,verbose=verbose,omitInputs=omitInputs,omitOutputs=omitOutputs,computeKnownRatio=computeKnownRatio,renaming=renaming,...)
+  neuronBag(TypeNames,fixed=FALSE,by.roi=by.roi,verbose=verbose,omitInputs=omitInputs,omitOutputs=omitOutputs,computeKnownRatio=computeKnownRatio,renaming=renaming,addContra=addContra,...)
 }
 
 #' @export
-neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,...){
+neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,addContra=FALSE,...){
  
   if(is.null(renaming)){renaming <- function(x,postfix="raw",...){
     redefine_types(x,idemtyper,postfix=postfix,...)}
@@ -150,6 +150,10 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
       allInsToOuts <- right_join(outputsR,allInsToOuts)
     }
     outputsTableRef <- renaming(outputsTableRef)
+    if (addContra){
+      outputsR <- addContraSide(outputsR)
+      outputsTableRef <- addContraSide_meta(outputsTableRef)
+    }
   }else{
     outputsR <- getConnectionTable(character(),"POST",by.roi=by.roi,verbose=verbose,...)
     outputsTableRef <- getTypesTable(character())
@@ -198,14 +202,18 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
       unknownsInOut <- getMeta(unique(allOutsFromIns$to[!(allOutsFromIns$to %in% inputsOutTableRef$bodyid)]))
       inputsOutTableRef <- renaming(rbind(inputsOutTableRef,retype.na_meta(unknownsInOut)))
     }
+    if(addContra){
+      inputsR <- addContraSide(inputsR)
+    }
   }else{
     inputsR <- getConnectionTable(character(),"PRE",by.roi=by.roi,verbose=verbose,...)
     if(computeKnownRatio){allOutsFromIns <- getConnectionTable(character(),"PRE",by.roi=by.roi,verbose=verbose,...)
                           inputsOutTableRef <- getTypesTable(character())
         }
     }
-  typeQuery <- renaming(retype.na_meta(typeQuery))   ## Revert typeQuery to the "original"
-
+  typeQuery <- renaming(retype.na_meta(typeQuery))  
+  if(addContra){typeQuery <- addContraSide_meta(typeQuery)}
+  
   if (verbose) message("Calculate type to type outputs")
   if (computeKnownRatio & nrow(outputsR)>0){
     OUTByTypesRef <- getTypeToTypeTable(allInsToOuts,typesTable = outputsTableRef) 

@@ -38,14 +38,13 @@ get_type2typePath <- function(type.from=NULL,
                               addContraPaths=FALSE,
                               thresholdPerROI=NULL,
                               computeKnownRatio = FALSE,
-                              combineContraPaths=FALSE,
                               chunkPath=FALSE,
                               addRecursive=FALSE,
                               ...){
   if(is.null(renaming)){renaming <- function(x,postfix="raw",...){
     redefine_types(x,idemtyper,postfix=postfix,...)}
   }
-  res <- get_type2typePath_raw(type.from,type.to,by.roi,ROI,n_steps,renaming,addContraPaths,thresholdPerROI,computeKnownRatio,combineContraPaths,...)
+  res <- get_type2typePath_raw(type.from,type.to,by.roi,ROI,n_steps,renaming,addContraPaths,thresholdPerROI,computeKnownRatio,...)
   
   if(!(is.null(type.to))) {if(!("databaseType" %in% names(type.to))){
     type.to <- mutate(type.to,databaseType=as.character(type))}
@@ -66,7 +65,6 @@ get_type2typePath_raw <- function(type.from=NULL,
                               addContraPaths=FALSE,
                               thresholdPerROI=NULL,
                               computeKnownRatio = FALSE,
-                              combineContraPaths=FALSE,
                               ...){
   stopifnot("At least one of type.from or type.to must be specified"=!is.null(type.from) | !is.null(type.to))
   if (addContraPaths & is.null(ROI)){stop("You should specify a set of (preferably right side) ROIs for `addContraPaths` to make sense.")}
@@ -76,19 +74,7 @@ get_type2typePath_raw <- function(type.from=NULL,
   
   res <- vector("list",max(n_steps))
   
-  if (is.list(ROI)){
-    ROIraw <- unlist(ROI,use.names = FALSE)
-    }else{ROIraw <- ROI}
-  
-  if (addContraPaths & is.list(ROI)){
-    if (combineContraPaths){
-      ROI <- lapply(ROI,function(r) c(r,paste0(r,"_contra")))
-      }else{
-       ROI_contra <- lapply(ROI,function(r) paste0(r,"_contra"))
-       names(ROI_contra) <- paste0(names(ROI),"_contra")
-       ROI <- c(ROI,ROI_contra)
-      }
-  }
+  if (is.list(ROI)){ROIraw <- unlist(ROI,use.names = FALSE)}else{ROIraw <- ROI}
   
   midP <- ceiling(max(n_steps)/2)
   downHalf <- seq(1,midP,length.out = midP)
@@ -108,7 +94,7 @@ get_type2typePath_raw <- function(type.from=NULL,
   type.from_toAdd <- getMeta(character(0))
   
   for (n in downHalf){
-    bag <- neuronBag(type.from,slctROI=ROIraw,by.roi=by.roi,omitInputs=TRUE,computeKnownRatio=computeKnownRatio,renaming=renaming,addContra=addContraPaths,...)  
+    bag <- neuronBag(type.from,slctROI=ROIraw,by.roi=by.roi,omitInputs=TRUE,computeKnownRatio=computeKnownRatio,renaming=renaming,...)  
     if (is.list(ROI)){
       bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r)})
       bag <- do.call(c,bag_list)
@@ -118,6 +104,7 @@ get_type2typePath_raw <- function(type.from=NULL,
     
     resLoc <- bag$outputs
     res[[n]] <- distinct(rbind(resLoc,filter(knownConnections,type.from %in% type.from_toAdd$type)))
+    if (addContraPaths) res[[n]] <- addContraSide(res[[n]])
     
     outRef <- renaming(getTypesTable(unique(res[[n]]$databaseType.to)) %>% mutate(databaseType = type)) %>% filter(type %in% res[[n]]$type.to)
     unknowns <- retype.na_meta(getMeta(unique(bag$outputs_raw$to[!(bag$outputs_raw$to %in% outRef$bodyid)])))
@@ -132,7 +119,7 @@ get_type2typePath_raw <- function(type.from=NULL,
   knownConnectionsIn <- getTypeToTypeTable(getConnectionTable(NULL,"PRE"))
   type.to_toAdd <- getMeta(character(0)) %>% mutate(databaseType=NA_character_) 
   for (n in rev(upHalf)){
-    bag <- neuronBag(type.to,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,computeKnownRatio=computeKnownRatio,renaming=renaming,addContra=addContraPaths,...)   
+    bag <- neuronBag(type.to,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,computeKnownRatio=computeKnownRatio,renaming=renaming,...)   
     if (is.list(ROI)){
       bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r)})
       bag <- do.call(c,bag_list)
@@ -143,6 +130,7 @@ get_type2typePath_raw <- function(type.from=NULL,
     resLoc <- bag$inputs
     
     res[[n]] <- rbind(resLoc,filter(knownConnectionsIn,type.to %in% type.to_toAdd$type))
+    if (addContraPaths) res[[n]] <- addContraSide(res[[n]])
     
     knownConnectionsIn <- distinct(rbind(knownConnectionsIn,resLoc))
     
@@ -340,12 +328,8 @@ addContraSide <- function(connTable){
   rbind(connTable,simulatedContraSide(connTable))
 }
 
-addContraSide_meta <- function(metaTable){
-  rbind(metaTable,simulatedContraSide_meta(metaTable))
-}
 
 simulatedContraSide <- function(connTable){
-  ##CHECK IT'S A RAW TABLE
   simulated <- connTable %>% mutate(type.from=lrInvert(type.from),
                                     type.to=lrInvert(type.to),
                                     roi = paste0(roi,"_contra"))
@@ -353,17 +337,6 @@ simulatedContraSide <- function(connTable){
   simulated <- filter(simulated,grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$|_R$|_R[1-9]$|_R[1-9]/[1-9]$|_R[1-9]_C[1-9]$|_R[1-9]_C[1-9]_irreg$|_R_C[1-9]_irreg$|_R_small$",type.from) & 
                                 grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$|_R$|_R[1-9]$|_R[1-9]/[1-9]$|_R[1-9]_C[1-9]$|_R[1-9]_C[1-9]_irreg$|_R_C[1-9]_irreg$|_R_small$",type.to) &
                         (grepl("(R)",roi) | roi=="SAD_contra" | roi=="PRW_contra")) ## Non lateralized neuropiles shouldn't be simulated and neither should types with no L/R info
-  
-  simulated
-  
-}
-
-simulatedContraSide_meta <- function(metaTable){
-  ##CHECK IT'S A RAW TABLE
-  simulated <- metaTable %>% mutate(type=lrInvert(type))
-  
-  simulated <- filter(simulated,grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$|_R$|_R[1-9]$|_R[1-9]/[1-9]$|_R[1-9]_C[1-9]$|_R[1-9]_C[1-9]_irreg$|_R_C[1-9]_irreg$|_R_small$|
-                                      _L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$|_R$|_R[1-9]$|_R[1-9]/[1-9]$|_R[1-9]_C[1-9]$|_R[1-9]_C[1-9]_irreg$|_R_C[1-9]_irreg$|_R_small$",type)) ## Non lateralized neuropiles shouldn't be simulated and neither should types with no L/R info
   
   simulated
   

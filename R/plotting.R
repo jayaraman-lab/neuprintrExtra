@@ -188,8 +188,8 @@ plotConnectivity.data.frame <- function(connObj,
   }
   
   if (!is.null(replacementLabels)){
-    p <- p + scale_x_discrete(breaks= levels(connObj$Inputs),labels=replacing[[ifelse(xaxis=="inputs","from","to")]])+
-      scale_y_discrete(breaks= levels(connObj$Outputs),labels=replacing[[ifelse(xaxis=="inputs","to","from")]])
+    p <- p + scale_x_discrete(breaks= levels(connObj[[xVar]]),labels=replacing[[ifelse(xaxis=="inputs","from","to")]])+
+      scale_y_discrete(breaks= levels(connObj[[yVar]]),labels=replacing[[ifelse(xaxis=="inputs","to","from")]])
   }
   
   p +

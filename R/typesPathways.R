@@ -40,6 +40,7 @@ get_type2typePath <- function(type.from=NULL,
                               computeKnownRatio = FALSE,
                               chunkPath=FALSE,
                               addRecursive=FALSE,
+                              overruleThreshold=Inf,
                               ...){
   if(is.null(renaming)){renaming <- function(x,postfix="raw",...){
     redefine_types(x,idemtyper,postfix=postfix,...)}
@@ -65,6 +66,7 @@ get_type2typePath_raw <- function(type.from=NULL,
                               addContraPaths=FALSE,
                               thresholdPerROI=NULL,
                               computeKnownRatio = FALSE,
+                              overruleThreshold=Inf,
                               ...){
   stopifnot("At least one of type.from or type.to must be specified"=!is.null(type.from) | !is.null(type.to))
   if (addContraPaths & is.null(ROI)){stop("You should specify a set of (preferably right side) ROIs for `addContraPaths` to make sense.")}
@@ -94,9 +96,9 @@ get_type2typePath_raw <- function(type.from=NULL,
   type.from_toAdd <- getMeta(character(0))
   
   for (n in downHalf){
-    bag <- neuronBag(type.from,slctROI=ROIraw,by.roi=by.roi,omitInputs=TRUE,computeKnownRatio=computeKnownRatio,renaming=renaming,...)  
+    bag <- neuronBag(type.from,slctROI=ROIraw,by.roi=by.roi,omitInputs=TRUE,computeKnownRatio=computeKnownRatio,renaming=renaming,overruleThreshold=overruleThreshold,...)  
     if (is.list(ROI)){
-      bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r)})
+      bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r,overruleThreshold=overruleThreshold)})
       bag <- do.call(c,bag_list)
     }
     
@@ -119,9 +121,9 @@ get_type2typePath_raw <- function(type.from=NULL,
   knownConnectionsIn <- getTypeToTypeTable(getConnectionTable(NULL,"PRE"))
   type.to_toAdd <- getMeta(character(0)) %>% mutate(databaseType=NA_character_) 
   for (n in rev(upHalf)){
-    bag <- neuronBag(type.to,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,computeKnownRatio=computeKnownRatio,renaming=renaming,...)   
+    bag <- neuronBag(type.to,slctROI=ROIraw,by.roi=by.roi,omitOutputs=TRUE,computeKnownRatio=computeKnownRatio,renaming=renaming,overruleThreshold=overruleThreshold,...)   
     if (is.list(ROI)){
-      bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r)})
+      bag_list <- lapply(names(ROI),function(r) {combineRois(bag,ROI[[r]],r,overruleThreshold=overruleThreshold)})
       bag <- do.call(c,bag_list)
     }
 

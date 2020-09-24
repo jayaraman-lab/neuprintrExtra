@@ -52,7 +52,7 @@ is.neuronBag <- function(x) inherits(x,"neuronBag")
 
 #### Helper -------------------------------------------------------
 
-create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,...){
+create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,overruleThreshold=Inf,...){
   .Deprecated("neuronBag")
   UseMethod("neuronBag")
 }
@@ -87,17 +87,17 @@ create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,ver
 #'  with retyping functions. Methods exist for filtering (\code{filter}), concatenating (\code{c}) and all retyping utilities.
 #' @seealso \code{\link{lateralize_types}}, \code{\link{cxRetyping}}, \code{\link{redefine_types}} for retyping a bag.  
 #' @export
-neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,...){
+neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,overruleThreshold=Inf,...){
   UseMethod("neuronBag")}
 
 #' @export
-neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,...){
+neuronBag.character <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,overruleThreshold=Inf,...){
   TypeNames <- getTypesTable(typeQuery)
-  neuronBag(TypeNames,fixed=FALSE,by.roi=by.roi,verbose=verbose,omitInputs=omitInputs,omitOutputs=omitOutputs,computeKnownRatio=computeKnownRatio,renaming=renaming,...)
+  neuronBag(TypeNames,fixed=FALSE,by.roi=by.roi,verbose=verbose,omitInputs=omitInputs,omitOutputs=omitOutputs,computeKnownRatio=computeKnownRatio,renaming=renaming,overruleThreshold=overruleThreshold,...)
 }
 
 #' @export
-neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,...){
+neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,overruleThreshold=Inf,...){
  
   if(is.null(renaming)){renaming <- function(x,postfix="raw",...){
     redefine_types(x,idemtyper,postfix=postfix,...)}
@@ -208,21 +208,21 @@ neuronBag.data.frame <- function(typeQuery,fixed=FALSE,selfRef=FALSE,by.roi=TRUE
 
   if (verbose) message("Calculate type to type outputs")
   if (computeKnownRatio & nrow(outputsR)>0){
-    OUTByTypesRef <- getTypeToTypeTable(allInsToOuts,typesTable = outputsTableRef) 
+    OUTByTypesRef <- getTypeToTypeTable(allInsToOuts,typesTable = outputsTableRef,overruleThreshold=overruleThreshold) 
     OUTByTypes <- processTypeToTypeFullOutputs(OUTByTypesRef,outputsR)
     
   }else{
-    OUTByTypes <- getTypeToTypeTable(outputsR,typesTable = outputsTableRef)
+    OUTByTypes <- getTypeToTypeTable(outputsR,typesTable = outputsTableRef,overruleThreshold=overruleThreshold)
     if(computeKnownRatio) OUTByTypesRef <- getTypeToTypeTable(allInsToOuts)
   }
   
   
   if (verbose) message("Calculate type to type inputs")
   if (computeKnownRatio & nrow(inputsR)>0){
-      INByTypesRef <- getTypeToTypeTable(allOutsFromIns,typesTable = inputsOutTableRef)
+      INByTypesRef <- getTypeToTypeTable(allOutsFromIns,typesTable = inputsOutTableRef,overruleThreshold=overruleThreshold)
       INByTypes <- processTypeToTypeFullInputs(INByTypesRef,inputsR)
     }else{
-      INByTypes <- getTypeToTypeTable(inputsR,typesTable = typeQuery)
+      INByTypes <- getTypeToTypeTable(inputsR,typesTable = typeQuery,overruleThreshold=overruleThreshold)
       if(computeKnownRatio) INByTypesRef <-getTypeToTypeTable(allOutsFromIns)
     }
 

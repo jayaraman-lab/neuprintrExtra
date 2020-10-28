@@ -13,7 +13,7 @@ cxRetyping <- function(connections,redefinePartners=TRUE,postfix=c("raw","to","f
   if (verbose) message("Renaming PFL3")
   connections <- redefineTypeByName(connections,typeList = c("PFL3"),pattern = "(^.*_L(?!.*irreg))|(^.*_R.*irreg)",perl=TRUE,nameModifiers = c("_L*","_R*"),redefinePartners = redefinePartners,postfix = postfix)
   if (verbose) message("Renaming PFL1/PFR_a")
-  connections <- redefineTypeByName(connections,typeList = c("PFR_a","PFL1"),pattern = "_L[2-7]|_R1",nameModifiers = c("_L*","_R*"),redefinePartners = redefinePartners,postfix = postfix)
+  connections <- redefineTypeByName(connections,typeList = c("PFR_a","PFL1"),pattern = "_L[2-8]|_R1",nameModifiers = c("_L*","_R*"),redefinePartners = redefinePartners,postfix = postfix)
   if (verbose) message("Renaming PFR_b")
   connections <- redefineTypeByName(connections,typeList = c("PFR_b"),pattern = "(^.*_L(?!.*C9))|(^.*C1.*)",perl=TRUE,nameModifiers = c("_L*","_R*"),redefinePartners = redefinePartners,postfix = postfix)
   if (verbose) message("All other L/R retyping")

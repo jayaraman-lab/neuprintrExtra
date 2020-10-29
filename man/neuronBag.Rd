@@ -14,6 +14,7 @@ neuronBag(
   omitOutputs = FALSE,
   computeKnownRatio = FALSE,
   renaming = NULL,
+  overruleThreshold = Inf,
   ...
 )
 }

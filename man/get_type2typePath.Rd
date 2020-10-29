@@ -20,6 +20,7 @@ get_type2typePath(
   computeKnownRatio = FALSE,
   chunkPath = FALSE,
   addRecursive = FALSE,
+  overruleThreshold = Inf,
   ...
 )
 
@@ -33,6 +34,7 @@ get_type2typePath_raw(
   addContraPaths = FALSE,
   thresholdPerROI = NULL,
   computeKnownRatio = FALSE,
+  overruleThreshold = Inf,
   ...
 )
 }
@@ -58,7 +60,7 @@ If a character vector, restrict to those ROIs. If a list, each element of the li
 in their name will be considered}
 
 \item{thresholdPerROI}{Optional filtering of the connection tables to limit to types containing at least \code{thresholdPerROI} synapses of the right 
-polarity in the ROI considered (forces to run the connection tables with \code{computeKnownRatio} set to TRUE)}
+polarity in the ROI considered}
 
 \item{computeKnownRatio}{Compute total relative metrics at each step (this is slow)}
 

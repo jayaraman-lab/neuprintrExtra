@@ -10,6 +10,7 @@ getConnectionTable(
   slctROI = NULL,
   by.roi = FALSE,
   synThresh = 3,
+  largeOnly = FALSE,
   chunk_connections = TRUE,
   chunk_meta = TRUE,
   verbose = FALSE,
@@ -27,6 +28,8 @@ usually slower as it requires listing all the outputs of the input neurons to ge
 \item{by.roi}{Passed to neuprint_connection_table. If returning all ROIs, should results be broken down by ROI?}
 
 \item{synThresh}{Minimum number of synapses to consider a connection (default 3)}
+
+\item{largeOnly}{For cropped targets, only consider them if they have more than 1000 connections (matching Scheffer et al)}
 
 \item{chunk_meta}{: to be passed to metadata and roiInfo queries (default TRUE)}
 

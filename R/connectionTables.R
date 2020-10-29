@@ -5,6 +5,7 @@
 #' @param slctROI String specifying the ROI where connections should be queried. By default all the ROIs.
 #' @param by.roi Passed to neuprint_connection_table. If returning all ROIs, should results be broken down by ROI?
 #' @param synThresh Minimum number of synapses to consider a connection (default 3)
+#' @param largeOnly For cropped targets, only consider them if they have more than 1000 connections (matching Scheffer et al)
 #' @param chunk_meta : to be passed to metadata and roiInfo queries (default TRUE)
 #' @param chunk_connection : to be passed to neuprint_connection_table (default TRUE)
 #' @param verbose : should the function report on its progress?
@@ -15,17 +16,17 @@
 #' ROI and \code{totalROIweight} is the absolute number of inputs this neuron receives in that region and
 #' \code{weightROIRelativeTotal} is the weight in the ROI normalized by the total number of inputs (in all ROIs)
 #' @export
-getConnectionTable <- function(bodyIDs,synapseType, slctROI=NULL,by.roi=FALSE, synThresh = 3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,...){
+getConnectionTable <- function(bodyIDs,synapseType, slctROI=NULL,by.roi=FALSE, synThresh = 3,largeOnly=FALSE,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,...){
   UseMethod("getConnectionTable")}
 
 #' @export
-getConnectionTable.default = function(bodyIDs, synapseType, slctROI=NULL,by.roi=FALSE, synThresh=3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,...){
+getConnectionTable.default = function(bodyIDs, synapseType, slctROI=NULL,by.roi=FALSE, synThresh=3,largeOnly=FALSE,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,...){
   refMeta <- getMeta(bodyIDs,chunk=chunk_meta,...)
-  return(getConnectionTable(refMeta,synapseType,slctROI,by.roi,synThresh,chunk_connections=chunk_connections,chunk_meta=chunk_meta,...))
+  return(getConnectionTable(refMeta,synapseType,slctROI,by.roi,synThresh,largeOnly=largeOnly,chunk_connections=chunk_connections,chunk_meta=chunk_meta,...))
 }
 
 #' @export
-getConnectionTable.data.frame <- function(bodyIDs,synapseType, slctROI=NULL,by.roi=FALSE,synThresh=3,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,...){
+getConnectionTable.data.frame <- function(bodyIDs,synapseType, slctROI=NULL,by.roi=FALSE,synThresh=3,largeOnly=FALSE,chunk_connections=TRUE,chunk_meta=TRUE,verbose=FALSE,...){
   refMeta <- bodyIDs
   bodyIDs <- neuprint_ids(bodyIDs$bodyid,mustWork = FALSE)
 
@@ -47,6 +48,11 @@ getConnectionTable.data.frame <- function(bodyIDs,synapseType, slctROI=NULL,by.r
 
   myConnections <- filter(myConnections,partnerMeta$status =="Traced")
   partnerMeta <- filter(partnerMeta,status == "Traced")
+  
+  if (largeOnly){
+    myConnections <- filter(myConnections,partnerMeta$cropped == FALSE | partnerMeta$downstream + partnerMeta$upstream >= 1000)
+    partnerMeta <- filter(partnerMeta,cropped == FALSE | downstream + upstream > 1000)
+  }
   
   processConnectionTable(myConnections,synThresh,refMeta,partnerMeta,refMetaOrig,synapseType,by.roi,slctROI,verbose,chunk_meta,chunk_connections,...)
 }

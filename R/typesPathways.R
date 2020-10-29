@@ -102,7 +102,9 @@ get_type2typePath_raw <- function(type.from=NULL,
       bag <- do.call(c,bag_list)
     }
     
-    if(!is.null(thresholdPerROI)){bag$outputs <- filter(bag$outputs,(totalROIweight*n_targets/n_type)>thresholdPerROI & totalPreROIweight>thresholdPerROI)}
+    if(!is.null(thresholdPerROI)){bag$outputs <- filter(bag$outputs,(totalROIweight*n_targets/n_type)>thresholdPerROI & 
+                                                                     totalPreROIweight>thresholdPerROI)}
+    
     
     resLoc <- bag$outputs
     res[[n]] <- distinct(rbind(resLoc,filter(knownConnections,type.from %in% type.from_toAdd$type)))
@@ -127,7 +129,7 @@ get_type2typePath_raw <- function(type.from=NULL,
       bag <- do.call(c,bag_list)
     }
 
-    if(!is.null(thresholdPerROI)){bag$inputs <- filter(bag$inputs,totalROIweight>thresholdPerROI & totalPreROIweight>thresholdPerROI)}
+    if(!is.null(thresholdPerROI)){bag$inputs <- filter(bag$inputs,(totalROIweight*n_targets/n_type)>thresholdPerROI  & totalPreROIweight>thresholdPerROI)}
     
     resLoc <- bag$inputs
     

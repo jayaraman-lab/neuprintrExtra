@@ -9,6 +9,7 @@ getTypeToTypeTable(
   majorOutputThreshold = 0.8,
   singleNeuronThreshold = 0.01,
   singleNeuronThresholdN = 3,
+  overruleThreshold = Inf,
   pThresh = 0.05,
   typesTable = NULL,
   oldTable = NULL

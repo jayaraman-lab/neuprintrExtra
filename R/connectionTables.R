@@ -51,7 +51,7 @@ getConnectionTable.data.frame <- function(bodyIDs,synapseType, slctROI=NULL,by.r
   
   if (largeOnly){
     myConnections <- filter(myConnections,partnerMeta$cropped == FALSE | partnerMeta$downstream + partnerMeta$upstream >= 1000)
-    partnerMeta <- filter(partnerMeta,cropped == FALSE | downstream + upstream > 1000)
+    partnerMeta <- filter(partnerMeta,cropped == FALSE | downstream + upstream >= 1000)
   }
   
   processConnectionTable(myConnections,synThresh,refMeta,partnerMeta,refMetaOrig,synapseType,by.roi,slctROI,verbose,chunk_meta,chunk_connections,...)

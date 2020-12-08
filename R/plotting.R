@@ -70,7 +70,7 @@ haneschPlot <- function(roiTable,
     scale_fill_gradient(limits=c(-1,1),name="Polarity",breaks=c(-1,-0.5,0,0.5,1),labels=c("Receives inputs","","Mixed","","Sends outputs"),low = "white", high = "black",
                         space = "Lab") +
     guides(fill = guide_legend(override.aes = list(size=5))) +
-    scale_size_area(name = "# Synapses") + labs(y="Neuron type",x="Neuropile") + theme
+    scale_size_area(name = "# Synapses") + labs(y="Neuron type",x="neuropil") + theme
 
   if (!(is.null(grouping))){
     if (flip==TRUE){fct <- paste(". ~",grouping)}else{fct <- paste(grouping,"~ .")}

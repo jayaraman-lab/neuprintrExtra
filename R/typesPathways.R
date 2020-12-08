@@ -340,7 +340,7 @@ simulatedContraSide <- function(connTable){
   
   simulated <- filter(simulated,grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$|_R$|_R[1-9]$|_R[1-9]/[1-9]$|_R[1-9]_C[1-9]$|_R[1-9]_C[1-9]_irreg$|_R_C[1-9]_irreg$|_R_small$|_L\\*$|_R\\*$",type.from) & 
                                 grepl("_L$|_L[1-9]$|_L[1-9]/[1-9]$|_L[1-9]_C[1-9]$|_L[1-9]_C[1-9]_irreg$|_L_C[1-9]_irreg$|_L_small$|_R$|_R[1-9]$|_R[1-9]/[1-9]$|_R[1-9]_C[1-9]$|_R[1-9]_C[1-9]_irreg$|_R_C[1-9]_irreg$|_R_small$|_R\\*$|_L\\*$",type.to) &
-                        (grepl("(R)",roi) | roi=="SAD_contra" | roi=="PRW_contra")) ## Non lateralized neuropiles shouldn't be simulated and neither should types with no L/R info
+                        (grepl("(R)",roi) | roi=="SAD_contra" | roi=="PRW_contra")) ## Non lateralized neuropils shouldn't be simulated and neither should types with no L/R info
   
   simulated
   

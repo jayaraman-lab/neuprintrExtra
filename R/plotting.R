@@ -50,7 +50,7 @@ haneschPlot <- function(roiTable,
   }
   if (regionOutlines==TRUE){hanesch <- hanesch +
     geom_rect(data=roiPos,aes(xmin=xmin,xmax=xmax,ymin=-Inf,ymax=Inf,fill=superroi),alpha=alphaRois,inherit.aes = F) +
-    scale_fill_manual(name="Brain region",values=roiP,guide = guide_legend(reverse = TRUE)) +
+    scale_fill_manual(name="brain region",values=roiP,guide = guide_legend(reverse = TRUE)) +
     ggnewscale::new_scale_fill()}
   if (interactive){
     hanesch <- hanesch + ggiraph::geom_point_interactive(data=roiTable,
@@ -67,10 +67,10 @@ haneschPlot <- function(roiTable,
     hanesch <- hanesch +
       geom_point(data=roiTable,aes(size=fullWeight,fill=deltaWeight,x=roi,y=yV),shape=21)}
   hanesch <- hanesch +
-    scale_fill_gradient(limits=c(-1,1),name="Polarity",breaks=c(-1,-0.5,0,0.5,1),labels=c("Receives inputs","","Mixed","","Sends outputs"),low = "white", high = "black",
+    scale_fill_gradient(limits=c(-1,1),name="polarity",breaks=c(-1,-0.5,0,0.5,1),labels=c("receives inputs","","mixed","","sends outputs"),low = "white", high = "black",
                         space = "Lab") +
     guides(fill = guide_legend(override.aes = list(size=5))) +
-    scale_size_area(name = "# Synapses",breaks=scales::breaks_log(n = 6)) + labs(y="neuron type",x="neuropil") + theme
+    scale_size_area(name = "# synapses",breaks=scales::breaks_log(n = 6)) + labs(y="neuron type",x="neuropil") + theme
 
   if (!(is.null(grouping))){
     if (flip==TRUE){fct <- paste(". ~",grouping)}else{fct <- paste(grouping,"~ .")}

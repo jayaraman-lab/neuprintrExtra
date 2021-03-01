@@ -34,7 +34,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^OA_V.*",types)] <- "OA"
   supertype[grepl("^TuBu.*",types)] <- "TuBu"
   supertype[grepl("^Delta7",types)] <- "Delta7"
-  supertype[grepl("^LPsP.*",types)] <- "LPsPB"
+  supertype[grepl("^LPsP.*",types)] <- "LPsP"
   supertype[grepl("^KC.*",types)] <- "KC"
   if (unicodeDelta){supertype <- stringr::str_replace(supertype,"Delta","\u0394")}
   

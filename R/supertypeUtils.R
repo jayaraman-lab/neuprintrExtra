@@ -31,6 +31,7 @@ supertype.character <- function(types,level=2,unicodeDelta=TRUE){
   supertype[grepl("^MBON[0-5][0-9].*",types)] <- stringr::str_extract(types,"MBON[0-5][0-9]")[grepl("^MBON[0-5][0-9].*",types)]
   supertype[grepl("^ExR.*",types)] <-  stringr::str_extract(types,"ExR[1-9]")[grepl("^ExR.*",types)]
   supertype[grepl("SpsP.*",types)] <- "SPS-PB"
+  supertype[grepl("PFGs",types)] <- "PFGs"
   supertype[grepl("^OA_V.*",types)] <- "OA"
   supertype[grepl("^TuBu.*",types)] <- "TuBu"
   supertype[grepl("^Delta7",types)] <- "Delta7"

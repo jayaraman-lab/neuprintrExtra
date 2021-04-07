@@ -138,7 +138,8 @@ plotConnectivity.data.frame <- function(connObj,
                                         orderIn=NULL,
                                         orderOut=NULL,
                                         legendName=NULL,
-                                        showTable="inputs"){
+                                        showTable="inputs",
+                                        switch=NULL){
   xaxis <- match.arg(xaxis)
   if(!is.null(slctROI)){connObj <- filter(connObj,roi==slctROI)}
   if(length(unique(connObj$roi))>1){stop("The data frame to plot should only contain one ROI -- you can use the `slctROI` argument")}
@@ -214,7 +215,8 @@ plotConnectivity.connectivityCluster <- function(connObj,
                                                  orderIn=NULL,
                                                  orderOut=NULL,
                                                  legendName=NULL,
-                                                 showTable="inputs"){
+                                                 showTable="inputs",
+                                                 switch=NULL){
   showTable <- match.arg(showTable)
   xaxis <- match.arg(xaxis)
   grouping <- connObj$grouping
@@ -233,5 +235,5 @@ plotConnectivity.connectivityCluster <- function(connObj,
                    slctROI = slctROI,
                    connectionMeasure=connectionMeasure,facetInputs=facetInputs,facetOutputs=facetOutputs,
                    orderIn=orderIn,orderOut=orderOut,xaxis=xaxis,cmax=cmax,theme=theme,
-                   legendName=legendName)
+                   legendName=legendName,switch=switch)
 }

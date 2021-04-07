@@ -18,7 +18,8 @@ plotConnectivity(
   orderIn = NULL,
   orderOut = NULL,
   legendName = NULL,
-  showTable = "inputs"
+  showTable = "inputs",
+  switch = NULL
 )
 }
 \arguments{
@@ -52,6 +53,8 @@ Optional ordering of the outputs (ignored and replaced by the clustering order i
 \item{legendName}{Optional override the default name for the color legend (by default a prettification of connectionMeasure)}
 
 \item{showTable}{When both inputs and outputs have been used for a clustering (via \code{\link{clusterBag}}), which connectivity table to show.}
+
+\item{switch}{To be passed to \code{\link{ggplot2::facet_grid}} to switch where the facet labels are displayed.}
 }
 \value{
 A ggplot object

@@ -102,6 +102,7 @@ haneschPlot <- function(roiTable,
 #'Optional ordering of the outputs (ignored and replaced by the clustering order if connObj is a connectivityCluster).
 #'@param legendName Optional override the default name for the color legend (by default a prettification of connectionMeasure)
 #'@param showTable When both inputs and outputs have been used for a clustering (via \code{\link{clusterBag}}), which connectivity table to show.
+#'@param switch To be passed to \code{\link{ggplot2::facet_grid}} to switch where the facet labels are displayed.
 #'@details orderIn and orderOut are passed as levels to a factor to order the axis.
 #'@return A ggplot object
 #'@export
@@ -118,7 +119,8 @@ plotConnectivity <- function(connObj,
                              orderIn=NULL,
                              orderOut=NULL,
                              legendName=NULL,
-                             showTable="inputs"){
+                             showTable="inputs",
+                             switch=NULL){
   UseMethod("plotConnectivity")
 }
 
@@ -184,7 +186,7 @@ plotConnectivity.data.frame <- function(connObj,
     facetX <- ifelse(xaxis=="inputs",facetInputs,facetOutputs)
     facetY <- ifelse(xaxis=="inputs",facetOutputs,facetInputs)
     facetExpr <- paste0(facetY," ~ ",facetX)
-    p <- p + facet_grid(as.formula(facetExpr),scale="free",space="free")
+    p <- p + facet_grid(as.formula(facetExpr),scale="free",space="free",switch=switch)
   }
   
   if (!is.null(replacementLabels)){

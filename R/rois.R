@@ -43,12 +43,12 @@ getNeuronsInRoiTable <- function(ROI,minTypePercentage=0.5,renaming=NULL,retypin
 
 #' Returns a neuronBag object of all the neurons forming significant connections in a ROI.
 #' @param ROI The ROI to consider
-#' @param renaming a renaming function to be applied to the types found. \code{cxRetyping} by default (for no renaming, set it to \code{identity})
+#' @param renaming a renaming function to be applied to the types found. \code{cxRetyping} by default (for no renaming, set it to NULL)
 #' @param bagROIs Which ROIs to include in the bag created (by default only the ROI one wants neurons in). If NULL returns all ROIs.
 #' @param minTypePercentage The minimum proportion of the instances of a type that should be innervating the ROI for
 #' it to be considered (0.5 by default)
 #' @param ... Parameters to be passed to \code{neuronBag}
-#' @details calls \code{getNeuronsInRoiTable} internally, with \code{minTypePercentage} divided by 2 if \code{lateralize} is TRUE.
+#' @details calls \code{getNeuronsInRoiTable} internally.
 #' @seealso  \code{getNeuronsInRoiTable}
 #' @export
 getTypesInRoiTable <- function(ROI,

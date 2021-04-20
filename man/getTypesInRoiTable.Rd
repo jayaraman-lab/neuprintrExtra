@@ -15,7 +15,7 @@ getTypesInRoiTable(
 \arguments{
 \item{ROI}{The ROI to consider}
 
-\item{renaming}{a renaming function to be applied to the types found. \code{cxRetyping} by default (for no renaming, set it to \code{identity})}
+\item{renaming}{a renaming function to be applied to the types found. \code{cxRetyping} by default (for no renaming, set it to NULL)}
 
 \item{bagROIs}{Which ROIs to include in the bag created (by default only the ROI one wants neurons in). If NULL returns all ROIs.}
 
@@ -28,7 +28,7 @@ it to be considered (0.5 by default)}
 Returns a neuronBag object of all the neurons forming significant connections in a ROI.
 }
 \details{
-calls \code{getNeuronsInRoiTable} internally, with \code{minTypePercentage} divided by 2 if \code{lateralize} is TRUE.
+calls \code{getNeuronsInRoiTable} internally.
 }
 \seealso{
 \code{getNeuronsInRoiTable}

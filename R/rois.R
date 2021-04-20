@@ -56,6 +56,10 @@ getTypesInRoiTable <- function(ROI,
                                bagROIs=ROI,
                                minTypePercentage=0.5,
                                ...){
+  if(!missing(retyping)){
+    warning("Argument 'retyping' deprecated, use 'renaming' instead")
+    renaming <- retyping
+  }
   neuronTable <- getNeuronsInRoiTable(ROI,minTypePercentage=minTypePercentage,renaming=renaming) ## Remove types if less than
   ## 25% of the instances touch (l/R)
   roiConnections <- neuronBag(neuronTable,slctROI=bagROIs,renaming=renaming,...)

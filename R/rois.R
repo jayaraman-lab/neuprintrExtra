@@ -55,6 +55,7 @@ getTypesInRoiTable <- function(ROI,
                                renaming=cxRetyping,
                                bagROIs=ROI,
                                minTypePercentage=0.5,
+                               retyping=NULL,
                                ...){
   if(!missing(retyping)){
     warning("Argument 'retyping' deprecated, use 'renaming' instead")
@@ -317,7 +318,7 @@ getROISummary.neuronBag <- function(neurons,threshold=0,rois = NULL){
 #'@export
 getROISummary.data.frame <- function(neurons,threshold=0,rois = NULL){
 
-  roiSummary <- getRoiInfo(neurons)
+  roiSummary <- getRoiInfo(neurons$bodyid)
 
   if (!(is.null(rois))){
     roiSummary <- roiSummary %>%
@@ -325,7 +326,7 @@ getROISummary.data.frame <- function(neurons,threshold=0,rois = NULL){
   }
 
   neurons <- rename(neurons,totalDownstream=downstream,totalUpstream=upstream)
-  countInstances <- group_by(neurons,type) %>% summarize(n=n())
+  countInstances <- group_by(neurons,type) %>% summarize(n=n()) 
 
   roiSummary <-
     left_join(roiSummary,

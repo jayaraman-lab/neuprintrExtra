@@ -2,7 +2,7 @@
 #'@export
 getMeta <- function(bodyids,...){
   knownMeta <- get("storedMeta",envir=cacheEnv)
-  
+  bodyids <- neuprint_ids(bodyids,unique=FALSE,mustWork = FALSE)
   newIDs <- bodyids[!(bodyids %in% knownMeta$bodyid)]
   reusable <- filter(knownMeta,bodyid %in% bodyids)
   
@@ -48,7 +48,7 @@ getTypesTable <- function(types){
 getRoiInfo <- function(bodyids,...){
   if (length(bodyids)==0){return(data.frame(bodyid=double(),roi=character(),pre=integer(),post=integer(),downstream=integer(),upstream=integer(),stringsAsFactors = FALSE))}
   knownInfo <- get("storedRoiInfo",envir=cacheEnv)
-  
+  bodyids <- neuprint_ids(bodyids,unique=FALSE,mustWork = FALSE)
   newIDs <- bodyids[!(bodyids %in% knownInfo$bodyid)]
   reusable <- filter(knownInfo,bodyid %in% bodyids)
   roiInfo <- neuprint_get_roiInfo(newIDs,...)

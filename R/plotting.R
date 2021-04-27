@@ -152,8 +152,11 @@ plotConnectivity.data.frame <- function(connObj,
   
   if(is.null(cmax)){cmax <- max(connObj[[connectionMeasure]])}
   if(is.null(legendName)){legendName <- stringr::str_to_title(gsub("([a-z])([A-Z])", "\\1 \\2", connectionMeasure))}
-  if (grepl("bodyid",grouping) | grepl("neuron",grouping)) {grouping <- ""}else{
-    grouping=paste0(grouping,".")}
+  if (grepl("bodyid",grouping) | grepl("neuron",grouping)) {
+    groupingName <- "neuron"
+    grouping <- ""}else{
+      groupingName <- grouping
+      grouping=paste0(grouping,".")}
   from <- paste0(grouping,"from")
   to <- paste0(grouping,"to")
   
@@ -213,9 +216,9 @@ plotConnectivity.data.frame <- function(connObj,
                          midpoint =0.5*cmax, limits=c(0,cmax),na.value=NA)  + theme + theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))
  
   if (xaxis=="inputs"){
-    p <- p + xlab(paste("presynaptic",grouping)) + ylab(paste("postsynaptic",grouping))
+    p <- p + xlab(paste("presynaptic",groupingName)) + ylab(paste("postsynaptic",groupingName))
   } else {
-    p <- p + xlab(paste("postsynaptic",grouping)) + ylab(paste("presynaptic",grouping))
+    p <- p + xlab(paste("postsynaptic",groupingName)) + ylab(paste("presynaptic",groupingName))
   }
   p
 }

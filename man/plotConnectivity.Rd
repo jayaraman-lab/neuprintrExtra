@@ -19,7 +19,8 @@ plotConnectivity(
   orderOut = NULL,
   legendName = NULL,
   showTable = "inputs",
-  switch = NULL
+  switch = NULL,
+  flipy = FALSE
 )
 }
 \arguments{
@@ -55,6 +56,8 @@ Optional ordering of the outputs (ignored and replaced by the clustering order i
 \item{showTable}{When both inputs and outputs have been used for a clustering (via \code{\link{clusterBag}}), which connectivity table to show.}
 
 \item{switch}{To be passed to \code{\link{ggplot2::facet_grid}} to switch where the facet labels are displayed.}
+
+\item{flipy}{Option to flip the y axis order}
 }
 \value{
 A ggplot object

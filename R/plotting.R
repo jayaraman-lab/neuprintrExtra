@@ -103,6 +103,7 @@ haneschPlot <- function(roiTable,
 #'@param legendName Optional override the default name for the color legend (by default a prettification of connectionMeasure)
 #'@param showTable When both inputs and outputs have been used for a clustering (via \code{\link{clusterBag}}), which connectivity table to show.
 #'@param switch To be passed to \code{\link{ggplot2::facet_grid}} to switch where the facet labels are displayed.
+#'@param flipy Option to flip the y axis order
 #'@details orderIn and orderOut are passed as levels to a factor to order the axis.
 #'@return A ggplot object
 #'@export
@@ -120,7 +121,8 @@ plotConnectivity <- function(connObj,
                              orderOut=NULL,
                              legendName=NULL,
                              showTable="inputs",
-                             switch=NULL){
+                             switch=NULL,
+                             flipy=FALSE){
   UseMethod("plotConnectivity")
 }
 
@@ -139,7 +141,8 @@ plotConnectivity.data.frame <- function(connObj,
                                         orderOut=NULL,
                                         legendName=NULL,
                                         showTable="inputs",
-                                        switch=NULL){
+                                        switch=NULL,
+                                        flipy=FALSE){
   xaxis <- match.arg(xaxis)
   if(!is.null(slctROI)){connObj <- filter(connObj,roi==slctROI)}
   if(length(unique(connObj$roi))>1){stop("The data frame to plot should only contain one ROI -- you can use the `slctROI` argument")}
@@ -179,13 +182,20 @@ plotConnectivity.data.frame <- function(connObj,
     xVar <- "Outputs"
     yVar <- "Inputs"
   }
-  p <- ggplot(connObj,aes(x=!!sym(xVar),y=!!sym(yVar),fill=!!(sym(connectionMeasure)))) + geom_tile()
+  if (flipy){
+    p <- ggplot(connObj,aes(x=!!sym(xVar),y=factor(!!sym(yVar),levels=rev(levels(!!sym(yVar)))),
+                            fill=!!(sym(connectionMeasure)))) + geom_tile()
+  }else{
+    p <- ggplot(connObj,aes(x=!!sym(xVar),y=!!sym(yVar),
+                          fill=!!(sym(connectionMeasure)))) + geom_tile()
+  }
   
   if (!is.null(facetInputs) | !is.null(facetOutputs)){
     facetInputs <- ifelse(is.null(facetInputs),".",facetInputs)
     facetOutputs <- ifelse(is.null(facetOutputs),".",facetOutputs)
     facetX <- ifelse(xaxis=="inputs",facetInputs,facetOutputs)
     facetY <- ifelse(xaxis=="inputs",facetOutputs,facetInputs)
+    if (flipy) facetY <- paste0("desc(",facetY,")")
     facetExpr <- paste0(facetY," ~ ",facetX)
     p <- p + facet_grid(as.formula(facetExpr),scale="free",space="free",switch=switch)
   }
@@ -222,7 +232,8 @@ plotConnectivity.connectivityCluster <- function(connObj,
                                                  orderOut=NULL,
                                                  legendName=NULL,
                                                  showTable="inputs",
-                                                 switch=NULL){
+                                                 switch=NULL,
+                                                 flipy=FALSE){
   showTable <- match.arg(showTable)
   xaxis <- match.arg(xaxis)
   grouping <- connObj$grouping
@@ -241,5 +252,5 @@ plotConnectivity.connectivityCluster <- function(connObj,
                    slctROI = slctROI,
                    connectionMeasure=connectionMeasure,facetInputs=facetInputs,facetOutputs=facetOutputs,
                    orderIn=orderIn,orderOut=orderOut,xaxis=xaxis,cmax=cmax,theme=theme,
-                   legendName=legendName,switch=switch)
+                   legendName=legendName,switch=switch,flipy=flipy)
 }

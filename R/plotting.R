@@ -198,7 +198,7 @@ plotConnectivity.data.frame <- function(connObj,
     facetOutputs <- ifelse(is.null(facetOutputs),".",facetOutputs)
     facetX <- ifelse(xaxis=="inputs",facetInputs,facetOutputs)
     facetY <- ifelse(xaxis=="inputs",facetOutputs,facetInputs)
-    if (flipy_facet) facetY <- paste0("reorder(facetY,desc(",facetY,"))")
+    if (flipy_facet) facetY <- paste0("reorder(",facetY,",desc(",facetY,"))")
     facetExpr <- paste0(facetY," ~ ",facetX)
     p <- p + facet_grid(as.formula(facetExpr),scale="free",space="free",switch=switch)
   }

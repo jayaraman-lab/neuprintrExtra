@@ -200,9 +200,9 @@ plotConnectivity.data.frame <- function(connObj,
                          midpoint =0.5*cmax, limits=c(0,cmax),na.value=NA)  + theme + theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))
  
   if (xaxis=="inputs"){
-    p <- p + xlab(paste("presynaptic",grouping)) + xlab(paste("postsynaptic",grouping))
+    p <- p + xlab(paste("presynaptic",grouping)) + ylab(paste("postsynaptic",grouping))
   } else {
-    p <- p + xlab(paste("postsynaptic",grouping)) + xlab(paste("presynaptic",grouping))
+    p <- p + xlab(paste("postsynaptic",grouping)) + ylab(paste("presynaptic",grouping))
   }
   p
 }

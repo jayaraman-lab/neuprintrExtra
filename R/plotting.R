@@ -104,6 +104,7 @@ haneschPlot <- function(roiTable,
 #'@param showTable When both inputs and outputs have been used for a clustering (via \code{\link{clusterBag}}), which connectivity table to show.
 #'@param switch To be passed to \code{\link{ggplot2::facet_grid}} to switch where the facet labels are displayed.
 #'@param flipy Option to flip the y axis order
+#'@param flipy_facets Option to flip the y axis facets order
 #'@details orderIn and orderOut are passed as levels to a factor to order the axis.
 #'@return A ggplot object
 #'@export
@@ -122,7 +123,8 @@ plotConnectivity <- function(connObj,
                              legendName=NULL,
                              showTable="inputs",
                              switch=NULL,
-                             flipy=FALSE){
+                             flipy=FALSE,
+                             flipy_facet=FALSE){
   UseMethod("plotConnectivity")
 }
 
@@ -142,7 +144,8 @@ plotConnectivity.data.frame <- function(connObj,
                                         legendName=NULL,
                                         showTable="inputs",
                                         switch=NULL,
-                                        flipy=FALSE){
+                                        flipy=FALSE,
+                                        flipy_facet=TRUE){
   xaxis <- match.arg(xaxis)
   if(!is.null(slctROI)){connObj <- filter(connObj,roi==slctROI)}
   if(length(unique(connObj$roi))>1){stop("The data frame to plot should only contain one ROI -- you can use the `slctROI` argument")}
@@ -195,7 +198,7 @@ plotConnectivity.data.frame <- function(connObj,
     facetOutputs <- ifelse(is.null(facetOutputs),".",facetOutputs)
     facetX <- ifelse(xaxis=="inputs",facetInputs,facetOutputs)
     facetY <- ifelse(xaxis=="inputs",facetOutputs,facetInputs)
-    if (flipy) facetY <- paste0("desc(",facetY,")")
+    if (flipy_facet) facetY <- paste0("reorder(facetY,desc(",facetY,"))")
     facetExpr <- paste0(facetY," ~ ",facetX)
     p <- p + facet_grid(as.formula(facetExpr),scale="free",space="free",switch=switch)
   }
@@ -233,7 +236,8 @@ plotConnectivity.connectivityCluster <- function(connObj,
                                                  legendName=NULL,
                                                  showTable="inputs",
                                                  switch=NULL,
-                                                 flipy=FALSE){
+                                                 flipy=FALSE,
+                                                 flipy_facet=FALSE){
   showTable <- match.arg(showTable)
   xaxis <- match.arg(xaxis)
   grouping <- connObj$grouping

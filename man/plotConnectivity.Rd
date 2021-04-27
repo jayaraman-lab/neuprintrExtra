@@ -20,7 +20,8 @@ plotConnectivity(
   legendName = NULL,
   showTable = "inputs",
   switch = NULL,
-  flipy = FALSE
+  flipy = FALSE,
+  flipy_facet = FALSE
 )
 }
 \arguments{
@@ -58,6 +59,8 @@ Optional ordering of the outputs (ignored and replaced by the clustering order i
 \item{switch}{To be passed to \code{\link{ggplot2::facet_grid}} to switch where the facet labels are displayed.}
 
 \item{flipy}{Option to flip the y axis order}
+
+\item{flipy_facets}{Option to flip the y axis facets order}
 }
 \value{
 A ggplot object

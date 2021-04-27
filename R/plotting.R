@@ -129,10 +129,10 @@ plotConnectivity.data.frame <- function(connObj,
                                         slctROI=NULL,
                                         grouping="type",
                                         connectionMeasure="weightRelative",
-                                        xaxis=c("inputs","outputs"),
+                                        xaxis=c("outputs","inputs"),
                                         facetInputs=NULL,
                                         facetOutputs=NULL,
-                                        theme=theme_minimal(),
+                                        theme=theme_minimal(strip.placement = "outside"),
                                         cmax=NULL,
                                         replacementLabels=NULL,
                                         orderIn=NULL,
@@ -195,10 +195,16 @@ plotConnectivity.data.frame <- function(connObj,
       scale_y_discrete(breaks= levels(connObj[[yVar]]),labels=replacing[[ifelse(xaxis=="inputs","to","from")]])
   }
   
-  p +
+  p <- p +
     scale_fill_gradient2(name=legendName,low="thistle", mid="blueviolet", high="black", 
-                         midpoint =0.5*cmax, limits=c(0,cmax),na.value=NA)  +theme+ theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))
+                         midpoint =0.5*cmax, limits=c(0,cmax),na.value=NA)  + theme + theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5))
  
+  if (xaxis=="inputs"){
+    p <- p + xlab(paste("presynaptic",grouping)) + xlab(paste("postsynaptic",grouping))
+  } else {
+    p <- p + xlab(paste("postsynaptic",grouping)) + xlab(paste("presynaptic",grouping))
+  }
+  p
 }
 
 #'@export

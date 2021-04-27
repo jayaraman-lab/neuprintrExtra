@@ -9,6 +9,7 @@ getTypesInRoiTable(
   renaming = cxRetyping,
   bagROIs = ROI,
   minTypePercentage = 0.5,
+  retyping = NULL,
   ...
 )
 }

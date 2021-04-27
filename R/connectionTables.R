@@ -212,7 +212,7 @@ getTypeToTypeTable <- function(connectionTable,
   ## Counting instances for each post type
   if (is.null(typesTable) & any(connectionTable$type.to != connectionTable$databaseType.to,na.rm=T))
   {
-    stop("Some types are custom defined. You need to provide a `typesTable` argument, or use `selfRef=TRUE`")
+    stop("Some types are custom defined. You need to provide a `typesTable` argument")
   }
 
   if (is.null(typesTable)){

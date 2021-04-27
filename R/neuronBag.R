@@ -89,7 +89,14 @@ create_neuronBag <- function(typeQuery,fixed=FALSE,by.roi=TRUE,selfRef=FALSE,ver
 #' @export
 neuronBag <- function(typeQuery,
                       fixed=FALSE,
-                      by.roi=TRUE,selfRef=FALSE,verbose=FALSE,omitInputs=FALSE,omitOutputs=FALSE,computeKnownRatio=FALSE,renaming=NULL,overruleThreshold=Inf,...){
+                      by.roi=TRUE,
+                      selfRef=FALSE,
+                      verbose=FALSE,
+                      omitInputs=FALSE,
+                      omitOutputs=FALSE,
+                      computeKnownRatio=FALSE,
+                      renaming=NULL,
+                      overruleThreshold=Inf,...){
   UseMethod("neuronBag")}
 
 #' @export

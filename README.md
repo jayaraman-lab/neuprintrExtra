@@ -13,5 +13,5 @@ if (!require("devtools")) install.packages("devtools")
 devtools::install_github("jayaramanlab/neuprintrExtra")
 
 # use 
-library(neuprintr)
+library(neuprintrExtra)
   ```

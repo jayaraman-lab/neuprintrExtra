@@ -16,6 +16,9 @@ Imports:
     stringr (>= 1.4.0),
     tidyr (>= 1.0.2),
     ggplot2
+Remotes:
+    natverse/nat
+    natverse/neuprintr
 Suggests:
     ggiraph,
     ggnewscale,

@@ -10,7 +10,7 @@ An R package, building on top of the neuprintr package (**neuprintr: R client ut
   ```r
   # install
 if (!require("devtools")) install.packages("devtools")
-devtools::install_github("jayaramanlab/neuprintrExtra")
+devtools::install_github("jayaraman-lab/neuprintrExtra")
 
 # use 
 library(neuprintrExtra)

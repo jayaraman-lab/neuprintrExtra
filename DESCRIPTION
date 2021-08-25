@@ -17,7 +17,7 @@ Imports:
     tidyr (>= 1.0.2),
     ggplot2
 Remotes:
-    natverse/nat
+    natverse/nat,
     natverse/neuprintr
 Suggests:
     ggiraph,
